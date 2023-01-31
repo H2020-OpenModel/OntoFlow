@@ -1,0 +1,38 @@
+function_costs:
+  predicate:
+    - mapsTo:
+      namespace: "http://emmo.info/domain-mappings#mapsTo"
+      cost: 3.0
+      self-contained: true
+    - function:
+      namespace: "https://w3id.org/function/ontology#Function"
+      cost: 10.0
+      self-contained: true
+    - instanceOf:
+      namespace: "http://emmo.info/datamodel#instanceOf"
+      cost: 1.0
+      self-contained: true
+    - subClassOf:
+      namespace: "http://www.w3.org/2000/01/rdf-schema#subclassOf"
+      cost: 1.0
+      self-contained: true
+    - label:
+      namespace: "http://www.w3.org/2000/01/rdf-schema#label"
+      cost: 1.0
+      self-contained: true
+    - hasAccuracy:
+      namespace: "http://example.com/demo-ontology#hasAccuracy"
+      self-contained: false
+      values:
+        - value: "http://example.com/demo-ontology#High"
+          cost: 5.0
+        - value: "http://example.com/demo-ontology#Low"
+          cost: 10.0
+    - hasComputationalEffort:
+      namespace: "http://example.com/demo-ontology#hasComputationalEffort"
+      self-contained: false
+      values:
+        - value: "http://example.com/demo-ontology#High"
+          cost: 20.0
+        - value: "http://example.com/demo-ontology#Low"
+          cost: 10.0
