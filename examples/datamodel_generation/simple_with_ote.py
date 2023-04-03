@@ -213,17 +213,16 @@ molecule_routes = engine.getmappingroute(
     quantity=ureg.Quantity,  # Quantity class with our extended unit registry
 )
 
-print("-----------ROUTES--------------")
-print(molecule_routes)
+# print("-----------ROUTES--------------")
+# print(molecule_routes)
 print("-------------------------")
-print("-------------FORMULA------------")
+print("-------------FORMULA FINAL------------")
 print(molecule_routes["formula"].show())
-print("-------------------------")
+print("------------WORKFLOW-------------")
 print(molecule_routes["formula"].get_workflow_yaml(0))
 # # print(molecule_routes["formula"].visualise(0))
 
 
-# import copy
 # print("-------------------------")
 # print("-------------------------")
 # print(molecule_routes["formula"].show())

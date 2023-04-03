@@ -39,6 +39,10 @@ class MinimumCostStrategy():
 
 
 	def get_best_route(self, routes):
+		#####
+		# Return the route with the minimum cost
+		# Tree traversal algorithm
+		#####
 		
 		open_set = [{"route":routes, "cost": routes.cost, "parent": None}]
 		closed_set = []

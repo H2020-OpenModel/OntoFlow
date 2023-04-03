@@ -172,13 +172,6 @@ class OntoFlowEngineValue(Value):
         self.cost = self.cost + total_cost
 
 
-    def _to_yaml(self, routeno: int, next_iri: str, next_steptype: StepType) -> str:
-        pass
-
-    def get_workflow_yaml(self, routeno: int) -> str:
-        pass
-
-
 
 class OntoFlowDMEngine():
 
@@ -294,7 +287,8 @@ class OntoFlowDMEngine():
                 # route = self.mapping_route(target, sources, triplestore=self.triplestore, **kwargs)
                 route = tripper_mapping_routes(target, sources, triplestore=self.triplestore, mappingstep_class=OntoFlowEngineMappingStep, value_class=OntoFlowEngineValue, default_costs=default_function_costs, **kwargs)
                 route.adjust_cost(custom_costs, self.costs)
-            except MissingRelationError:
+            # except MissingRelationError:
+            except Exception:
                 if allow_incomplete:
                     continue
                 raise
@@ -358,9 +352,12 @@ class OntoFlowDMEngine():
             **kwargs
         )
 
-        best_routes = routes
-        # best_routes = {}
-        # for k,v in routes.items():
-        #     best_routes[k] = self.mco_interface.get_best_route(v)["root"]
+        print("-------------FORMULA ROUTES------------")
+        print(routes["formula"].show())
+
+        # best_routes = routes
+        best_routes = {}
+        for k,v in routes.items():
+            best_routes[k] = self.mco_interface.get_best_route(v)["root"]
 
         return best_routes
