@@ -45,7 +45,7 @@ from oteapi.models.resourceconfig import ResourceConfig
 from oteapi.plugins import load_strategies
 from oteapi_asmod.strategies.parse import AtomisticStructureParseStrategy
 from ontoflow.engine import OntoFlowDMEngine
-from mco_strategies.minimumCostStrategy import MinimumCostStrategy
+from ontoflow.mco_strategies.minimumCostStrategy import MinimumCostStrategy
 
 
 thisdir = Path(__file__).absolute().parent
