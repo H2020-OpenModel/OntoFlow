@@ -1,107 +1,32 @@
 [build-system]
-requires = ["flit_core >=3.4,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "OntoFlow"
-authors = [
-    {name = "University of Bologna", email = "luca.foschini@unibo.it"},
-]
-description = "A triplestore wrapper for Python."
+name = "ontoflow"
+version = "0.0.1"
+description = "An enhanced workflow designer and builder"
 readme = "README.md"
-license = {file = "LICENSE"}
-classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Environment :: Plugins",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
+requires-python = ">=3.8"
+authors = [
+  {name = "Alessandro Calvio", email = "alessandro.calvio@unibo.it"}
 ]
-keywords = ["triplestore", "ontology", "RDF"]
-requires-python = "~=3.7"
-dynamic = ["version"]
-
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python"
+]
 dependencies = [
-    "typing-extensions ~=4.4 ; python_version<'3.8'",
+  "tripper @ git+https://github.com/EMMC-ASBL/tripper@8b1acbe",
+  "DLite-Python<=0.3.16",
+  "pint~=0.18"
 ]
 
 [project.optional-dependencies]
-docs = [
-    "mike ~=1.1",
-    "mkdocs ~=1.4",
-    "mkdocs-awesome-pages-plugin ~=2.8",
-    "mkdocs-material ~=8.5",
-    "mkdocstrings[python-legacy] ~=0.19.1",
-    "EMMOntoPy ~=0.4",
-    "rdflib ~=6.2",
-    "SPARQLWrapper ~=2.0",
-    "DLite-Python >=0.3.16,<1",
-]
-pre-commit = [
-    "pre-commit ~=2.21",
-    "pylint ~=2.13",
-]
-testing = [
-    "pytest ~=7.2",
-    "pytest-cov ~=4.0",
-    "EMMOntoPy ~=0.4",
-    "rdflib ~=6.2",
-    "SPARQLWrapper ~=2.0",
-    "DLite-Python >=0.3.16,<1",
-]
-dev = [
-    "mike ~=1.1",
-    "mkdocs ~=1.4",
-    "mkdocs-awesome-pages-plugin ~=2.8",
-    "mkdocs-material ~=8.5",
-    "mkdocstrings[python-legacy] ~=0.19.1",
-    "pre-commit ~=2.21",
-    "pylint ~=2.13",
-    "pytest ~=7.2",
-    "pytest-cov ~=4.0",
-    "EMMOntoPy ~=0.4",
-    "rdflib ~=6.2",
-    "SPARQLWrapper ~=2.0",
-    "DLite-Python >=0.3.16,<1",
+examples = [
+  "oteapi-asmod @ git+https://github.com/EMMC-ASBL/oteapi-asmod@eb7292b",
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@360ab93",
+  "oteapi-core==0.4.1"
 ]
 
 [project.urls]
-Home = "https://github.com/EMMC-ASBL/OntoFlow"
-Documentation = "https://EMMC-ASBL.github.io/OntoFlow"
-Source = "https://github.com/EMMC-ASBL/OntoFlow"
-Package = "https://pypi.org/project/OntoFlow"
-
-[tool.mypy]
-python_version = "3.7"
-ignore_missing_imports = true
-scripts_are_modules = true
-warn_unused_configs = true
-show_error_codes = true
-allow_redefinition = true
-
-[tool.pylint.messages_control]
-max-line-length = 88
-max-args = 10
-max-public-methods = 25
-max-locals = 20
-disable = [
-    "fixme",
-]
-good-names = [
-    # Default
-    "i", "j", "k", "ex", "Run", "_",
-    # Triple components: subject, predicate, object
-    "s", "p", "o",
-]
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-rs --cov=OntoFlow --cov-report=term"
-filterwarnings = [
-    "ignore:.*imp module.*:DeprecationWarning",
-]
+repository = "https://github.com/H2020-OpenModel/OntoFlow"
