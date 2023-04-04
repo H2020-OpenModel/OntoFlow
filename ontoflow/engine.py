@@ -11,14 +11,10 @@ with numpy.
 """
 from __future__ import annotations
 
-from collections import defaultdict
 from enum import Enum
-from typing import Any, Callable, Optional, Union
 
 import dlite
 import yaml
-from dlite.utils import infer_dimensions
-import numpy as np
 from pint import Quantity
 from tripper import DM, EMMO,  FNO, MAP, RDF, RDFS
 from tripper.mappings import MappingStep, Value, mapping_routes as tripper_mapping_routes

@@ -1,7 +1,0 @@
-DLite-Python~=0.3.15
-NumPy~=1.21
-pint~=0.18
-
-## For the examples
-# oteapi-core
-# oteapi-asmod

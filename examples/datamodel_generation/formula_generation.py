@@ -15,7 +15,7 @@ from oteapi.models.resourceconfig import ResourceConfig
 from oteapi.plugins import load_strategies
 from oteapi_asmod.strategies.parse import AtomisticStructureParseStrategy
 from ontoflow.engine import OntoFlowDMEngine
-from mco_strategies.minimumCostStrategy import MinimumCostStrategy
+from ontoflow.mco_strategies.minimumCostStrategy import MinimumCostStrategy
 
 
 #################################### EXAMPLE ######################################
@@ -68,7 +68,10 @@ dlite.storage_path.append(f"{entitydir}/*.json")
 
 # Use dlite.objectfactory to do the conversion
 # Consider to add a convenient function for this to dlite.factory
+
 ASEAtoms = dlite.get_instance("http://onto-ns.com/meta/0.1/ASEAtoms")
+print(atoms)
+print(ASEAtoms)
 aseatoms = dlite.objectfactory(atoms, meta=ASEAtoms)
 inst = aseatoms.dlite_inst
 
