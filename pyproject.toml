@@ -16,15 +16,14 @@ classifiers = [
   "Programming Language :: Python"
 ]
 dependencies = [
-  "tripper @ git+https://github.com/EMMC-ASBL/tripper@8b1acbe",
-  "DLite-Python<=0.3.16",
+  "DLite-Python>=0.3.16",
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v1.0.0",
   "pint~=0.18"
 ]
 
 [project.optional-dependencies]
 examples = [
   "oteapi-asmod @ git+https://github.com/EMMC-ASBL/oteapi-asmod@eb7292b",
-  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@360ab93",
   "oteapi-core==0.4.1"
 ]
 

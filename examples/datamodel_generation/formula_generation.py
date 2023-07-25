@@ -104,9 +104,9 @@ Molecule = dlite.get_instance("http://onto-ns.com/meta/0.1/Molecule")
 
 # Initialization of triplestore
 
-Triplestore.remove_database(backend="stardog", database="ontoflow", base_iri="http://localhost:5820")
-Triplestore.create_database(backend="stardog", database="ontoflow", base_iri="http://localhost:5820")
-ts = Triplestore(backend="stardog", base_iri="http://localhost:5820", database="ontoflow")
+Triplestore.remove_database(backend="stardog", database="ontoflow", triplestore_url="http://localhost:5820")
+Triplestore.create_database(backend="stardog", database="ontoflow", triplestore_url="http://localhost:5820")
+ts = Triplestore(backend="stardog", triplestore_url="http://localhost:5820", database="ontoflow")
 
 # Namespace binding
 DON = ts.bind("don", "http://example.com/demo-ontology#")
