@@ -246,22 +246,22 @@ class OntoFlowDMEngine():
         Returns:
             A dict mapping property names to a MappingStep instance.
         """
-        if isinstance(meta, str):
-            meta = dlite.get_instance(meta)
-        if isinstance(instances, dlite.Instance):
-            instances = [instances]
+        # if isinstance(meta, str):
+        #     meta = dlite.get_instance(meta)
+        # if isinstance(instances, dlite.Instance):
+        #     instances = [instances]
 
-        # These lines populated sources starting from dlite instances with raw data
-        # OntoFlow works on the ontological plan, so we don't want to have raw data but just references
-        # Here we can substitute dlite istances with a datamodels reader
-        sources = {}
-        for inst in instances:
-            props = {p.name: p for p in inst.meta['properties']}
-            for k, v in inst.properties.items():
-                uri = f'{inst.meta.uri}#{k}'
-                uri_references = list(self.triplestore.objects(uri, "http://example.com/demo-ontology#hasReference"))
-                sources[uri] = uri_references[0] if uri_references else None
-                # sources[uri] = quantity(v, props[k].unit)
+        # # These lines populated sources starting from dlite instances with raw data
+        # # OntoFlow works on the ontological plan, so we don't want to have raw data but just references
+        # # Here we can substitute dlite istances with a datamodels reader
+        # sources = {}
+        # for inst in instances:
+        #     props = {p.name: p for p in inst.meta['properties']}
+        #     for k, v in inst.properties.items():
+        #         uri = f'{inst.meta.uri}#{k}'
+        #         uri_references = list(self.triplestore.objects(uri, "http://example.com/demo-ontology#hasReference"))
+        #         sources[uri] = uri_references[0] if uri_references else None
+        #         # sources[uri] = quantity(v, props[k].unit)
 
         default_function_costs = []
         default_function_costs.append(("mapsTo", self.costs["mapsTo"]["cost"]))
@@ -276,84 +276,56 @@ class OntoFlowDMEngine():
             entry = filtered_cost[key]
             custom_costs[entry["namespace"]] = {s: o for s, o in self.triplestore.subject_objects(entry["namespace"])}
 
-        routes = {}
-        for prop in meta['properties']:
-            target = f'{meta.uri}#{prop.name}'
-            try:
-                # route = self.mapping_route(target, sources, triplestore=self.triplestore, **kwargs)
-                route = tripper_mapping_routes(target, sources, triplestore=self.triplestore, mappingstep_class=OntoFlowEngineMappingStep, value_class=OntoFlowEngineValue, default_costs=default_function_costs, **kwargs)
-                route.adjust_cost(custom_costs, self.costs)
-            # except MissingRelationError:
-            except Exception:
-                if allow_incomplete:
-                    continue
-                raise
-            if not allow_incomplete and not route.number_of_routes():
-                raise InsufficientMappingError(f'no mappings for {target}')
-            routes[prop.name] = route
+        # routes = {}
+
+        routes = tripper_mapping_routes(meta, instances, triplestore=self.triplestore, mappingstep_class=OntoFlowEngineMappingStep, value_class=OntoFlowEngineValue, default_costs=default_function_costs, **kwargs)
+        routes.adjust_cost(custom_costs, self.costs)
+
+        # for prop in meta['properties']:
+        #     target = f'{meta.uri}#{prop.name}'
+        #     try:
+        #         # route = self.mapping_route(target, sources, triplestore=self.triplestore, **kwargs)
+                
+        #     # except MissingRelationError:
+        #     except Exception:
+        #         if allow_incomplete:
+        #             continue
+        #         raise
+        #     if not allow_incomplete and not route.number_of_routes():
+        #         raise InsufficientMappingError(f'no mappings for {target}')
+        #     routes[prop.name] = route
 
         return routes
 
 
-    def getmappingroute(self, meta, instances, routedict=None, id=None,
-                    allow_incomplete=False, quantity=Quantity, **kwargs):
-        """Create a new instance of `meta` populated with the selected mapping
-        routes.
+    def getmappingroute(self, outputs, instances, **kwargs):
+       
+        
+        result_dict = {}
+        if isinstance(outputs, list):
+            for output in outputs:
+                routes = self.instance_routes(
+                    meta=output,
+                    instances=instances
+                )
 
-        This is a convenient function that combines instance_routes() and
-        instantiate_from_routes().  If you want to investigate the possible
-        routes, you will probably want to call instance_routes() and
-        instantiate_from_routes() instead.
+                result_dict[output] = routes
 
-        Arguments:
-            meta: Metadata to instantiate.
-            instances: Sequence of instances with source values.
-            self.triplestore: self.triplestore instance.
-                It is safe to pass a generator expression too.
-            routedict: Dict mapping property names to route number to select for
-                the given property.  The default is to select the route with
-                lowest cost.
-            id: URI of instance to create.
-            allow_incomplete: Whether to allow not populating all properties
-                of the returned instance.
-            quantity: Class implementing quantities with units.  Defaults to
-                pint.Quantity.
+        elif isinstance(outputs, str):
+            routes = self.instance_routes(
+                    meta=outputs,
+                    instances=instances
+                )
 
-        Keyword arguments (passed to mapping_route()):
-            function_repo: Dict mapping function IRIs to corresponding Python
-                function.  Default is to use `self.triplestore.function_repo`.
-            function_mappers: Sequence of mapping functions that takes
-                `self.triplestore` as argument and return a dict mapping output IRIs
-                to a list of `(function_iri, [input_iris, ...])` tuples.
-            mapsTo: IRI of 'mapsTo' in `self.triplestore`.
-            instanceOf: IRI of 'instanceOf' in `self.triplestore`.
-            subClassOf: IRI of 'subClassOf' in `self.triplestore`.  Set it to None if
-                subclasses should not be considered.
-            label: IRI of 'label' in `self.triplestore`.  Used for naming function
-                input parameters.  The default is to use rdfs:label.
-            hasUnit: IRI of 'hasUnit' in `self.triplestore`.
-            hasCost: IRI of 'hasCost' in `self.triplestore`.
+            result_dict[outputs] = routes
+        else:
+            raise Exception("Output format not recognized")
 
-        Returns:
-            New instance.
-        """
-        if isinstance(meta, str):
-            meta = dlite.get_instance(meta)
+        # # best_routes = routes
+        # best_routes = {}
+        # for k,v in routes.items():
+        #     best_routes[k] = self.mco_interface.get_best_route(v)["root"]
 
-        routes = self.instance_routes(
-            meta=meta,
-            instances=instances,
-            allow_incomplete=allow_incomplete,
-            quantity=quantity,
-            **kwargs
-        )
+        # return best_routes
 
-        print("-------------FORMULA ROUTES------------")
-        print(routes["formula"].show())
-
-        # best_routes = routes
-        best_routes = {}
-        for k,v in routes.items():
-            best_routes[k] = self.mco_interface.get_best_route(v)["root"]
-
-        return best_routes
+        return result_dict
