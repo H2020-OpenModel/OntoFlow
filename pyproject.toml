@@ -17,7 +17,7 @@ classifiers = [
 ]
 dependencies = [
   "DLite-Python>=0.3.16",
-  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v1.0.0",
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@feature/fuseki",
   "pint~=0.18"
 ]
 
