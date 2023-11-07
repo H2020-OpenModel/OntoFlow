@@ -18,7 +18,7 @@ classifiers = [
 dependencies = [
   "DLite-Python>=0.3.16",
   "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v1.0.0",
-  "pint~=0.18"
+  "pint~=0.16.1"
 ]
 
 [project.optional-dependencies]
