@@ -1,0 +1,7 @@
+DLite-Python>=0.3.16
+pybacktrip@ git+https://github.com/xAlessandroC/PyBackTrip@feature/fuseki
+pint~=0.18
+
+[examples]
+oteapi-asmod@ git+https://github.com/EMMC-ASBL/oteapi-asmod@eb7292b
+oteapi-core==0.4.1
