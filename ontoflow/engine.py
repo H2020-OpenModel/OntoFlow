@@ -12,6 +12,7 @@
 
 # Scaricare nuova versione Fuseki Docker
 
+
 import yaml
 
 PREFIXES = ["PREFIX base: <http://webprotege.stanford.edu/>"]
@@ -107,3 +108,5 @@ def generateYaml(input, output):
 # Use the function
 generateYaml("LAMMPSLog", "Density")
 
+# TODO: add the input to the query
+# TODO: add the input to the data dictionary
