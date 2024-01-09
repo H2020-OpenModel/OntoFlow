@@ -27,7 +27,7 @@ SELECT ?subject WHERE {
 
 SELECT ?subject WHERE {
   # Pattern for querying using the custom property hasOutput. 
-  # base:LAMMPSLog is the argument.
+  # base:FluidDensity is the argument.
   # ?subject is the result.
   ?subject rdf:type owl:Class .
   ?subject rdfs:subClassOf ?restriction .
