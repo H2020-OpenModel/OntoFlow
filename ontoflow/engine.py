@@ -29,19 +29,12 @@ NAMESPACES = {
 data = {}
 
 
-def query(q: str):
-    iw = q.index("WHERE")
-    queryStr = f"{q[:iw]}FROM <{GRAPH}> {q[iw:]}".strip()
-
-    return __request("GET", queryStr)
-
-
 def exploreNode(node: str, target: str):
     """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
 
     Args:
         node (str): The node to explore.
-        data (dict): The dictionary to add the results to.
+        target (str): The node to be found.
     """
 
     patterns = [
@@ -94,7 +87,14 @@ def exploreNode(node: str, target: str):
                     return
 
 
-def generateYaml(input, output):
+def generateYaml(input: str, output: str):
+    """
+    Generate a YAML file based on the search of the input starting from the output.
+
+    Args:
+        input (str): The input data to be found.
+        output (str): The output data, which is the starting point.
+    """
     data[output] = {}
 
     exploreNode(output, input)
@@ -102,6 +102,23 @@ def generateYaml(input, output):
     # Save the YAML data to a file
     with open("output.yaml", "w") as file:
         yaml.dump(data, file, default_flow_style=False)
+
+
+def query(q: str):
+    """
+    Executes a SPARQL query with the given query string.
+
+    Args:
+        q (str): The SPARQL query string.
+
+    Returns:
+        The result of the query.
+    """
+
+    iw = q.index("WHERE")
+    queryStr = f"{q[:iw]}FROM <{GRAPH}> {q[iw:]}".strip()
+
+    return __request("GET", queryStr)
 
 
 def __request(
