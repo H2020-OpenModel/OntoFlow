@@ -17,7 +17,6 @@ import requests
 ENDPOINT = f"http://localhost:3030/openmodel"
 DATABASE = "openmodel"
 GRAPH = "graph://main"
-PATH = os.path.abspath("openmodel_example.ttl")
 NAMESPACES = {
     "owl": "http://www.w3.org/2002/07/owl#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -27,6 +26,12 @@ NAMESPACES = {
 }
 
 data = {}
+
+
+def loadOntology(path: str):
+    content = open(path, "rb")
+    headers = {"Content-type": "text/turtle"}
+    __request("POST", cmd=content, headers=headers, plainData=True, graph=True)
 
 
 def exploreNode(node: str, target: str):
