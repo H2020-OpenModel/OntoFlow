@@ -1,4 +1,11 @@
-http://webprotege.stanford.edu/Density: {}
+Step:
+  output_iri: http://webprotege.stanford.edu/Density
+  relation: 'subclassOf'
+  routes:
+    - output_iri: http://webprotege.stanford.edu/FluidDensity
+      routes:
+        - output_iri: http://webprotege.stanford.edu/LAMMPS2Density
+
 http://webprotege.stanford.edu/FluidDensity:
   from: http://webprotege.stanford.edu/Density
 http://webprotege.stanford.edu/LAMMPS2Density:
@@ -12,7 +19,7 @@ http://webprotege.stanford.edu/LAMMPSSimulation:
 http://webprotege.stanford.edu/MoltemplateProcess1:
   from: http://webprotege.stanford.edu/LAMMPSDatasetInput
 http://webprotege.stanford.edu/MoltemplateProcess2:
-  from: http://webprotege.stanford.edu/LAMMPSDatasetInput
+  from: http://webprotege.stanford.edu/WaterDensityDatasetInput
 http://webprotege.stanford.edu/WaterDensityDatasetInput:
   from: http://webprotege.stanford.edu/MoltemplateProcess1
 http://webprotege.stanford.edu/WaterDensityDatasetInput1:

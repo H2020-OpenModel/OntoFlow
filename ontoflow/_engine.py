@@ -1,8 +1,11 @@
+import sys
+sys.path.append("../../../")
+
 from io import BufferedReader
-import os
 from typing import Union, Literal
 import yaml
 import requests
+from PyBackTrip.pybacktrip.backends.fuseki import FusekiStrategy
 
 # Definizione interfaccia per chiamare metodo
 # Input: ex. Density (root, albero parte, si lavora "al contrario", si parte da output e si ottengono input)
@@ -14,10 +17,7 @@ import requests
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-# Includere tripper ed usare per fare query
-# Struttura ad albero v. _output.yaml
-# Sistemare query facendo test, v. onClass, v. inversione responabilità
-
+_ENDPOINT = f"http://localhost:3030"
 ENDPOINT = f"http://localhost:3030/openmodel"
 DATABASE = "openmodel"
 GRAPH = "graph://main"
@@ -31,13 +31,16 @@ NAMESPACES = {
 
 data = {}
 
+ts = FusekiStrategy(NAMESPACES['base'], _ENDPOINT, DATABASE)
+
+
 def loadOntology(path: str):
     content = open(path, "rb")
     headers = {"Content-type": "text/turtle"}
     __request("POST", cmd=content, headers=headers, plainData=True, graph=True)
 
 
-def exploreNode(node: str, target: str):
+def exploreNode(node: str):
     """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
 
     Args:
@@ -54,6 +57,13 @@ def exploreNode(node: str, target: str):
             ?result rdf:type owl:Class .
             ?result rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction .
+            ?restriction owl:onProperty base:hasInput .
+            ?restriction owl:someValuesFrom {node} .
+        }}""",
+        """SELECT ?result WHERE {{
+            ?result rdf:type owl:Class .
+            ?result rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction .
             ?restriction owl:onProperty base:hasOutput .
             ?restriction owl:someValuesFrom {node} .
         }}""",
@@ -65,13 +75,6 @@ def exploreNode(node: str, target: str):
             ?restriction owl:someValuesFrom ?result .
         }}""",
         """SELECT ?result WHERE {{
-            {node} rdf:type owl:Class .
-            {node} rdfs:subClassOf ?restriction .
-            ?restriction rdf:type owl:Restriction .
-            ?restriction owl:onProperty base:hasOutput .
-            ?restriction owl:someValuesFrom ?result .
-        }}""",
-        """SELECT ?result WHERE {{
             ?result rdf:type {node}, owl:NamedIndividual .
         }}""",
     ]
@@ -79,20 +82,13 @@ def exploreNode(node: str, target: str):
     for pattern in patterns:
         nodeForm = f"<{node}>" if node[0] != "<" else node
         q = pattern.format(node=nodeForm)
-        results = query(q)["results"]["bindings"]
+        results = ts.query(q)
+        print(results)
         for result in results:
             val = result["result"]["value"]
-            print("RES", val)
-            print("NODE", node)
-            print("DATA", data)
-            print()
             if not val in data:
-                data[val] = {"from": node}
-                if val != target:
-                    exploreNode(val, target)
-                else:
-                    print(f"TARGET {target} FOUND!")
-                    return
+                data[val] = {"from": node, "relation": "hasInput"}
+                exploreNode(val)
 
 
 def generateYaml(input: str, output: str):
@@ -105,7 +101,9 @@ def generateYaml(input: str, output: str):
     """
     data[output] = {}
 
-    exploreNode(output, input)
+    exploreNode(output)
+
+    # Format data in order to get an hierarchy
 
     # Save the YAML data to a file
     with open("output.yaml", "w") as file:
@@ -122,6 +120,7 @@ def query(q: str):
     Returns:
         The result of the query.
     """
+
 
     iw = q.index("WHERE")
     queryStr = f"{q[:iw]}FROM <{GRAPH}> {q[iw:]}".strip()
