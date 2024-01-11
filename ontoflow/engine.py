@@ -1,8 +1,5 @@
-from io import BufferedReader
-import os
-from typing import Union, Literal
 import yaml
-import requests
+from tripper import Triplestore
 
 # Definizione interfaccia per chiamare metodo
 # Input: ex. Density (root, albero parte, si lavora "al contrario", si parte da output e si ottengono input)
@@ -14,38 +11,12 @@ import requests
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-# Includere tripper ed usare per fare query
 # Struttura ad albero v. _output.yaml
 # Sistemare query facendo test, v. onClass, v. inversione responabilità
 
-ENDPOINT = f"http://localhost:3030/openmodel"
-DATABASE = "openmodel"
-GRAPH = "graph://main"
-NAMESPACES = {
-    "owl": "http://www.w3.org/2002/07/owl#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "schema": "http://schema.org/",
-    "base": "http://webprotege.stanford.edu/",
-}
 
-data = {}
-
-def loadOntology(path: str):
-    content = open(path, "rb")
-    headers = {"Content-type": "text/turtle"}
-    __request("POST", cmd=content, headers=headers, plainData=True, graph=True)
-
-
-def exploreNode(node: str, target: str):
-    """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
-
-    Args:
-        node (str): The node to explore.
-        target (str): The node to be found.
-    """
-
-    patterns = [
+class OntoFlowEngine:
+    __PATTERNS = [
         """SELECT ?result WHERE {{
             ?result rdf:type owl:Class .
             ?result rdfs:subClassOf {node} .
@@ -76,110 +47,74 @@ def exploreNode(node: str, target: str):
         }}""",
     ]
 
-    for pattern in patterns:
-        nodeForm = f"<{node}>" if node[0] != "<" else node
-        q = pattern.format(node=nodeForm)
-        results = query(q)["results"]["bindings"]
-        for result in results:
-            val = result["result"]["value"]
-            print("RES", val)
-            print("NODE", node)
-            print("DATA", data)
-            print()
-            if not val in data:
-                data[val] = {"from": node}
-                if val != target:
-                    exploreNode(val, target)
-                else:
-                    print(f"TARGET {target} FOUND!")
-                    return
+    def __init__(self, triplestore: Triplestore) -> None:
+        """Initialise the OntoFlow engine. Sets the triplestore and the data dictionary.
 
+        Args:
+            triplestore (Triplestore): Triplestore to be used for the engine.
+        """
 
-def generateYaml(input: str, output: str):
-    """
-    Generate a YAML file based on the search of the input starting from the output.
+        self.triplestore = triplestore
+        self.data = {}
 
-    Args:
-        input (str): The input data to be found.
-        output (str): The output data, which is the starting point.
-    """
-    data[output] = {}
+    def loadOntology(self, path: str, format: str = "turtle") -> None:
+        """Load the ontology from a file.
 
-    exploreNode(output, input)
+        Args:
+            path (str): Path to the ontology file.
+            format (str, optional): Format of the ontology file. Defaults to "turtle".
+        """
+        self.triplestore.parse(path, format=format)
 
-    # Save the YAML data to a file
-    with open("output.yaml", "w") as file:
-        yaml.dump(data, file, default_flow_style=False)
+    def generateYaml(self, data: dict = {}):
+        """
+        Generate a YAML file based on the search of the input starting from the output.
 
+        Args:
+            data (dict): The data used for generating the yaml file. Defaults to {}
+        """
 
-def query(q: str):
-    """
-    Executes a SPARQL query with the given query string.
+        if not data:
+            data = self.data
 
-    Args:
-        q (str): The SPARQL query string.
+        # Save the YAML data to a file
+        with open("output.yaml", "w") as file:
+            yaml.dump(data, file, default_flow_style=False)
 
-    Returns:
-        The result of the query.
-    """
+    def getMappingRoute(self, target: str) -> dict:
+        """Get the mapping route from the target to all the possible sources.
 
-    iw = q.index("WHERE")
-    queryStr = f"{q[:iw]}FROM <{GRAPH}> {q[iw:]}".strip()
+        Args:
+            target (str): The target data to be found.
 
-    return __request("GET", queryStr)
+        Returns:
+            dict: The mapping route.
+        """
 
+        self.data[target] = {}
 
-def __request(
-    method: Literal["GET", "POST"],
-    cmd: Union[str, BufferedReader] = "",
-    prefix: bool = True,
-    headers: dict = {},
-    plainData: bool = False,
-    graph: bool = False,
-    json: bool = True,
-) -> dict:
-    """Generic REST method caller for the Triplestore
+        self.__exploreNode(target)
 
-    Args:
-        method (Literal["GET", "POST"]): Method of the request.
-        cmd (Union[str, BufferedReader], optional): Command to be executed. Defaults to "".
-        prefix (bool, optional): If the prefixes need to be added to the query. Defaults to True.
-        headers (dict, optional): Custom headers. Defaults to {}.
-        plainData (bool, optional): If data needs a format or is plain. Defaults to False.
-        graph (bool, optional): If the endpoint needs to specify the graph. Defaults to False.
-        json (bool, optional): If the result is a JSON or a dict containing the result as string. Defaults to True.
+        return self.data
 
-    Returns:
-        dict: Dict containing the result as JSON or text
-    """
+    def __exploreNode(self, node: str) -> None:
+        """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
 
-    if method not in ["GET", "POST"]:
-        print("Method unknown")
-        return {}
+        Args:
+            node (str): The node to explore.
+        """
 
-    ep = ENDPOINT if not graph else f"{ENDPOINT}?graph={GRAPH}"
-
-    if prefix and isinstance(cmd, str):
-        cmd = " ".join(f"PREFIX {k}: <{v}>" for k, v in NAMESPACES.items()) + cmd
-
-    try:
-        r: requests.Response = requests.request(
-            method=method,
-            url=ep,
-            headers=headers,
-            params=({"query": cmd} if method == "GET" and cmd else None),
-            data=(
-                cmd
-                if method == "POST" and plainData
-                else {"update": cmd}
-                if method == "POST" and not plainData
-                else None
-            ),
-        )
-        r.raise_for_status()
-        if r.status_code == 200:
-            return r.json() if json else {"response": r.text}
-        return {}
-    except requests.RequestException as e:
-        print(e)
-        return {}
+        for pattern in self.__PATTERNS:
+            nodeForm = f"<{node}>" if node[0] != "<" else node
+            q = pattern.format(node=nodeForm)
+            results = self.triplestore.query(q)
+            print("RES:",results)
+            for result in results:
+                val = result[0]
+                print("RES", val)
+                print("NODE", node)
+                print("DATA", self.data)
+                print()
+                if not val in self.data:
+                    self.data[val] = {"from": node}
+                    self.__exploreNode(val)

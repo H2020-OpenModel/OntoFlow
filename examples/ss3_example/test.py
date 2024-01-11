@@ -3,13 +3,23 @@ import sys
 
 sys.path.append("../../")
 
-from ontoflow.engine import generateYaml, loadOntology
+from ontoflow.engine import OntoFlowEngine
+from tripper import Triplestore
 
 ONTOLOGY_PATH = os.path.abspath("openmodel_example.ttl")
 
-# loadOntology(ONTOLOGY_PATH)
+ts = Triplestore(
+    backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"
+)
 
-generateYaml(
-    "http://webprotege.stanford.edu/WaterDensityDatasetInput1",
+ts.bind("base", "http://webprotege.stanford.edu/")
+
+engine = OntoFlowEngine(triplestore=ts)
+
+# engine.loadOntology(ONTOLOGY_PATH)
+
+engine.getMappingRoute(
     "http://webprotege.stanford.edu/Density",
 )
+
+engine.generateYaml()

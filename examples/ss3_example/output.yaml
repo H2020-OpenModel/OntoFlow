@@ -17,3 +17,5 @@ http://webprotege.stanford.edu/WaterDensityDatasetInput:
   from: http://webprotege.stanford.edu/MoltemplateProcess1
 http://webprotege.stanford.edu/WaterDensityDatasetInput1:
   from: http://webprotege.stanford.edu/WaterDensityDatasetInput
+http://webprotege.stanford.edu/WaterDensityDatasetInput2:
+  from: http://webprotege.stanford.edu/WaterDensityDatasetInput
