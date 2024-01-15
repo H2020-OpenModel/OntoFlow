@@ -1,49 +1,68 @@
 import yaml
 from tripper import Triplestore
 
-# Definizione interfaccia per chiamare metodo
-# Input: ex. Density (root, albero parte, si lavora "al contrario", si parte da output e si ottengono input)
-# Output: tutto il precorso trovato (struttura ad albero con input, nodi intermedi, e valore finale)
-# Risultato: v. Public/Deliverable5.5/ontoKB/ontoflow_output.txt formato yaml
-# Vedi lookup table in tripper/mappings
-# Per interfacciamento a Triplestore usare Tripper
-# Testare in cartella di examples
-
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-# Struttura ad albero v. _output.yaml
 # Sistemare query facendo test, v. onClass, v. inversione responabilità
 
 
 class OntoFlowEngine:
     __PATTERNS = [
-        """SELECT ?result WHERE {{
-            ?result rdf:type owl:Class .
-            ?result rdfs:subClassOf {node} .
+        """SELECT ?result ?property ?node WHERE {{
+            ?result rdf:type owl:Class ;
+                    rdfs:subClassOf {node} .
+            BIND(rdfs:subClassOf AS ?property)
+            BIND({node} as ?node) .
         }}""",
-        """SELECT ?result WHERE {{
-            ?result rdf:type owl:Class .
-            ?result rdfs:subClassOf ?restriction .
-            ?restriction rdf:type owl:Restriction .
-            ?restriction owl:onProperty base:hasOutput .
-            ?restriction owl:someValuesFrom {node} .
+        """SELECT ?result ?property ?node WHERE {{
+            ?result rdf:type owl:Class ;
+                    rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction ;
+                         owl:onProperty base:hasOutput ;
+                         owl:someValuesFrom {node} .
+            BIND(base:hasOutput AS ?property) .
+            BIND({node} AS ?node) .
         }}""",
-        """SELECT ?result WHERE {{
-            {node} rdf:type owl:Class .
-            {node} rdfs:subClassOf ?restriction .
-            ?restriction rdf:type owl:Restriction .
-            ?restriction owl:onProperty base:hasInput .
-            ?restriction owl:someValuesFrom ?result .
+        """SELECT ?result ?property ?node WHERE {{
+            {node} rdf:type owl:Class ;
+                   rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction ;
+                         owl:onProperty base:hasInput ;
+                         owl:someValuesFrom ?result .
+            BIND(base:hasInput AS ?property) .
+            BIND({node} AS ?node) .
         }}""",
-        """SELECT ?result WHERE {{
-            {node} rdf:type owl:Class .
-            {node} rdfs:subClassOf ?restriction .
-            ?restriction rdf:type owl:Restriction .
-            ?restriction owl:onProperty base:hasOutput .
-            ?restriction owl:someValuesFrom ?result .
+        """SELECT ?result ?property ?node WHERE {{
+            {node} rdf:type owl:Class ;
+                   rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction ;
+                         owl:onProperty base:hasOutput ;
+                         owl:someValuesFrom ?result .
+            BIND(base:hasOutput AS ?property) .
+            BIND({node} AS ?node) .
         }}""",
-        """SELECT ?result WHERE {{
+        """SELECT ?result ?property ?node WHERE {{
+            {node} rdf:type owl:Class ;
+                   rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction ;
+                         owl:onProperty base:hasInput ;
+                         owl:someValuesFrom ?result .
+            BIND(base:hasInput AS ?property) .
+            BIND({node} AS ?node) .
+        }}""",
+        """SELECT ?result ?property ?node WHERE {{
+            {node} rdf:type owl:Class ;
+                   rdfs:subClassOf ?restriction .
+            ?restriction rdf:type owl:Restriction ;
+                         owl:onProperty base:hasOutput ;
+                         owl:someValuesFrom ?result .
+            BIND(base:hasOutput AS ?property) .
+            BIND({node} AS ?node) .
+        }}""",
+        """SELECT ?result ?property ?node WHERE {{
             ?result rdf:type {node}, owl:NamedIndividual .
+            BIND(rdf:type AS ?property) .
+            BIND({node} AS ?node) .
         }}""",
     ]
 
@@ -66,20 +85,19 @@ class OntoFlowEngine:
         """
         self.triplestore.parse(path, format=format)
 
-    def generateYaml(self, data: dict = {}):
-        """
-        Generate a YAML file based on the search of the input starting from the output.
+    def generateYaml(self, root: str) -> None:
+        """Generate a hierarchical YAML file from the given data.
 
         Args:
-            data (dict): The data used for generating the yaml file. Defaults to {}
+            root (str): The root node of the hierarchy.
         """
 
-        if not data:
-            data = self.data
+        hierarchy = self.__convertToHierarchy(self.data, root)
 
-        # Save the YAML data to a file
+        hierarchy = {"Step": hierarchy}
+
         with open("output.yaml", "w") as file:
-            yaml.dump(data, file, default_flow_style=False)
+            yaml.dump(hierarchy, file, sort_keys=False)
 
     def getMappingRoute(self, target: str) -> dict:
         """Get the mapping route from the target to all the possible sources.
@@ -108,13 +126,34 @@ class OntoFlowEngine:
             nodeForm = f"<{node}>" if node[0] != "<" else node
             q = pattern.format(node=nodeForm)
             results = self.triplestore.query(q)
-            print("RES:",results)
             for result in results:
-                val = result[0]
-                print("RES", val)
-                print("NODE", node)
-                print("DATA", self.data)
-                print()
+                val, prop, node = result
                 if not val in self.data:
-                    self.data[val] = {"from": node}
+                    self.data[val] = {"node": node, "property": prop}
                     self.__exploreNode(val)
+
+    def __convertToHierarchy(self, data: dict, base: str) -> dict:
+        """
+        Convert the given dictionary into a hierarchical structure.
+
+        Args:
+            data (dict): The data to convert.
+            base (str): The base element of the hierarchy.
+
+        Returns:
+            dict: The hierarchical structure.
+        """
+
+        hierarchy = {"output_iri": base, "routes": []}
+
+        for key, value in data.items():
+            if value.get("node") == base:
+                hierarchy["routes"].append(
+                    {
+                        "output_iri": key,
+                        "relation": value.get("property"),
+                        "routes": self.__convertToHierarchy(data, key)["routes"],
+                    }
+                )
+
+        return hierarchy
