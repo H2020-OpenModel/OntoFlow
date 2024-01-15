@@ -3,7 +3,7 @@ from tripper import Triplestore
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-# Sistemare query facendo test, v. onClass, v. inversione responabilità
+# Setup queries adding onClass, and other cases
 
 
 class OntoFlowEngine:
@@ -75,6 +75,7 @@ class OntoFlowEngine:
 
         self.triplestore = triplestore
         self.data = {}
+        self.mapping = {}
 
     def loadOntology(self, path: str, format: str = "turtle") -> None:
         """Load the ontology from a file.
@@ -85,19 +86,11 @@ class OntoFlowEngine:
         """
         self.triplestore.parse(path, format=format)
 
-    def generateYaml(self, root: str) -> None:
-        """Generate a hierarchical YAML file from the given data.
-
-        Args:
-            root (str): The root node of the hierarchy.
-        """
-
-        hierarchy = self.__convertToHierarchy(self.data, root)
-
-        hierarchy = {"Step": hierarchy}
+    def generateYaml(self) -> None:
+        """Generate a YAML file from the mapping."""
 
         with open("output.yaml", "w") as file:
-            yaml.dump(hierarchy, file, sort_keys=False)
+            yaml.dump(self.mapping, file, sort_keys=False)
 
     def getMappingRoute(self, target: str) -> dict:
         """Get the mapping route from the target to all the possible sources.
@@ -113,7 +106,9 @@ class OntoFlowEngine:
 
         self.__exploreNode(target)
 
-        return self.data
+        self.mapping = self.__convertToMapping(target)
+
+        return self.mapping
 
     def __exploreNode(self, node: str) -> None:
         """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
@@ -132,28 +127,27 @@ class OntoFlowEngine:
                     self.data[val] = {"node": node, "property": prop}
                     self.__exploreNode(val)
 
-    def __convertToHierarchy(self, data: dict, base: str) -> dict:
+    def __convertToMapping(self, base: str) -> dict:
         """
         Convert the given dictionary into a hierarchical structure.
 
         Args:
-            data (dict): The data to convert.
             base (str): The base element of the hierarchy.
 
         Returns:
             dict: The hierarchical structure.
         """
 
-        hierarchy = {"output_iri": base, "routes": []}
+        mapping = {"output_iri": base, "routes": []}
 
-        for key, value in data.items():
+        for key, value in self.data.items():
             if value.get("node") == base:
-                hierarchy["routes"].append(
+                mapping["routes"].append(
                     {
                         "output_iri": key,
                         "relation": value.get("property"),
-                        "routes": self.__convertToHierarchy(data, key)["routes"],
+                        "routes": self.__convertToMapping(key)["routes"],
                     }
                 )
 
-        return hierarchy
+        return mapping

@@ -22,4 +22,4 @@ engine = OntoFlowEngine(triplestore=ts)
 
 engine.getMappingRoute(ROOT)
 
-engine.generateYaml(ROOT)
+engine.generateYaml()

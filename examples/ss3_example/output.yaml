@@ -1,33 +1,32 @@
-Step:
-  output_iri: http://webprotege.stanford.edu/Density
+output_iri: http://webprotege.stanford.edu/Density
+routes:
+- output_iri: http://webprotege.stanford.edu/FluidDensity
+  relation: http://www.w3.org/2000/01/rdf-schema#subClassOf
   routes:
-  - output_iri: http://webprotege.stanford.edu/FluidDensity
-    relation: http://www.w3.org/2000/01/rdf-schema#subClassOf
+  - output_iri: http://webprotege.stanford.edu/LAMMPS2Density
+    relation: http://webprotege.stanford.edu/hasOutput
     routes:
-    - output_iri: http://webprotege.stanford.edu/LAMMPS2Density
-      relation: http://webprotege.stanford.edu/hasOutput
+    - output_iri: http://webprotege.stanford.edu/LAMMPSLog
+      relation: http://webprotege.stanford.edu/hasInput
       routes:
-      - output_iri: http://webprotege.stanford.edu/LAMMPSLog
-        relation: http://webprotege.stanford.edu/hasInput
+      - output_iri: http://webprotege.stanford.edu/LAMMPSSimulation
+        relation: http://webprotege.stanford.edu/hasOutput
         routes:
-        - output_iri: http://webprotege.stanford.edu/LAMMPSSimulation
-          relation: http://webprotege.stanford.edu/hasOutput
+        - output_iri: http://webprotege.stanford.edu/LAMMPSDatasetInput
+          relation: http://webprotege.stanford.edu/hasInput
           routes:
-          - output_iri: http://webprotege.stanford.edu/LAMMPSDatasetInput
-            relation: http://webprotege.stanford.edu/hasInput
+          - output_iri: http://webprotege.stanford.edu/MoltemplateProcess1
+            relation: http://webprotege.stanford.edu/hasOutput
             routes:
-            - output_iri: http://webprotege.stanford.edu/MoltemplateProcess1
-              relation: http://webprotege.stanford.edu/hasOutput
+            - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput
+              relation: http://webprotege.stanford.edu/hasInput
               routes:
-              - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput
-                relation: http://webprotege.stanford.edu/hasInput
-                routes:
-                - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput1
-                  relation: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
-                  routes: []
-                - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput2
-                  relation: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
-                  routes: []
-            - output_iri: http://webprotege.stanford.edu/MoltemplateProcess2
-              relation: http://webprotege.stanford.edu/hasOutput
-              routes: []
+              - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput1
+                relation: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+                routes: []
+              - output_iri: http://webprotege.stanford.edu/WaterDensityDatasetInput2
+                relation: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
+                routes: []
+          - output_iri: http://webprotege.stanford.edu/MoltemplateProcess2
+            relation: http://webprotege.stanford.edu/hasOutput
+            routes: []
