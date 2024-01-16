@@ -8,7 +8,7 @@ from tripper import Triplestore
 
 ONTOLOGY_PATH = os.path.abspath("openmodel_example.ttl")
 
-ROOT = "http://webprotege.stanford.edu/Density"
+ROOT = "http://webprotege.stanford.edu/LAMMPSDatasetInput"
 
 ts = Triplestore(
     backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"

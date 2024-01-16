@@ -1,0 +1,54 @@
+{
+    "http://webprotege.stanford.edu/LAMMPSDatasetInput": {
+        "nodes": [
+            "http://webprotege.stanford.edu/MoltemplateProcess1",
+            "http://webprotege.stanford.edu/MoltemplateProcess2"
+        ],
+        "properties": [
+            "http://webprotege.stanford.edu/hasOutput",
+            "http://webprotege.stanford.edu/hasOutput"
+        ]
+    },
+    "http://webprotege.stanford.edu/MoltemplateProcess1": {
+        "nodes": [
+            "http://webprotege.stanford.edu/LAMMPSDatasetInput"
+        ],
+        "properties": [
+            "http://webprotege.stanford.edu/hasOutput"
+        ]
+    },
+    "http://webprotege.stanford.edu/WaterDensityDatasetInput": {
+        "nodes": [
+            "http://webprotege.stanford.edu/MoltemplateProcess1",
+            "http://webprotege.stanford.edu/MoltemplateProcess2"
+        ],
+        "properties": [
+            "http://webprotege.stanford.edu/hasInput",
+            "http://webprotege.stanford.edu/hasInput"
+        ]
+    },
+    "http://webprotege.stanford.edu/WaterDensityDatasetInput1": {
+        "nodes": [
+            "http://webprotege.stanford.edu/WaterDensityDatasetInput"
+        ],
+        "properties": [
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ]
+    },
+    "http://webprotege.stanford.edu/WaterDensityDatasetInput2": {
+        "nodes": [
+            "http://webprotege.stanford.edu/WaterDensityDatasetInput"
+        ],
+        "properties": [
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        ]
+    },
+    "http://webprotege.stanford.edu/MoltemplateProcess2": {
+        "nodes": [
+            "http://webprotege.stanford.edu/LAMMPSDatasetInput"
+        ],
+        "properties": [
+            "http://webprotege.stanford.edu/hasOutput"
+        ]
+    }
+}
