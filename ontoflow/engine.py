@@ -1,7 +1,6 @@
-import yaml
 import json
+import yaml
 from tripper import Triplestore
-import uuid
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
@@ -53,15 +52,6 @@ class OntoFlowEngine:
             BIND({node} AS ?node) .
         }}""",
         """SELECT ?result ?property ?node WHERE {{
-            {node} rdf:type owl:Class ;
-                   rdfs:subClassOf ?restriction .
-            ?restriction rdf:type owl:Restriction ;
-                         owl:onProperty base:hasOutput ;
-                         owl:someValuesFrom ?result .
-            BIND(base:hasOutput AS ?property) .
-            BIND({node} AS ?node) .
-        }}""",
-        """SELECT ?result ?property ?node WHERE {{
             ?result rdf:type {node}, owl:NamedIndividual .
             BIND(rdf:type AS ?property) .
             BIND({node} AS ?node) .
@@ -104,18 +94,17 @@ class OntoFlowEngine:
             dict: The mapping route.
         """
 
-        self.data[target] = []
-
-        self.mapping = self.__exploreNode(target)
-
-        with open("data.json", "w") as file:
-            json.dump(self.data, file, indent=4)
+        self.mapping = {"Step": self.__exploreNode(target)}
 
         with open("output.json", "w") as file:
-            json.dump(self.mapping, file, indent=4)
+            json.dump(self.mapping, file, sort_keys=False)
+
+        with open("data.json", "w") as file:
+            json.dump(self.data, file, sort_keys=False)
+
 
         return self.mapping
-    
+
     def __exploreNode(self, node: str, base: str = None) -> None:
         """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
 
@@ -129,7 +118,7 @@ class OntoFlowEngine:
 
         if base is None:
             base = node
-            self.data[base] = {"nodes": [], "properties": []}
+            self.data[base] = {}
 
         mapping = {"output_iri": base, "routes": []}
 
@@ -140,7 +129,7 @@ class OntoFlowEngine:
             for result in results:
                 val, prop, node = result
                 if val not in self.data:
-                    self.data[val] = {"nodes": [node], "properties": [prop]}
+                    self.data[val] = {"node": node, "property": prop}
                     child_mapping = self.__exploreNode(val, base=node)
                     mapping["routes"].append(
                         {
@@ -149,18 +138,5 @@ class OntoFlowEngine:
                             "routes": child_mapping["routes"],
                         }
                     )
-                elif node not in self.data[val]['nodes']:
-                    self.data[val]['nodes'].append(node)
-                    self.data[val]['properties'].append(prop)
-                    child_mapping = self.__exploreNode(val, base=node)
-                    mapping["routes"].append(
-                        {
-                            "output_iri": val,
-                            "relation": prop,
-                            "routes": child_mapping["routes"],
-                        }
-                    )
-                    print(node)
-
 
         return mapping
