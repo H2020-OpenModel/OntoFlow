@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append("/home/pinter/Workspace/OpenModel/OntoFlow")
+sys.path.append("/home/mbrigadoi/Workspace/OpenModel/OntoFlow")
 
 from ontoflow.engine import OntoFlowEngine
 from tripper import Triplestore

@@ -12,7 +12,7 @@ class OntoFlowEngine:
         """SELECT ?result ?property ?node WHERE {{
             ?result rdf:type owl:Class ;
                     rdfs:subClassOf {node} .
-            BIND(rdfs:subClassOf AS ?property)
+            BIND(rdfs:subClassOf AS ?property) .
             BIND({node} as ?node) .
         }}""",
         """SELECT ?result ?property ?node WHERE {{
@@ -25,12 +25,12 @@ class OntoFlowEngine:
             BIND({node} AS ?node) .
         }}""",
         """SELECT ?result ?property ?node WHERE {{
-            {node} rdf:type owl:Class ;
-                   rdfs:subClassOf ?restriction .
+            ?result rdf:type owl:Class ;
+                    rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction ;
                          owl:onProperty base:hasInput ;
-                         owl:someValuesFrom ?result .
-            BIND(base:hasInput AS ?property) .
+                         owl:someValuesFrom {node} .
+            BIND(base:hasOutput AS ?property) .
             BIND({node} AS ?node) .
         }}""",
         """SELECT ?result ?property ?node WHERE {{
@@ -94,10 +94,12 @@ class OntoFlowEngine:
             dict: The mapping route.
         """
 
-        self.mapping = {"Step": self.__exploreNode(target)}
+        # self.mapping = {"Step": self.__exploreNode(target)}
 
-        with open("output.json", "w") as file:
-            json.dump(self.mapping, file, sort_keys=False)
+        self.__explore(target)
+
+        # with open("output.json", "w") as file:
+        #     json.dump(self.mapping, file, sort_keys=False)
 
         with open("data.json", "w") as file:
             json.dump(self.data, file, sort_keys=False)
@@ -129,7 +131,7 @@ class OntoFlowEngine:
             for result in results:
                 val, prop, node = result
                 if val not in self.data:
-                    self.data[val] = {"node": node, "property": prop}
+                    self.data[val] = {"node": [node], "property": [prop]}
                     child_mapping = self.__exploreNode(val, base=node)
                     mapping["routes"].append(
                         {
@@ -138,5 +140,30 @@ class OntoFlowEngine:
                             "routes": child_mapping["routes"],
                         }
                     )
+                else:
+                    if node not in self.data[val]["node"]:
+                        self.data[val]["node"].append(node)
+                        self.data[val]["property"].append(prop)
 
         return mapping
+    
+    def __explore(self, node, parent = None):
+        # TODO: manage the case of multiple parents (MoltemplateProcess1, MoltemplateProcess2)
+        if node not in self.data:
+            self.data[node] = {"routes": []}
+        else: 
+            return
+
+        for pattern in self.__PATTERNS:
+            nodeForm = f"<{node}>" if node[0] != "<" else node
+            q = pattern.format(node=nodeForm)
+            results = self.triplestore.query(q)
+            tmp = []
+            for result in results:
+                val, prop, node = result
+                if val not in self.data[node]['routes'] and val != parent:
+                    self.data[node]['routes'].append(val)
+                tmp.append((val, node))
+            print(tmp)
+            for v, n in tmp:
+                self.__explore(v, n)

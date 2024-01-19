@@ -1,43 +1,56 @@
 {
-    "http://webprotege.stanford.edu/Density": {},
+    "http://webprotege.stanford.edu/Density": {
+        "routes": [
+            "http://webprotege.stanford.edu/FluidDensity"
+        ]
+    },
     "http://webprotege.stanford.edu/FluidDensity": {
-        "node": "http://webprotege.stanford.edu/Density",
-        "property": "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+        "routes": [
+            "http://webprotege.stanford.edu/LAMMPS2Density"
+        ]
     },
     "http://webprotege.stanford.edu/LAMMPS2Density": {
-        "node": "http://webprotege.stanford.edu/FluidDensity",
-        "property": "http://webprotege.stanford.edu/hasOutput"
+        "routes": [
+            "http://webprotege.stanford.edu/LAMMPSLog"
+        ]
     },
     "http://webprotege.stanford.edu/LAMMPSLog": {
-        "node": "http://webprotege.stanford.edu/LAMMPS2Density",
-        "property": "http://webprotege.stanford.edu/hasInput"
+        "routes": [
+            "http://webprotege.stanford.edu/LAMMPSSimulation"
+        ]
     },
     "http://webprotege.stanford.edu/LAMMPSSimulation": {
-        "node": "http://webprotege.stanford.edu/LAMMPSLog",
-        "property": "http://webprotege.stanford.edu/hasOutput"
+        "routes": [
+            "http://webprotege.stanford.edu/LAMMPSDatasetInput"
+        ]
     },
     "http://webprotege.stanford.edu/LAMMPSDatasetInput": {
-        "node": "http://webprotege.stanford.edu/LAMMPSSimulation",
-        "property": "http://webprotege.stanford.edu/hasInput"
+        "routes": [
+            "http://webprotege.stanford.edu/MoltemplateProcess1",
+            "http://webprotege.stanford.edu/MoltemplateProcess2"
+        ]
     },
     "http://webprotege.stanford.edu/MoltemplateProcess1": {
-        "node": "http://webprotege.stanford.edu/LAMMPSDatasetInput",
-        "property": "http://webprotege.stanford.edu/hasOutput"
+        "routes": [
+            "http://webprotege.stanford.edu/WaterDensityDatasetInput"
+        ]
     },
     "http://webprotege.stanford.edu/WaterDensityDatasetInput": {
-        "node": "http://webprotege.stanford.edu/MoltemplateProcess1",
-        "property": "http://webprotege.stanford.edu/hasInput"
-    },
-    "http://webprotege.stanford.edu/WaterDensityDatasetInput1": {
-        "node": "http://webprotege.stanford.edu/WaterDensityDatasetInput",
-        "property": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-    },
-    "http://webprotege.stanford.edu/WaterDensityDatasetInput2": {
-        "node": "http://webprotege.stanford.edu/WaterDensityDatasetInput",
-        "property": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        "routes": [
+            "http://webprotege.stanford.edu/MoltemplateProcess2",
+            "http://webprotege.stanford.edu/WaterDensityDatasetInput1",
+            "http://webprotege.stanford.edu/WaterDensityDatasetInput2"
+        ]
     },
     "http://webprotege.stanford.edu/MoltemplateProcess2": {
-        "node": "http://webprotege.stanford.edu/LAMMPSDatasetInput",
-        "property": "http://webprotege.stanford.edu/hasOutput"
+        "routes": [
+            "http://webprotege.stanford.edu/LAMMPSDatasetInput"
+        ]
+    },
+    "http://webprotege.stanford.edu/WaterDensityDatasetInput1": {
+        "routes": []
+    },
+    "http://webprotege.stanford.edu/WaterDensityDatasetInput2": {
+        "routes": []
     }
 }
