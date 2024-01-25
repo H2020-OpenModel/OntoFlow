@@ -94,8 +94,6 @@ class OntoFlowEngine:
             dict: The mapping route.
         """
 
-        # self.mapping = {"Step": self.__exploreNode(target)}
-
         self.__exploreNode(target)
         self.mapping = {"Step": self.__generateHierarchy(target)}
 
