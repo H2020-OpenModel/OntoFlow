@@ -21,7 +21,6 @@ def visualize(g, name = "example.png"):
     (graph,) = pydot.graph_from_dot_data(stream.getvalue())
     graph.write_png(os.path.join(dirname(dirname(abspath(__file__))), name))
 
-
 def add_individual(graph, currentTarget):
     global individual_count
     individual_count += 1
@@ -36,17 +35,19 @@ def add_subclass(graph, currentTarget):
     graph.add((subclass, URIRef(example_ns.subClassOf), currentTarget))
     return subclass
 
-def add_generating_model(graph, currentTarget):
+def add_generating_model(graph, currentTarget, n_inputs = 1):
     global generating_model_count, input_count
     generating_model_count += 1
     input_count += 1
     generating_model = URIRef(example_ns["generating-model" + str(generating_model_count)])
-    input = URIRef(example_ns["input" + str(input_count)])
     graph.add((generating_model, URIRef(example_ns.hasOutput), currentTarget))
-    graph.add((generating_model, URIRef(example_ns.hasInput), input))
-    return input
-
-
+    input_nodes = []
+    for i in range(0, n_inputs):
+        input = URIRef(example_ns["input" + str(input_count)])
+        graph.add((generating_model, URIRef(example_ns.hasInput), input))
+        input_nodes.append(input)
+        input_count += 1
+    return input_nodes
 
 if __name__ == "__main__":
     g = Graph()
@@ -54,15 +55,14 @@ if __name__ == "__main__":
     g.bind("ontoflow_ind", example_individual_ns)
 
     target_node = URIRef(example_ns.Target)
-    target_node = add_individual(g, target_node)
+    # target_node = add_individual(g, target_node)
     target_node = add_subclass(g, target_node)
-    target_node = add_generating_model(g, target_node)
-    target_node = add_individual(g, target_node)
+    target_node = add_generating_model(g, target_node, 2)
+    target_node = add_individual(g, target_node[0])
 
     # input_node_gm1 = add_generating_model(g, target_node)
     # input_node_gm2 = add_generating_model(g, target_node)
     # input_node_gm2 = add_subclass(g, input_node_gm2)
-
 
     print(g.serialize(format="turtle"))
 
