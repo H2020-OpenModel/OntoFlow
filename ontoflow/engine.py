@@ -9,52 +9,52 @@ from tripper import Triplestore
 
 class OntoFlowEngine:
     __PATTERNS = [
-        """SELECT ?result ?property ?node WHERE {{
-            ?result rdf:type owl:Class ;
+        """SELECT ?sub ?rel ?obj WHERE {{
+            ?sub rdf:type owl:Class ;
                     rdfs:subClassOf {node} .
-            BIND(rdfs:subClassOf AS ?property) .
-            BIND({node} as ?node) .
+            BIND(rdfs:subClassOf AS ?rel) .
+            BIND({node} as ?obj) .
         }}""",
-        """SELECT ?result ?property ?node WHERE {{
-            ?result rdf:type owl:Class ;
+        """SELECT ?sub ?rel ?obj WHERE {{
+            ?sub rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction ;
                          owl:onProperty base:hasOutput ;
                          owl:someValuesFrom {node} .
-            BIND(base:hasOutput AS ?property) .
-            BIND({node} AS ?node) .
+            BIND(base:hasOutput AS ?rel) .
+            BIND({node} AS ?obj) .
         }}""",
-        """SELECT ?result ?property ?node WHERE {{
-            ?result rdf:type owl:Class ;
+        """SELECT ?sub ?rel ?obj WHERE {{
+            ?sub rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction ;
                          owl:onProperty base:hasInput ;
                          owl:someValuesFrom {node} .
-            BIND(base:hasOutput AS ?property) .
-            BIND({node} AS ?node) .
+            BIND(base:hasOutput AS ?rel) .
+            BIND({node} AS ?obj) .
         }}""",
-        """SELECT ?result ?property ?node WHERE {{
+        """SELECT ?sub ?rel ?obj WHERE {{
             {node} rdf:type owl:Class ;
                    rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction ;
                          owl:onProperty base:hasOutput ;
-                         owl:someValuesFrom ?result .
-            BIND(base:hasOutput AS ?property) .
-            BIND({node} AS ?node) .
+                         owl:someValuesFrom ?sub .
+            BIND(base:hasOutput AS ?rel) .
+            BIND({node} AS ?obj) .
         }}""",
-        """SELECT ?result ?property ?node WHERE {{
+        """SELECT ?sub ?rel ?obj WHERE {{
             {node} rdf:type owl:Class ;
                    rdfs:subClassOf ?restriction .
             ?restriction rdf:type owl:Restriction ;
                          owl:onProperty base:hasInput ;
-                         owl:someValuesFrom ?result .
-            BIND(base:hasInput AS ?property) .
-            BIND({node} AS ?node) .
+                         owl:someValuesFrom ?sub .
+            BIND(base:hasInput AS ?rel) .
+            BIND({node} AS ?obj) .
         }}""",
-        """SELECT ?result ?property ?node WHERE {{
-            ?result rdf:type {node}, owl:NamedIndividual .
-            BIND(rdf:type AS ?property) .
-            BIND({node} AS ?node) .
+        """SELECT ?sub ?rel ?obj WHERE {{
+            ?sub rdf:type {node}, owl:NamedIndividual .
+            BIND(rdf:type AS ?rel) .
+            BIND({node} AS ?obj) .
         }}""",
     ]
 
@@ -96,74 +96,82 @@ class OntoFlowEngine:
 
         # self.mapping = {"Step": self.__exploreNode(target)}
 
-        self.__explore(target)
-
-        # with open("output.json", "w") as file:
-        #     json.dump(self.mapping, file, sort_keys=False)
+        self.__exploreNode(target)
+        self.mapping = {"Step": self.__generateHierarchy(target)}
 
         with open("data.json", "w") as file:
             json.dump(self.data, file, sort_keys=False)
 
+        with open("output.json", "w") as file:
+            json.dump(self.mapping, file, sort_keys=False)
 
         return self.mapping
 
-    def __exploreNode(self, node: str, base: str = None) -> None:
+    def __exploreNode(self, node, parent=None):
         """Explore a node in the ontology using predefined patterns, and add the results to the data dictionary.
 
         Args:
             node (str): The node to explore.
-            base (str, optional): The base element of the hierarchy. Defaults to None.
+            parent (str, optional): The parent node. Defaults to None.
+
+        Returns:
+            dict: The flat mapping route.
+        """
+
+        if node not in self.data:
+            self.data[node] = {"routes": [], "relations": []}
+        else:
+            return
+
+        common = {"_parents": {}}
+
+        for pattern in self.__PATTERNS:
+            nodeForm = f"<{node}>" if node[0] != "<" else node
+            q = pattern.format(node=nodeForm)
+            results = self.triplestore.query(q)
+            # check if valid results
+            if results == []:
+                continue
+            # check if there are multiple results with the same relation
+            # in this case they have common subtrees
+
+            if len(results) > 1:
+                first = results[0]
+                for more in results[1:]:
+                    if more[0] not in common and more[2] == first[2]:
+                        common[more[0]] = first[0]
+                        common["_parents"][first[0]] = more[0]
+                        self.data[more[0]] = {}
+            for result in results:
+                sub, rel, obj = result
+                if (
+                    sub not in self.data[obj]["routes"]
+                    and sub != parent
+                    and (
+                        parent not in common["_parents"]
+                        or sub not in common["_parents"][parent]
+                    )
+                ):
+                    self.data[obj]["routes"].append(sub)
+                    self.data[obj]["relations"].append(rel)
+                self.__exploreNode(sub, obj)
+            for k, v in common.items():
+                if k != "_parents":
+                    self.data[k] = self.data[v]
+
+    def __generateHierarchy(self, node):
+        """Generate a hierarchical mapping route from the flat data.
+
+        Args:
+            node (str): The node to start from.
 
         Returns:
             dict: The hierarchical mapping route.
         """
 
-        if base is None:
-            base = node
-            self.data[base] = {}
-
-        mapping = {"output_iri": base, "routes": []}
-
-        for pattern in self.__PATTERNS:
-            nodeForm = f"<{node}>" if node[0] != "<" else node
-            q = pattern.format(node=nodeForm)
-            results = self.triplestore.query(q)
-            for result in results:
-                val, prop, node = result
-                if val not in self.data:
-                    self.data[val] = {"node": [node], "property": [prop]}
-                    child_mapping = self.__exploreNode(val, base=node)
-                    mapping["routes"].append(
-                        {
-                            "output_iri": val,
-                            "relation": prop,
-                            "routes": child_mapping["routes"],
-                        }
-                    )
-                else:
-                    if node not in self.data[val]["node"]:
-                        self.data[val]["node"].append(node)
-                        self.data[val]["property"].append(prop)
-
-        return mapping
-    
-    def __explore(self, node, parent = None):
-        # TODO: manage the case of multiple parents (MoltemplateProcess1, MoltemplateProcess2)
-        if node not in self.data:
-            self.data[node] = {"routes": []}
-        else: 
-            return
-
-        for pattern in self.__PATTERNS:
-            nodeForm = f"<{node}>" if node[0] != "<" else node
-            q = pattern.format(node=nodeForm)
-            results = self.triplestore.query(q)
-            tmp = []
-            for result in results:
-                val, prop, node = result
-                if val not in self.data[node]['routes'] and val != parent:
-                    self.data[node]['routes'].append(val)
-                tmp.append((val, node))
-            print(tmp)
-            for v, n in tmp:
-                self.__explore(v, n)
+        if node not in self.data or not self.data[node]["routes"]:
+            return None
+        hierarchy = {node: {}}
+        for route in self.data[node]["routes"]:
+            hierarchy[node][route] = self.__generateHierarchy(route)
+        return hierarchy

@@ -7,6 +7,7 @@ from ontoflow.engine import OntoFlowEngine
 from tripper import Triplestore
 
 ONTOLOGY_PATH = os.path.abspath("openmodel_example.ttl")
+# ONTOLOGY_PATH = os.path.abspath("ss3_complete.ttl")
 
 ROOT = "http://webprotege.stanford.edu/Density"
 
