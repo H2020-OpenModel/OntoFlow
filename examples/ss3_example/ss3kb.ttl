@@ -1,0 +1,37 @@
+@prefix : <http://open-model.eu/ontologies/ss3kb#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ss3: <http://open-model.eu/ontologies/ss3#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix astm: <http://emmo.info/doam/astm52900#> .
+@prefix emmo: <http://emmo.info/emmo#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<http://open-model.eu/ontologies/ss3kb> rdf:type owl:Ontology ;
+                                        owl:versionIRI <http://open-model.eu/ontologies/0.1/ss3kb> ;
+                                        owl:imports <http://open-model.eu/ontologies/0.1/ss3> ;
+                                        dcterms:abstract "Knowledge base for OpenModel success story 3 on aluminium reinforced concrete."@en ;
+                                        dcterms:created "2024-01-24"@en ;
+                                        dcterms:creator "Francesca Lønstad Bleken, SINTEF, NO"@en ,
+                                                        "Jesper Friis, SINTEF, NO"@en ,
+                                                        "Sylvain Gouttebroze, SINTEF, NO"@en ;
+                                        dcterms:license "https://creativecommons.org/licenses/by/4.0/legalcode"@en ;
+                                        dcterms:publisher "OpenModel"@en ;
+                                        dcterms:title "OpenModel Success Story 3 Knowledge base"@en ;
+                                        owl:versionInfo "0.1"@en .
+
+
+# Available data sources
+:heattreatment1 rdf:type ss3:HeatTreatment .  # Premod
+:premodsimple1 rdf:type ss3:PremodSimple .  # Premod
+
+:abaqus_femmesh1 rdf:type ss3:AbaqusFiniteElementMesh .  # Abaqus
+:abaqus_materialcard_al1 rdf:type ss3:AbaqusMaterialCard .  # Abaqus
+:abaqus_materialcard_cement1 rdf:type ss3:FenicsMaterialCard .  # Abaqus
+
+:fenics_femmesh1 rdf:type ss3:FenicsFiniteElementMesh .  # Fenics
+:fenicsmaterials1 rdf:type ss3:FenicsMaterials .  # Fenics
+:fenicssimulationconfig1 rdf:type ss3:FenicsSimulationConfig .  # Fenics
