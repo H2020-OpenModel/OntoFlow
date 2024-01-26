@@ -51,3 +51,9 @@ __PATTERNS = {
             BIND({node} AS ?obj) .
         }}"""
     }
+
+1. individual
+2. hasInput - hasOutput
+3. subclass
+
+Solo Generating model hanno hasOutput ed hasInput
