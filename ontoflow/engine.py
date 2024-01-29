@@ -4,20 +4,48 @@ from tripper import Triplestore
 
 
 class Node:
-    def __init__(self, depth: int, iri: str, parentPredicate: str):
+    def __init__(self, depth: int, iri: str, predicate: str):
         """Initialise a node in the ontology tree.
 
         Args:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
-            parent_predicate (str): the relation the parent node.
+            predicate (str): the relation the parent node.
         """
+
         self.depth = depth
         self.iri = iri
-        self.parentPredicate = parentPredicate
+        self.predicate = predicate
         self.children = []
 
-    def addChild(self, iri: str, predicate: str) -> 'Node':
+    def __str__(self) -> str:
+        """String representation of the node structure.
+
+        Returns:
+            str: the string representation of the node structure.
+        """
+
+        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, 
+Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
+        for child in self.children:
+            result += str(child)
+
+        return result
+
+    def _dict(self) -> dict:
+        """Dictionary representation of the node structure.
+
+        Returns:
+            dict: the dictionary representation of the node structure.
+        """
+        return {
+            "depth": self.depth,
+            "iri": self.iri,
+            "predicate": self.predicate,
+            "children": [child._dict() for child in self.children],
+        }
+
+    def addChild(self, iri: str, predicate: str) -> "Node":
         """Add a child to the node.
 
         Args:
@@ -32,20 +60,7 @@ class Node:
 
         return node
 
-    def __str__(self) -> str:
-        """String representation of the node structure.
-
-        Returns:
-            str: the string representation of the node structure.
-        """
-
-        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.parentPredicate}, 
-Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
-        for child in self.children:
-            result += str(child)
-        return result
-    
-    def export_node_as_json(self, fileName: str) -> None:
+    def export(self, fileName: str) -> None:
         """Serialize a node as JSON and export it to a file.
 
         Args:
@@ -53,7 +68,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             file_name (str): The name of the file to export the JSON data.
         """
         with open(fileName, "w") as file:
-            json.dump(self.__dict__, file, indent=4)
+            json.dump(self._dict(), file, indent=4)
 
 
 class OntoFlowEngine:
@@ -68,46 +83,7 @@ class OntoFlowEngine:
         self.data = []
         self.mapping = {}
 
-    def loadOntology(self, path: str, format: str = "turtle") -> None:
-        """Load the ontology from a file.
-
-        Args:
-            path (str): Path to the ontology file.
-            format (str, optional): Format of the ontology file. Defaults to "turtle".
-        """
-        self.triplestore.parse(path, format=format)
-
-    def generateYaml(self) -> None:
-        """Generate a YAML file from the mapping."""
-
-        with open("output.yaml", "w") as file:
-            yaml.dump(self.mapping, file, sort_keys=False)
-
-    def getMappingRoute(self, target: str) -> dict:
-        """Get the mapping route from the target to all the possible sources.
-
-        Args:
-            target (str): The target data to be found.
-
-        Returns:
-            dict: The mapping route.
-        """
-
-        root = Node(0, target, "")
-
-        self.__exploreNode(root)
-
-        print("RES", root)
-
-        with open("data.json", "w") as file:
-            json.dump(self.data, file, sort_keys=False)
-
-        with open("output.json", "w") as file:
-            json.dump(root, file, sort_keys=False)
-
-        return self.mapping
-
-    def __exploreNode(self, node):
+    def _exploreNode(self, node):
         """Explore a node in the ontology and generate the tree
 
         Args:
@@ -116,36 +92,27 @@ class OntoFlowEngine:
 
         # Step 1: check if the node is an individual.
         # If it is, return
-        # print("INDIVIDUAL")
-        if self.__isIndividual(node.iri):
+        if self._individual(node):
             return
 
         # Step 2: check if the node is a model.
         # If it is, get the inputs and explore them
-        inputs = self.__model(node.iri)
-        # print(f"MODEL\n{inputs}")
+        inputs = self._model(node)
         for input in inputs:
-            if input in self.data:
-                continue
-            child = node.addChild(input, "hasInput")
-            self.data.append(input)
-            self.__exploreNode(child)
+            self._exploreNode(input)
 
         # Step 3: check if the node is a subclass.
         # If it is, get the subclass and explore it
         else:
-            subclasses = self.__subClass(node.iri)
-            # print(f"SUBCLASS\n{subclasses}")
+            subclasses = self._subClass(node)
             for subclass in subclasses:
-                child = node.addChild(subclass, "subClassOf")
-                self.data.append(subclass)
-                self.__exploreNode(child)
+                self._exploreNode(subclass)
 
-    def __isIndividual(self, iri: str) -> bool:
-        """Check if the node is an individual
+    def _individual(self, node: Node) -> bool:
+        """Check if the node is an individual, add it to the mapping and return.
 
         Args:
-            iri (str): The IRI of the node to check.
+            node (Node): The node to check.
 
         Returns:
             bool: True if the node is an individual, False otherwise
@@ -159,16 +126,23 @@ class OntoFlowEngine:
             }}"""
         ]
 
-        res = self.__query(patterns, iri)
+        individuals = self._query(patterns, node.iri)
 
-        return len(res) > 0
+        for individual in individuals:
+            node.addChild(individual[0], "individual")
 
-    def __model(self, iri: str) -> list:
+        return len(individuals) > 0
+
+    def _model(self, node: Node) -> list:
         """Check if the node is a model.
-        In case it is accessed via its output and gets the inputs
+        In case it is accessed via its output and gets the inputs.
+        The outputs and inputs are added to the mapping.
 
         Args:
-            iri (str): The IRI of the node to check.
+            node (Node): The node to check.
+
+        Returns:
+            list: The inputs of the model
         """
 
         patternsOutput = [
@@ -214,22 +188,24 @@ class OntoFlowEngine:
 
         res = []
 
-        outputs = self.__query(patternsOutput, iri)
-        print(outputs)
+        outputs = self._query(patternsOutput, node.iri)
 
         for output in outputs:
-            inputs = self.__query(patternsInput, output[0])
-            res += [el[0] for el in inputs]
-
-        print(res)
+            child = node.addChild(output[0], "hasOutput")
+            inputs = self._query(patternsInput, output[0])
+            for input in inputs:
+                res.append(child.addChild(input[0], "hasInput"))
 
         return res
 
-    def __subClass(self, iri: str) -> list:
-        """Check if the node is a subclass.
+    def _subClass(self, node: Node) -> list:
+        """Check if the node is a subclass. If it is, get the subclass and add it to the mapping.
 
         Args:
-            iri (str): The IRI of the node to check.
+            node (Node): The node to check.
+
+        Returns:
+            list: The subclasses of the node.
         """
 
         patterns = [
@@ -241,11 +217,16 @@ class OntoFlowEngine:
             }}"""
         ]
 
-        res = self.__query(patterns, iri)
+        res = []
 
-        return [el[0] for el in res]
+        subclasses = self._query(patterns, node.iri)
 
-    def __query(self, patterns: list[str], iri: str) -> list:
+        for subclass in subclasses:
+            res.append(node.addChild(subclass[0], "subClassOf"))
+
+        return res
+
+    def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
 
         Args:
@@ -264,3 +245,36 @@ class OntoFlowEngine:
             results += self.triplestore.query(q)
 
         return results
+
+    def loadOntology(self, path: str, format: str = "turtle") -> None:
+        """Load the ontology from a file.
+
+        Args:
+            path (str): Path to the ontology file.
+            format (str, optional): Format of the ontology file. Defaults to "turtle".
+        """
+        self.triplestore.parse(path, format=format)
+
+    def generateYaml(self) -> None:
+        """Generate a YAML file from the mapping."""
+
+        with open("output.yaml", "w") as file:
+            yaml.dump(self.mapping, file, sort_keys=False)
+
+    def getMappingRoute(self, target: str) -> dict:
+        """Get the mapping route from the target to all the possible sources.
+
+        Args:
+            target (str): The target data to be found.
+
+        Returns:
+            dict: The mapping route.
+        """
+
+        root = Node(0, target, "")
+
+        self._exploreNode(root)
+
+        root.export("output.json")
+
+        return self.mapping

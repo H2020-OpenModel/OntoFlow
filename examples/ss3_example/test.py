@@ -22,5 +22,3 @@ engine = OntoFlowEngine(triplestore=ts)
 # engine.loadOntology(ONTOLOGY_PATH)
 
 engine.getMappingRoute(ROOT)
-
-engine.generateYaml()
