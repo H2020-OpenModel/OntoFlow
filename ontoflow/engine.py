@@ -67,8 +67,11 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             node (Node): The node to be serialized.
             file_name (str): The name of the file to export the JSON data.
         """
-        with open(fileName, "w") as file:
+        with open(f"{fileName}.json", "w") as file:
             json.dump(self._dict(), file, indent=4)
+
+        with open(f"{fileName}.yaml", "w") as file:
+            yaml.dump(self._dict(), file, indent=4, sort_keys=False)
 
 
 class OntoFlowEngine:
@@ -255,12 +258,6 @@ class OntoFlowEngine:
         """
         self.triplestore.parse(path, format=format)
 
-    def generateYaml(self) -> None:
-        """Generate a YAML file from the mapping."""
-
-        with open("output.yaml", "w") as file:
-            yaml.dump(self.mapping, file, sort_keys=False)
-
     def getMappingRoute(self, target: str) -> dict:
         """Get the mapping route from the target to all the possible sources.
 
@@ -275,6 +272,6 @@ class OntoFlowEngine:
 
         self._exploreNode(root)
 
-        root.export("output.json")
+        root.export("output")
 
         return self.mapping
