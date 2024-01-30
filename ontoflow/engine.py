@@ -2,6 +2,12 @@ import json
 import yaml
 from tripper import Triplestore
 
+# TODO
+# - [ ] Optimize using a structure for the already explored nodes
+# - [ ] Manage the onClass relation for hasInput and hasOutput
+# - [ ] Test the engine on the example and ss3 ontologies
+# - [ ] Package the engine as a library and test it on the infrastructure
+
 
 class Node:
     def __init__(self, depth: int, iri: str, predicate: str):
@@ -42,7 +48,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             "depth": self.depth,
             "iri": self.iri,
             "predicate": self.predicate,
-            "children": [child._dict() for child in self.children],
+            "children": [child._serialize() for child in self.children],
         }
 
     def addChild(self, iri: str, predicate: str) -> "Node":
@@ -247,15 +253,6 @@ class OntoFlowEngine:
             results += self.triplestore.query(q)
 
         return results
-
-    def loadOntology(self, path: str, format: str = "turtle") -> None:
-        """Load the ontology from a file.
-
-        Args:
-            path (str): Path to the ontology file.
-            format (str, optional): Format of the ontology file. Defaults to "turtle".
-        """
-        self.triplestore.parse(path, format=format)
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.

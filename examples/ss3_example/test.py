@@ -17,8 +17,12 @@ ts = Triplestore(
 
 ts.bind("base", "http://webprotege.stanford.edu/")
 
+ts.parse(ONTOLOGY_PATH, "turtle")
+
 engine = OntoFlowEngine(triplestore=ts)
 
 # engine.loadOntology(ONTOLOGY_PATH)
 
 engine.getMappingRoute(ROOT)
+
+# ts.remove_database(backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel")
