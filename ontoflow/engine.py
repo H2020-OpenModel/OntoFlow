@@ -65,7 +65,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
 
         Args:
             node (Node): The node to be serialized.
-            file_name (str): The name of the file to export the JSON data.
+            fileName (str): The name of the file to export the JSON data.
         """
         with open(f"{fileName}.json", "w") as file:
             json.dump(self._dict(), file, indent=4)
@@ -84,13 +84,12 @@ class OntoFlowEngine:
 
         self.triplestore = triplestore
         self.data = []
-        self.mapping = {}
 
-    def _exploreNode(self, node):
+    def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree
 
         Args:
-            node (str): The node to explore.
+            node (Node): The node to explore.
         """
 
         # Step 1: check if the node is an individual.
@@ -258,14 +257,14 @@ class OntoFlowEngine:
         """
         self.triplestore.parse(path, format=format)
 
-    def getMappingRoute(self, target: str) -> dict:
+    def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
 
         Args:
             target (str): The target data to be found.
 
         Returns:
-            dict: The mapping route.
+            Node: The mapping starting from the root node.
         """
 
         root = Node(0, target, "")
@@ -274,4 +273,4 @@ class OntoFlowEngine:
 
         root.export("output")
 
-        return self.mapping
+        return root
