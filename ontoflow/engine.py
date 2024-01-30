@@ -32,7 +32,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
 
         return result
 
-    def _dict(self) -> dict:
+    def _serialize(self) -> dict:
         """Dictionary representation of the node structure.
 
         Returns:
@@ -68,10 +68,10 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             fileName (str): The name of the file to export the JSON data.
         """
         with open(f"{fileName}.json", "w") as file:
-            json.dump(self._dict(), file, indent=4)
+            json.dump(self._serialize(), file, indent=4)
 
         with open(f"{fileName}.yaml", "w") as file:
-            yaml.dump(self._dict(), file, indent=4, sort_keys=False)
+            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
 
 class OntoFlowEngine:
