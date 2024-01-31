@@ -129,7 +129,7 @@ class OntoFlowEngine:
         """
 
         self.triplestore: Triplestore = triplestore
-        self.data: dict = {}
+        self.explored: dict = {}
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree
@@ -224,19 +224,19 @@ class OntoFlowEngine:
 
         for output in outputs:
             oiri = output[0]
-            if oiri in self.data:
-                node.addNodeChild(self.data[oiri], "hasOutput")
+            if oiri in self.explored:
+                node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
                 ochild = node.addChild(oiri, "hasOutput")
-                self.data[oiri] = ochild
+                self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
                     iiri = input[0]
-                    if iiri in self.data:
-                        ochild.addNodeChild(self.data[iiri], "hasInput")
+                    if iiri in self.explored:
+                        ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
                         ichild = ochild.addChild(iiri, "hasInput")
-                        self.data[iiri] = ichild
+                        self.explored[iiri] = ichild
                         res.append(ichild)
 
         return res
@@ -266,11 +266,11 @@ class OntoFlowEngine:
 
         for subclass in subclasses:
             iri = subclass[0]
-            if iri in self.data:
-                node.addNodeChild(self.data[iri], "subClassOf")
+            if iri in self.explored:
+                node.addNodeChild(self.explored[iri], "subClassOf")
             else:
                 child = node.addChild(iri, "subClassOf")
-                self.data[iri] = child
+                self.explored[iri] = child
                 res.append(child)
 
         return res
