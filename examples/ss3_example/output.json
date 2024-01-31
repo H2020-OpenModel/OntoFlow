@@ -1,7 +1,6 @@
 {
     "depth": 0,
     "iri": "http://webprotege.stanford.edu/Density",
-    "predicate": "",
     "children": [
         {
             "depth": 1,
@@ -41,14 +40,12 @@
                                                                 {
                                                                     "depth": 8,
                                                                     "iri": "http://webprotege.stanford.edu/WaterDensityDatasetInput1",
-                                                                    "predicate": "individual",
-                                                                    "children": []
+                                                                    "predicate": "individual"
                                                                 },
                                                                 {
                                                                     "depth": 8,
                                                                     "iri": "http://webprotege.stanford.edu/WaterDensityDatasetInput2",
-                                                                    "predicate": "individual",
-                                                                    "children": []
+                                                                    "predicate": "individual"
                                                                 }
                                                             ]
                                                         }
@@ -67,14 +64,12 @@
                                                                 {
                                                                     "depth": 8,
                                                                     "iri": "http://webprotege.stanford.edu/WaterDensityDatasetInput1",
-                                                                    "predicate": "individual",
-                                                                    "children": []
+                                                                    "predicate": "individual"
                                                                 },
                                                                 {
                                                                     "depth": 8,
                                                                     "iri": "http://webprotege.stanford.edu/WaterDensityDatasetInput2",
-                                                                    "predicate": "individual",
-                                                                    "children": []
+                                                                    "predicate": "individual"
                                                                 }
                                                             ]
                                                         }

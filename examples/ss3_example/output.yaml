@@ -1,6 +1,5 @@
 depth: 0
 iri: http://webprotege.stanford.edu/Density
-predicate: ''
 children:
 -   depth: 1
     iri: http://webprotege.stanford.edu/FluidDensity
@@ -33,11 +32,9 @@ children:
                             -   depth: 8
                                 iri: http://webprotege.stanford.edu/WaterDensityDatasetInput1
                                 predicate: individual
-                                children: []
                             -   depth: 8
                                 iri: http://webprotege.stanford.edu/WaterDensityDatasetInput2
                                 predicate: individual
-                                children: []
                     -   depth: 6
                         iri: http://webprotege.stanford.edu/MoltemplateProcess2
                         predicate: hasOutput
@@ -49,8 +46,6 @@ children:
                             -   depth: 8
                                 iri: http://webprotege.stanford.edu/WaterDensityDatasetInput1
                                 predicate: individual
-                                children: []
                             -   depth: 8
                                 iri: http://webprotege.stanford.edu/WaterDensityDatasetInput2
                                 predicate: individual
-                                children: []

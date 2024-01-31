@@ -47,12 +47,18 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             dict: the dictionary representation of the node structure.
         """
 
-        return {
+        ser = {
             "depth": self.depth,
             "iri": self.iri,
-            "predicate": self.predicate,
-            "children": [child._serialize() for child in self.children],
         }
+
+        if self.predicate:
+            ser["predicate"] = self.predicate
+        
+        if len(self.children) > 0:
+            ser["children"] = [child._serialize() for child in self.children]
+        
+        return ser
 
     def _updateChildrenDepth(self, node: "Node") -> None:
         """Recursively update the depth of all children of a node.
