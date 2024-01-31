@@ -1,9 +1,11 @@
 import json
+from typing import List
+
 import yaml
 from tripper import Triplestore
 
 # TODO
-# - [ ] Optimize using a structure for the already explored nodes
+# - [X] Optimize using a structure for the already explored nodes
 # - [ ] Manage the onClass relation for hasInput and hasOutput
 # - [ ] Test the engine on the example and ss3 ontologies
 # - [ ] Package the engine as a library and test it on the infrastructure
@@ -19,10 +21,10 @@ class Node:
             predicate (str): the relation the parent node.
         """
 
-        self.depth = depth
-        self.iri = iri
-        self.predicate = predicate
-        self.children = []
+        self.depth: int = depth
+        self.iri: str = iri
+        self.predicate: str = predicate
+        self.children: List["Node"] = []
 
     def __str__(self) -> str:
         """String representation of the node structure.
@@ -44,6 +46,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
         Returns:
             dict: the dictionary representation of the node structure.
         """
+
         return {
             "depth": self.depth,
             "iri": self.iri,
@@ -57,6 +60,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
         Args:
             node (Node): The Node object whose children's depth is to be updated.
         """
+
         for child in node.children:
             child.depth = node.depth + 1
             self._updateChildrenDepth(child)
@@ -71,25 +75,29 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
         Returns:
             Node: the child node.
         """
+
         node = Node(self.depth + 1, iri, predicate)
         self.children.append(node)
 
         return node
 
     def addNodeChild(self, node: "Node", predicate: str = "") -> None:
-        """Add a Node object as a child and update the depth of all its children.
+        """Add a Node object as a child and, if necessary, update the depth of all its children.
 
         Args:
             node (Node): The Node object to be added as a child.
             predicate (str): The relation to the child node.
         """
-        node.depth = self.depth + 1
 
         if predicate and node.predicate != predicate:
             node.predicate = predicate
 
-        self.children.append(node)
-        self._updateChildrenDepth(node)
+        if node.depth == self.depth + 1:
+            self.children.append(node)
+        else:
+            node.depth = self.depth + 1
+            self.children.append(node)
+            self._updateChildrenDepth(node)
 
     def export(self, fileName: str) -> None:
         """Serialize a node as JSON and export it to a file.
@@ -98,6 +106,7 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             node (Node): The node to be serialized.
             fileName (str): The name of the file to export the JSON data.
         """
+
         with open(f"{fileName}.json", "w") as file:
             json.dump(self._serialize(), file, indent=4)
 
@@ -113,8 +122,8 @@ class OntoFlowEngine:
             triplestore (Triplestore): Triplestore to be used for the engine.
         """
 
-        self.triplestore = triplestore
-        self.data = {}
+        self.triplestore: Triplestore = triplestore
+        self.data: dict = {}
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree
@@ -122,7 +131,7 @@ class OntoFlowEngine:
         Args:
             node (Node): The node to explore.
         """
-        print(node.iri)
+
         # Step 1: check if the node is an individual.
         # If it is, return
         if self._individual(node):
@@ -140,10 +149,6 @@ class OntoFlowEngine:
             subclasses = self._subClass(node)
             for subclass in subclasses:
                 self._exploreNode(subclass)
-        
-        # Step 4: add the node to the data dictionary
-        self.data[node.iri] = node
-        print(self.data)
 
     def _individual(self, node: Node) -> bool:
         """Check if the node is an individual, add it to the mapping and return.
@@ -210,14 +215,21 @@ class OntoFlowEngine:
         outputs = self._query(patternsOutput, node.iri)
 
         for output in outputs:
-            # print(output[0], self.data)
-            if output[0] in self.data:
-                node.addNodeChild(self.data[output[0]], "hasOutput")
+            oiri = output[0]
+            if oiri in self.data:
+                node.addNodeChild(self.data[oiri], "hasOutput")
             else:
-                child = node.addChild(output[0], "hasOutput")
-                inputs = self._query(patternsInput, output[0])
+                ochild = node.addChild(oiri, "hasOutput")
+                self.data[oiri] = ochild
+                inputs = self._query(patternsInput, oiri)
                 for input in inputs:
-                    res.append(child.addChild(input[0], "hasInput"))
+                    iiri = input[0]
+                    if iiri in self.data:
+                        ochild.addNodeChild(self.data[iiri], "hasInput")
+                    else:
+                        ichild = ochild.addChild(iiri, "hasInput")
+                        self.data[iiri] = ichild
+                        res.append(ichild)
 
         return res
 
@@ -245,10 +257,13 @@ class OntoFlowEngine:
         subclasses = self._query(patterns, node.iri)
 
         for subclass in subclasses:
-            if subclass[0] in self.data:
-                node.addNodeChild(self.data[subclass[0]], "subClassOf")
+            iri = subclass[0]
+            if iri in self.data:
+                node.addNodeChild(self.data[iri], "subClassOf")
             else:
-                res.append(node.addChild(subclass[0], "subClassOf"))
+                child = node.addChild(iri, "subClassOf")
+                self.data[iri] = child
+                res.append(child)
 
         return res
 
