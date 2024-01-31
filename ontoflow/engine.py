@@ -163,26 +163,8 @@ class OntoFlowEngine:
                 BIND(base:hasOutput AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}""",
-            """SELECT ?sub ?rel ?obj WHERE {{
-                {iri} rdf:type owl:Class ;
-                    rdfs:subClassOf ?restriction .
-                ?restriction rdf:type owl:Restriction ;
-                            owl:onProperty base:hasOutput ;
-                            owl:someValuesFrom ?sub .
-                BIND(base:hasOutput AS ?rel) .
-                BIND({iri} AS ?obj) .
-            }}""",
         ]
         patternsInput = [
-            """SELECT ?sub ?rel ?obj WHERE {{
-                ?sub rdf:type owl:Class ;
-                        rdfs:subClassOf ?restriction .
-                ?restriction rdf:type owl:Restriction ;
-                            owl:onProperty base:hasInput ;
-                            owl:someValuesFrom {iri} .
-                BIND(base:hasOutput AS ?rel) .
-                BIND({iri} AS ?obj) .
-            }}""",
             """SELECT ?sub ?rel ?obj WHERE {{
                 {iri} rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
