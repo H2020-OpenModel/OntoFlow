@@ -51,6 +51,16 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
             "children": [child._serialize() for child in self.children],
         }
 
+    def _updateChildrenDepth(self, node: "Node") -> None:
+        """Recursively update the depth of all children of a node.
+
+        Args:
+            node (Node): The Node object whose children's depth is to be updated.
+        """
+        for child in node.children:
+            child.depth = node.depth + 1
+            self._updateChildrenDepth(child)
+
     def addChild(self, iri: str, predicate: str) -> "Node":
         """Add a child to the node.
 
@@ -65,6 +75,21 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
         self.children.append(node)
 
         return node
+
+    def addNodeChild(self, node: "Node", predicate: str = "") -> None:
+        """Add a Node object as a child and update the depth of all its children.
+
+        Args:
+            node (Node): The Node object to be added as a child.
+            predicate (str): The relation to the child node.
+        """
+        node.depth = self.depth + 1
+
+        if predicate and node.predicate != predicate:
+            node.predicate = predicate
+
+        self.children.append(node)
+        self._updateChildrenDepth(node)
 
     def export(self, fileName: str) -> None:
         """Serialize a node as JSON and export it to a file.
@@ -89,7 +114,7 @@ class OntoFlowEngine:
         """
 
         self.triplestore = triplestore
-        self.data = []
+        self.data = {}
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree
@@ -97,7 +122,7 @@ class OntoFlowEngine:
         Args:
             node (Node): The node to explore.
         """
-
+        print(node.iri)
         # Step 1: check if the node is an individual.
         # If it is, return
         if self._individual(node):
@@ -115,6 +140,10 @@ class OntoFlowEngine:
             subclasses = self._subClass(node)
             for subclass in subclasses:
                 self._exploreNode(subclass)
+        
+        # Step 4: add the node to the data dictionary
+        self.data[node.iri] = node
+        print(self.data)
 
     def _individual(self, node: Node) -> bool:
         """Check if the node is an individual, add it to the mapping and return.
@@ -181,10 +210,14 @@ class OntoFlowEngine:
         outputs = self._query(patternsOutput, node.iri)
 
         for output in outputs:
-            child = node.addChild(output[0], "hasOutput")
-            inputs = self._query(patternsInput, output[0])
-            for input in inputs:
-                res.append(child.addChild(input[0], "hasInput"))
+            # print(output[0], self.data)
+            if output[0] in self.data:
+                node.addNodeChild(self.data[output[0]], "hasOutput")
+            else:
+                child = node.addChild(output[0], "hasOutput")
+                inputs = self._query(patternsInput, output[0])
+                for input in inputs:
+                    res.append(child.addChild(input[0], "hasInput"))
 
         return res
 
@@ -212,7 +245,10 @@ class OntoFlowEngine:
         subclasses = self._query(patterns, node.iri)
 
         for subclass in subclasses:
-            res.append(node.addChild(subclass[0], "subClassOf"))
+            if subclass[0] in self.data:
+                node.addNodeChild(self.data[subclass[0]], "subClassOf")
+            else:
+                res.append(node.addChild(subclass[0], "subClassOf"))
 
         return res
 
