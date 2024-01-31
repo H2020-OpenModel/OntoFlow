@@ -6,7 +6,7 @@ from tripper import Triplestore
 
 # TODO
 # - [X] Optimize using a structure for the already explored nodes
-# - [ ] Manage the onClass relation for hasInput and hasOutput
+# - [X] Manage the onClass relation for hasInput and hasOutput
 # - [ ] Test the engine on the example and ss3 ontologies
 # - [ ] Package the engine as a library and test it on the infrastructure
 
@@ -54,10 +54,10 @@ Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
 
         if self.predicate:
             ser["predicate"] = self.predicate
-        
+
         if len(self.children) > 0:
             ser["children"] = [child._serialize() for child in self.children]
-        
+
         return ser
 
     def _updateChildrenDepth(self, node: "Node") -> None:
@@ -199,7 +199,8 @@ class OntoFlowEngine:
                         rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
                             owl:onProperty base:hasOutput ;
-                            owl:someValuesFrom {iri} .
+                            ?p {iri} .
+                FILTER (?p IN (owl:onClass, owl:someValuesFrom))
                 BIND(base:hasOutput AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}""",
@@ -210,7 +211,8 @@ class OntoFlowEngine:
                     rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
                             owl:onProperty base:hasInput ;
-                            owl:someValuesFrom ?sub .
+                            ?p ?sub .
+                FILTER (?p IN (owl:onClass, owl:someValuesFrom))
                 BIND(base:hasInput AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}""",
