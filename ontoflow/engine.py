@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from typing import List
 
 import yaml
@@ -33,8 +34,7 @@ class Node:
             str: the string representation of the node structure.
         """
 
-        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, 
-Children ({len(self.children)}) {":" if len(self.children) > 0 else ""}\n"""
+        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
         for child in self.children:
             result += str(child)
 
@@ -132,29 +132,21 @@ class OntoFlowEngine:
         self.explored: dict = {}
 
     def _exploreNode(self, node: Node) -> None:
-        """Explore a node in the ontology and generate the tree
+        """Explore a node in the ontology and generate the tree.
+        Step 1: check if the node is an individual and, if it is, return.
+        Step 2: check if the node is a model and explore the inputs.
+        Step 3: check if the node is a subclass and explore it.
 
         Args:
             node (Node): The node to explore.
         """
 
-        # Step 1: check if the node is an individual.
-        # If it is, return
         if self._individual(node):
             return
 
-        # Step 2: check if the node is a model.
-        # If it is, get the inputs and explore them
-        inputs = self._model(node)
-        for input in inputs:
-            self._exploreNode(input)
+        self._model(node)
 
-        # Step 3: check if the node is a subclass.
-        # If it is, get the subclass and explore it
-        else:
-            subclasses = self._subClass(node)
-            for subclass in subclasses:
-                self._exploreNode(subclass)
+        self._subClass(node)
 
     def _individual(self, node: Node) -> bool:
         """Check if the node is an individual, add it to the mapping and return.
@@ -181,16 +173,13 @@ class OntoFlowEngine:
 
         return len(individuals) > 0
 
-    def _model(self, node: Node) -> list:
+    def _model(self, node: Node) -> None:
         """Check if the node is a model.
-        In case it is accessed via its output and gets the inputs.
+        In case it is accessed via its output and explores the inputs.
         The outputs and inputs are added to the mapping.
 
         Args:
             node (Node): The node to check.
-
-        Returns:
-            list: The inputs of the model
         """
 
         patternsOutput = [
@@ -218,14 +207,12 @@ class OntoFlowEngine:
             }}""",
         ]
 
-        res = []
-
         outputs = self._query(patternsOutput, node.iri)
 
         for output in outputs:
             oiri = output[0]
             if oiri in self.explored:
-                node.addNodeChild(self.explored[oiri], "hasOutput")
+                node.addNodeChild(deepcopy(self.explored[oiri]), "hasOutput")
             else:
                 ochild = node.addChild(oiri, "hasOutput")
                 self.explored[oiri] = ochild
@@ -233,22 +220,17 @@ class OntoFlowEngine:
                 for input in inputs:
                     iiri = input[0]
                     if iiri in self.explored:
-                        ochild.addNodeChild(self.explored[iiri], "hasInput")
+                        ochild.addNodeChild(deepcopy(self.explored[iiri]), "hasInput")
                     else:
                         ichild = ochild.addChild(iiri, "hasInput")
+                        self._exploreNode(ichild)
                         self.explored[iiri] = ichild
-                        res.append(ichild)
 
-        return res
-
-    def _subClass(self, node: Node) -> list:
-        """Check if the node is a subclass. If it is, get the subclass and add it to the mapping.
+    def _subClass(self, node: Node) -> None:
+        """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
 
         Args:
             node (Node): The node to check.
-
-        Returns:
-            list: The subclasses of the node.
         """
 
         patterns = [
@@ -260,20 +242,16 @@ class OntoFlowEngine:
             }}"""
         ]
 
-        res = []
-
         subclasses = self._query(patterns, node.iri)
 
         for subclass in subclasses:
             iri = subclass[0]
             if iri in self.explored:
-                node.addNodeChild(self.explored[iri], "subClassOf")
+                node.addNodeChild(deepcopy(self.explored[iri]), "subClassOf")
             else:
                 child = node.addChild(iri, "subClassOf")
+                self._exploreNode(child)
                 self.explored[iri] = child
-                res.append(child)
-
-        return res
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
@@ -308,7 +286,5 @@ class OntoFlowEngine:
         root = Node(0, target, "")
 
         self._exploreNode(root)
-
-        root.export("output")
 
         return root

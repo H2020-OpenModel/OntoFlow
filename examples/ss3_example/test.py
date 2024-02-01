@@ -24,7 +24,9 @@ ts.bind("base", "http://webprotege.stanford.edu/")
 
 engine = OntoFlowEngine(triplestore=ts)
 
-engine.getMappingRoute(ROOT)
+mapping = engine.getMappingRoute(ROOT)
+
+mapping.export("output")
 
 # ts.remove_database(backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel")
 
