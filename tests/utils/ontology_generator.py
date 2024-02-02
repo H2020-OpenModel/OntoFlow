@@ -57,7 +57,7 @@ def add_generating_model(graph, currentTarget, n_inputs = 1, useinputs = []):
         input_count += 1
         input_bnode = BNode()
         if len(useinputs) > 0:
-            input = useinputs[i]
+            input = useinputs[i] if isinstance(useinputs[i], URIRef) else URIRef(useinputs[i])
         else:
             input = URIRef(example_ns["input" + str(input_count)])
         graph.add((input_bnode, rdf.type, owl.Restriction))

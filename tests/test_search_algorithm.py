@@ -232,6 +232,29 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         print( routes.accept(visitor_flat_structure) )
 
         self.assertIn(routes.accept(visitor_flat_structure), [expected_structure_a, expected_structure_b])
+
+    def test_T11(self):
+        target_node = URIRef(example_ns.Target)
+        generating_model_a, inputs_a = add_generating_model(self.__graph, target_node, 1)
+        generating_model_b, inputs_b = add_generating_model(self.__graph, target_node, 1, inputs_a)
+        generating_model_c, inputs_c = add_generating_model(self.__graph, inputs_a[0], 1)
+        subclass_a = add_subclass(self.__graph, inputs_c[0])
+        individual_node_a = add_individual(self.__graph, subclass_a)
+
+        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        self.__triplestore.parse(source = ontology_stream, format = "turtle")
+
+        expected_structure_a = [str(target_node), str(generating_model_a), str(inputs_a[0]), str(generating_model_c), str(inputs_c[0]), str(subclass_a), str(individual_node_a), str(generating_model_b), str(inputs_b[0]), str(generating_model_c), str(inputs_c[0]), str(subclass_a), str(individual_node_a)]
+        expected_structure_b = [str(target_node), str(generating_model_b), str(inputs_b[0]), str(generating_model_c), str(inputs_c[0]), str(subclass_a), str(individual_node_a), str(generating_model_a), str(inputs_a[0]), str(generating_model_c), str(inputs_c[0]), str(subclass_a), str(individual_node_a)]
+
+        print(self.__graph.serialize(format="turtle"))
+
+        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        print(routes)
+
+        print( routes.accept(visitor_flat_structure) )
+
+        self.assertIn(routes.accept(visitor_flat_structure), [expected_structure_a, expected_structure_b])
         
 
 
