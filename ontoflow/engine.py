@@ -87,7 +87,7 @@ class Node:
 
         return node
 
-    def addNodeChild(self, node: "Node", predicate: str = "") -> None:
+    def addNodeChild(self, node: "Node", predicate: str) -> None:
         """Add a Node object as a child and, if necessary, update the depth of all its children.
 
         Args:
@@ -95,14 +95,11 @@ class Node:
             predicate (str): The relation to the child node.
         """
 
-        node = deepcopy(node)
-
-        if predicate and node.predicate != predicate:
-            node.predicate = predicate
-
-        if node.depth == self.depth + 1:
+        if node.depth == self.depth + 1 and node.predicate == predicate:
             self.children.append(node)
         else:
+            node = deepcopy(node)
+            node.predicate = predicate
             node.depth = self.depth + 1
             self.children.append(node)
             self._updateChildrenDepth(node)
