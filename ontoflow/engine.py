@@ -95,6 +95,8 @@ class Node:
             predicate (str): The relation to the child node.
         """
 
+        node = deepcopy(node)
+
         if predicate and node.predicate != predicate:
             node.predicate = predicate
 
@@ -212,7 +214,7 @@ class OntoFlowEngine:
         for output in outputs:
             oiri = output[0]
             if oiri in self.explored:
-                node.addNodeChild(deepcopy(self.explored[oiri]), "hasOutput")
+                node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
                 ochild = node.addChild(oiri, "hasOutput")
                 self.explored[oiri] = ochild
@@ -220,7 +222,7 @@ class OntoFlowEngine:
                 for input in inputs:
                     iiri = input[0]
                     if iiri in self.explored:
-                        ochild.addNodeChild(deepcopy(self.explored[iiri]), "hasInput")
+                        ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
                         ichild = ochild.addChild(iiri, "hasInput")
                         self._exploreNode(ichild)
@@ -247,7 +249,7 @@ class OntoFlowEngine:
         for subclass in subclasses:
             iri = subclass[0]
             if iri in self.explored:
-                node.addNodeChild(deepcopy(self.explored[iri]), "subClassOf")
+                node.addNodeChild(self.explored[iri], "subClassOf")
             else:
                 child = node.addChild(iri, "subClassOf")
                 self._exploreNode(child)
