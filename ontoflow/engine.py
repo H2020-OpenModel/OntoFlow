@@ -5,6 +5,8 @@ from typing import List
 import yaml
 from tripper import Triplestore
 
+from ontoflow.log.logger import logger
+
 # TODO
 # - [X] Optimize using a structure for the already explored nodes
 # - [X] Manage the onClass relation for hasInput and hasOutput
@@ -118,6 +120,15 @@ class Node:
         with open(f"{fileName}.yaml", "w") as file:
             yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
+    def accept(self, visitor):
+        """Accept a visitor and visit the node.
+
+        Args:
+            visitor: The visitor to be accepted.
+        """
+
+        return visitor(self)
+
 
 class OntoFlowEngine:
     def __init__(self, triplestore: Triplestore) -> None:
@@ -141,6 +152,7 @@ class OntoFlowEngine:
         """
 
         if self._individual(node):
+            logger.info(f"Node {node.iri} has an individual")
             return
 
         self._model(node)
@@ -208,6 +220,8 @@ class OntoFlowEngine:
 
         outputs = self._query(patternsOutput, node.iri)
 
+        logger.info(f"Outputs models of {node.iri}: {outputs}")
+
         for output in outputs:
             oiri = output[0]
             if oiri in self.explored:
@@ -243,6 +257,8 @@ class OntoFlowEngine:
 
         subclasses = self._query(patterns, node.iri)
 
+        logger.info(f"Subclasses of {node.iri}: {subclasses}")
+
         for subclass in subclasses:
             iri = subclass[0]
             if iri in self.explored:
@@ -268,8 +284,10 @@ class OntoFlowEngine:
         for pattern in patterns:
             iriForm = f"<{iri}>" if iri[0] != "<" else iri
             q = pattern.format(iri=iriForm)
+            logger.info("\n{}\n".format(q))
             results += self.triplestore.query(q)
 
+        logger.info(results)
         return results
 
     def getMappingRoute(self, target: str) -> Node:
@@ -282,6 +300,7 @@ class OntoFlowEngine:
             Node: The mapping starting from the root node.
         """
 
+        logger.info(f"Getting mapping route for {target}")
         root = Node(0, target, "")
 
         self._exploreNode(root)
