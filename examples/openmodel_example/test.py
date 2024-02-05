@@ -17,7 +17,6 @@ ts = Triplestore(
     backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"
 )
 
-
 ts.remove_database(
     backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"
 )
