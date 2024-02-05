@@ -7,7 +7,7 @@ import io
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
-from utils.ontology_generator import add_individual, add_subclass, add_generating_model
+from tests.utils.ontology_generator import add_individual, add_subclass, add_generating_model
 from ontoflow.engine import OntoFlowEngine
 
 example_ns = Namespace("http://openmodel.ontoflow/examples#")

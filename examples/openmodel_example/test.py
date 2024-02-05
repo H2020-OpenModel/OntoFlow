@@ -9,7 +9,7 @@ from tripper import Triplestore
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-ONTOLOGY_PATH = os.path.abspath("ss3_complete.ttl")
+ONTOLOGY_PATH = os.path.abspath("openmodel_example.ttl")
 
 ROOT = "http://webprotege.stanford.edu/Density"
 

@@ -9,16 +9,15 @@ description = "An enhanced workflow designer and builder"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-  {name = "Alessandro Calvio", email = "alessandro.calvio@unibo.it"}
+  {name = "Alessandro Calvio", email = "alessandro.calvio@unibo.it"},
+  {name = "Michele Brigadoi", email = "michele.brigadoi@unibo.it"}
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Programming Language :: Python"
 ]
 dependencies = [
-  "DLite-Python>=0.3.16",
-  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0",
-  "pint~=0.18"
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0"
 ]
 
 [project.optional-dependencies]
