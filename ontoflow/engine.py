@@ -171,7 +171,7 @@ class OntoFlowEngine:
 
         patterns = [
             """SELECT ?sub ?rel ?obj WHERE {{
-                ?sub rdf:type {iri}, owl:NamedIndividual .
+                ?sub rdf:type {iri} .
                 BIND(rdf:type AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}"""
@@ -198,10 +198,10 @@ class OntoFlowEngine:
                 ?sub rdf:type owl:Class ;
                         rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
-                            owl:onProperty base:hasOutput ;
+                            owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                             ?p {iri} .
                 FILTER (?p IN (owl:onClass, owl:someValuesFrom))
-                BIND(base:hasOutput AS ?rel) .
+                BIND(emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}""",
         ]
@@ -210,10 +210,10 @@ class OntoFlowEngine:
                 {iri} rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
-                            owl:onProperty base:hasInput ;
+                            owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                             ?p ?sub .
                 FILTER (?p IN (owl:onClass, owl:someValuesFrom))
-                BIND(base:hasInput AS ?rel) .
+                BIND(emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 AS ?rel) .
                 BIND({iri} AS ?obj) .
             }}""",
         ]
