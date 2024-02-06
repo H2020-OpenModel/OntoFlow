@@ -19,12 +19,14 @@ generating_model_count = 0
 input_count = 0
 
 
-def visualize(g, name = "example.png"):
+def visualize(g, name="example.png"):
     import sys
+
     stream = io.StringIO()
     rdf2dot(g, stream)
     (graph,) = pydot.graph_from_dot_data(stream.getvalue())
     graph.write_png(os.path.join(dirname(dirname(abspath(__file__))), name))
+
 
 def add_individual(graph, currentTarget):
     global individual_count
@@ -34,6 +36,7 @@ def add_individual(graph, currentTarget):
     # graph.add((individual, rdf.type, owl.NamedIndividual))
     return individual
 
+
 def add_subclass(graph, currentTarget):
     global subclass_count
     subclass_count += 1
@@ -42,14 +45,19 @@ def add_subclass(graph, currentTarget):
     graph.add((subclass, URIRef(rdfs.subClassOf), currentTarget))
     return subclass
 
-def add_generating_model(graph, currentTarget, n_inputs = 1, useinputs = []):
+
+def add_generating_model(graph, currentTarget, n_inputs=1, useinputs=[]):
     global generating_model_count, input_count
     generating_model_count += 1
-    generating_model = URIRef(example_ns["generating-model" + str(generating_model_count)])
+    generating_model = URIRef(
+        example_ns["generating-model" + str(generating_model_count)]
+    )
     graph.add((generating_model, rdf.type, owl.Class))
     output_bnode = BNode()
     graph.add((output_bnode, rdf.type, owl.Restriction))
-    graph.add((output_bnode, owl.onProperty, emmo.EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840))
+    graph.add(
+        (output_bnode, owl.onProperty, emmo.EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840)
+    )
     graph.add((output_bnode, owl.someValuesFrom, currentTarget))
     graph.add((generating_model, rdfs.subClassOf, output_bnode))
 
@@ -58,11 +66,21 @@ def add_generating_model(graph, currentTarget, n_inputs = 1, useinputs = []):
         input_count += 1
         input_bnode = BNode()
         if len(useinputs) > 0:
-            input = useinputs[i] if isinstance(useinputs[i], URIRef) else URIRef(useinputs[i])
+            input = (
+                useinputs[i]
+                if isinstance(useinputs[i], URIRef)
+                else URIRef(useinputs[i])
+            )
         else:
             input = URIRef(example_ns["input" + str(input_count)])
         graph.add((input_bnode, rdf.type, owl.Restriction))
-        graph.add((input_bnode, owl.onProperty, emmo.EMMO_36e69413_8c59_4799_946c_10b05d266e22))
+        graph.add(
+            (
+                input_bnode,
+                owl.onProperty,
+                emmo.EMMO_36e69413_8c59_4799_946c_10b05d266e22,
+            )
+        )
         graph.add((input_bnode, owl.someValuesFrom, input))
         graph.add((generating_model, rdfs.subClassOf, input_bnode))
 
@@ -88,5 +106,3 @@ if __name__ == "__main__":
     print(g.serialize(format="turtle"))
 
     visualize(g)
-
-
