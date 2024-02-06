@@ -17,7 +17,8 @@ classifiers = [
   "Programming Language :: Python"
 ]
 dependencies = [
-  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0"
+  "pyyaml",
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0",
 ]
 
 [project.optional-dependencies]
