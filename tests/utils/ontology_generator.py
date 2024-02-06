@@ -10,6 +10,7 @@ example_individual_ns = Namespace("http://openmodel.ontoflow/examples/individual
 owl = Namespace("http://www.w3.org/2002/07/owl#")
 rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
+emmo = Namespace("http://emmo.info/emmo#")
 webprotege = Namespace("http://webprotege.stanford.edu/")
 
 individual_count = 0
@@ -30,7 +31,7 @@ def add_individual(graph, currentTarget):
     individual_count += 1
     individual = URIRef(example_individual_ns["individual" + str(individual_count)])
     graph.add((individual, rdf.type, currentTarget))
-    graph.add((individual, rdf.type, owl.NamedIndividual))
+    # graph.add((individual, rdf.type, owl.NamedIndividual))
     return individual
 
 def add_subclass(graph, currentTarget):
@@ -48,7 +49,7 @@ def add_generating_model(graph, currentTarget, n_inputs = 1, useinputs = []):
     graph.add((generating_model, rdf.type, owl.Class))
     output_bnode = BNode()
     graph.add((output_bnode, rdf.type, owl.Restriction))
-    graph.add((output_bnode, owl.onProperty, webprotege.hasOutput))
+    graph.add((output_bnode, owl.onProperty, emmo.EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840))
     graph.add((output_bnode, owl.someValuesFrom, currentTarget))
     graph.add((generating_model, rdfs.subClassOf, output_bnode))
 
@@ -61,7 +62,7 @@ def add_generating_model(graph, currentTarget, n_inputs = 1, useinputs = []):
         else:
             input = URIRef(example_ns["input" + str(input_count)])
         graph.add((input_bnode, rdf.type, owl.Restriction))
-        graph.add((input_bnode, owl.onProperty, webprotege.hasInput))
+        graph.add((input_bnode, owl.onProperty, emmo.EMMO_36e69413_8c59_4799_946c_10b05d266e22))
         graph.add((input_bnode, owl.someValuesFrom, input))
         graph.add((generating_model, rdfs.subClassOf, input_bnode))
 

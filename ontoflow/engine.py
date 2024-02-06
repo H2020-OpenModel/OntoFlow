@@ -7,12 +7,6 @@ from tripper import Triplestore
 
 from ontoflow.log.logger import logger
 
-# TODO
-# - [X] Optimize using a structure for the already explored nodes
-# - [X] Manage the onClass relation for hasInput and hasOutput
-# - [ ] Test the engine on the example and ss3 ontologies
-# - [ ] Package the engine as a library and test it on the infrastructure
-
 
 class Node:
     def __init__(self, depth: int, iri: str, predicate: str):

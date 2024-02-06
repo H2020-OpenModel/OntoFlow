@@ -44,6 +44,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         self.__database_name = "openmodel" # Fixed in the backend - make parametric
         self.__triplestore = Triplestore(backend = "fuseki", base_iri="http://example.com/ontology#", triplestore_url = "http://localhost:3030", database = self.__database_name)
         self.__triplestore.bind("base", "http://webprotege.stanford.edu/")
+        self.__triplestore.bind("emmo", "http://emmo.info/emmo#")
         self.__graph = Graph()
         self.__graph.bind("ontoflow", str(example_ns))
         self.__graph.bind("ontoflow_ind", str(example_individual_ns))

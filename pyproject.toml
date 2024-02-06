@@ -27,5 +27,10 @@ examples = [
   "oteapi-core==0.4.1"
 ]
 
+tests = [
+  "rdflib",
+  "pydot",
+]
+
 [project.urls]
 repository = "https://github.com/H2020-OpenModel/OntoFlow"
