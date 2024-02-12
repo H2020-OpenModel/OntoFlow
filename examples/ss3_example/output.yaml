@@ -6,6 +6,27 @@ children:
     predicate: hasOutput
     children:
     -   depth: 2
+        iri: http://open-model.eu/ontologies/ss3#FenicsMaterials
+        predicate: hasInput
+        children:
+        -   depth: 3
+            iri: http://open-model.eu/ontologies/ss3kb#fenicsmaterials1
+            predicate: individual
+    -   depth: 2
+        iri: http://open-model.eu/ontologies/ss3#FenicsFiniteElementMesh
+        predicate: hasInput
+        children:
+        -   depth: 3
+            iri: http://open-model.eu/ontologies/ss3kb#fenics_femmesh1
+            predicate: individual
+    -   depth: 2
+        iri: http://open-model.eu/ontologies/ss3#FenicsSimulationConfig
+        predicate: hasInput
+        children:
+        -   depth: 3
+            iri: http://open-model.eu/ontologies/ss3kb#fenicssimulationconfig1
+            predicate: individual
+    -   depth: 2
         iri: http://open-model.eu/ontologies/ss3#EMMO_71f190d2_8809_4c5e_9987_ecb97e898e79
         predicate: hasInput
         children:
@@ -13,6 +34,13 @@ children:
             iri: http://open-model.eu/ontologies/ss3#AbaqusSimulation
             predicate: hasOutput
             children:
+            -   depth: 4
+                iri: http://open-model.eu/ontologies/ss3#AbaqusFiniteElementMesh
+                predicate: hasInput
+                children:
+                -   depth: 5
+                    iri: http://open-model.eu/ontologies/ss3kb#abaqus_femmesh1
+                    predicate: individual
             -   depth: 4
                 iri: http://open-model.eu/ontologies/ss3#AbaqusSimpleMaterialCard
                 predicate: hasInput
@@ -54,31 +82,3 @@ children:
                                         -   depth: 11
                                             iri: http://open-model.eu/ontologies/ss3kb#premodsimple1
                                             predicate: individual
-            -   depth: 4
-                iri: http://open-model.eu/ontologies/ss3#AbaqusFiniteElementMesh
-                predicate: hasInput
-                children:
-                -   depth: 5
-                    iri: http://open-model.eu/ontologies/ss3kb#abaqus_femmesh1
-                    predicate: individual
-    -   depth: 2
-        iri: http://open-model.eu/ontologies/ss3#FenicsFiniteElementMesh
-        predicate: hasInput
-        children:
-        -   depth: 3
-            iri: http://open-model.eu/ontologies/ss3kb#fenics_femmesh1
-            predicate: individual
-    -   depth: 2
-        iri: http://open-model.eu/ontologies/ss3#FenicsMaterials
-        predicate: hasInput
-        children:
-        -   depth: 3
-            iri: http://open-model.eu/ontologies/ss3kb#fenicsmaterials1
-            predicate: individual
-    -   depth: 2
-        iri: http://open-model.eu/ontologies/ss3#FenicsSimulationConfig
-        predicate: hasInput
-        children:
-        -   depth: 3
-            iri: http://open-model.eu/ontologies/ss3kb#fenicssimulationconfig1
-            predicate: individual
