@@ -1,0 +1,119 @@
+@prefix : <urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix emmo: <http://emmo.info/emmo#> .
+@base <urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4> .
+
+<urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://webprotege.stanford.edu/Density
+<http://webprotege.stanford.edu/Density> rdf:type owl:Class ;
+                                         rdfs:subClassOf owl:Thing ;
+                                         rdfs:label "Density"@en .
+
+
+###  http://webprotege.stanford.edu/FluidDensity
+<http://webprotege.stanford.edu/FluidDensity> rdf:type owl:Class ;
+                                              rdfs:subClassOf <http://webprotege.stanford.edu/Density> ;
+                                              rdfs:label "FluidDensity"@en .
+
+
+###  http://webprotege.stanford.edu/LAMMPS2Density
+<http://webprotege.stanford.edu/LAMMPS2Density> rdf:type owl:Class ;
+                                                rdfs:subClassOf owl:Thing ,
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                                                  owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSLog>
+                                                                ] ,
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                                                  owl:someValuesFrom <http://webprotege.stanford.edu/FluidDensity>
+                                                                ] ;
+                                                rdfs:label "LAMMPS2Density"@en .
+
+
+###  http://webprotege.stanford.edu/LAMMPSDatasetInput
+<http://webprotege.stanford.edu/LAMMPSDatasetInput> rdf:type owl:Class ;
+                                                    rdfs:subClassOf owl:Thing ;
+                                                    rdfs:label "LAMMPSDatasetInput"@en .
+
+
+###  http://webprotege.stanford.edu/LAMMPSLog
+<http://webprotege.stanford.edu/LAMMPSLog> rdf:type owl:Class ;
+                                           rdfs:subClassOf owl:Thing ;
+                                           rdfs:label "LAMMPSLog"@en .
+
+
+###  http://webprotege.stanford.edu/LAMMPSSimulation
+<http://webprotege.stanford.edu/LAMMPSSimulation> rdf:type owl:Class ;
+                                                  rdfs:subClassOf owl:Thing ,
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                                                    owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSDatasetInput>
+                                                                  ] ,
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                                                    owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSLog>
+                                                                  ] ;
+                                                  rdfs:label "LAMMPSSimulation"@en .
+
+
+###  http://webprotege.stanford.edu/MoltemplateProcess1
+<http://webprotege.stanford.edu/MoltemplateProcess1> rdf:type owl:Class ;
+                                                     rdfs:subClassOf owl:Thing ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                                                       owl:someValuesFrom <http://webprotege.stanford.edu/WaterDensityDatasetInput>
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                                                       owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSDatasetInput>
+                                                                     ] ;
+                                                     rdfs:label "MoltemplateProcess1"@en .
+
+
+###  http://webprotege.stanford.edu/MoltemplateProcess2
+<http://webprotege.stanford.edu/MoltemplateProcess2> rdf:type owl:Class ;
+                                                     rdfs:subClassOf owl:Thing ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                                                       owl:someValuesFrom <http://webprotege.stanford.edu/WaterDensityDatasetInput>
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                                                       owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSDatasetInput>
+                                                                     ] ;
+                                                     rdfs:label "MoltemplateProcess2"@en .
+
+
+###  http://webprotege.stanford.edu/WaterDensityDatasetInput
+<http://webprotege.stanford.edu/WaterDensityDatasetInput> rdf:type owl:Class ;
+                                                          rdfs:label "WaterDensityDatasetInput"@en .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://webprotege.stanford.edu/WaterDensityDatasetInput1
+<http://webprotege.stanford.edu/WaterDensityDatasetInput1> rdf:type <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           rdfs:label "WaterDensityDatasetInput1"@en .
+
+
+###  http://webprotege.stanford.edu/WaterDensityDatasetInput2
+<http://webprotege.stanford.edu/WaterDensityDatasetInput2> rdf:type <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           rdfs:label "WaterDensityDatasetInput2"@en .
+
+
+###  Generated by the OWL API (version 4.5.13) https://github.com/owlcs/owlapi

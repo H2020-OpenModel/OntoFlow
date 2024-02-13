@@ -1,359 +1,302 @@
-"""Implements mappings between entities.
+import json
+from copy import deepcopy
+from typing import List
 
-Units are currently handled with pint.Quantity.  The benefit of this
-compared to explicit unit conversions, is that units will be handled
-transparently by mapping functions, without any need to specify units
-of input and output parameters.
-
-Shapes are automatically handled by expressing non-scalar quantities
-with numpy.
-
-"""
-from __future__ import annotations
-
-from enum import Enum
-
-import dlite
 import yaml
-from pint import Quantity
-from tripper import DM, EMMO,  FNO, MAP, RDF, RDFS
-from tripper.mappings import MappingStep, Value, mapping_routes as tripper_mapping_routes
+from tripper import Triplestore
+
+from ontoflow.log.logger import logger
 
 
-class MappingError(Exception):
-    """Base class for mapping errors."""
+class Node:
+    def __init__(self, depth: int, iri: str, predicate: str):
+        """Initialise a node in the ontology tree.
 
-class InsufficientMappingError(MappingError):
-    """There are properties or dimensions that are not mapped."""
+        Args:
+            depth (int): the depth of the node in the tree.
+            iri (str): the IRI of the node.
+            predicate (str): the relation the parent node.
+        """
 
-class MissingRelationError(MappingError):
-    """There are missing relations in RDF triples."""
+        self.depth: int = depth
+        self.iri: str = iri
+        self.predicate: str = predicate
+        self.children: List["Node"] = []
 
+    def __str__(self) -> str:
+        """String representation of the node structure.
 
+        Returns:
+            str: the string representation of the node structure.
+        """
 
-class StepType(Enum):
-    """Type of mapping step when going from the output to the inputs."""
-    UNSPECIFIED = 0
-    MAPSTO = 1
-    INV_MAPSTO = -1
-    INSTANCEOF = 2
-    INV_INSTANCEOF = -2
-    SUBCLASSOF = 3
-    INV_SUBCLASSOF = -3
-    FUNCTION = 4
+        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
+        for child in self.children:
+            result += str(child)
 
+        return result
 
-class OntoFlowEngineMappingStep(MappingStep):
+    def _serialize(self) -> dict:
+        """Dictionary representation of the node structure.
 
-    
-    def adjust_cost(self, predicate_dict, costs):
-        
-        total_cost = 0
-        for cost_definition_key in predicate_dict.keys():
-            cost_definition = predicate_dict[cost_definition_key]
-            if self.output_iri in cost_definition:
-                # find the cost_defintion
-                cost_el = next(iter({key: value for key, value in costs.items() if value.get('namespace') == cost_definition_key}.values()))
-                if isinstance(cost_el.get("cost"), float):
-                    #unique cost
-                    total_cost =  total_cost + float(cost_el.get("cost"))
-                else:
-                    #value-dependent cost
-                    total_cost =  total_cost + float(cost_el.get("cost")[cost_definition[self.output_iri]])
+        Returns:
+            dict: the dictionary representation of the node structure.
+        """
 
-        self.cost = self.cost + total_cost
+        ser = {
+            "depth": self.depth,
+            "iri": self.iri,
+        }
 
-        for input in self.input_routes:
-           list(input.values())[0].adjust_cost(predicate_dict, costs)
+        if self.predicate:
+            ser["predicate"] = self.predicate
 
+        if len(self.children) > 0:
+            ser["children"] = [child._serialize() for child in self.children]
 
-    def _to_yaml(self, routeno: int, next_iri: str, next_steptype: StepType) -> list:
+        return ser
 
-        hasOutput = EMMO.EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840
+    def _updateChildrenDepth(self, node: "Node") -> None:
+        """Recursively update the depth of all children of a node.
 
-        inputs, idx = self.get_inputs(routeno)
-        execution_flow = []
-        current_ctx = []
-        for _, input in inputs.items():
-            if isinstance(input, OntoFlowEngineValue):
-                collection_label = input.output_iri.split("#")[1].lower()
-                input_entry = {}
-                input_entry["workflow"] = "execflow.pipeline"
-                input_entry["inputs"] = {}
-                input_entry["inputs"]["pipeline"] = "file://random/path/pipeline_for_{}.yaml".format(collection_label)  # Generate random reference
-                input_entry["inputs"]["run_pipleline"] = "get_{}".format(collection_label)  # Generate random pipeline name
+        Args:
+            node (Node): The Node object whose children's depth is to be updated.
+        """
 
-                ctx_element = {}
-                ctx_element["label"] = collection_label
+        for child in node.children:
+            child.depth = node.depth + 1
+            self._updateChildrenDepth(child)
 
-                execution_flow.append(input_entry)
-                current_ctx.append(ctx_element)
-                
-            elif isinstance(input, OntoFlowEngineMappingStep):
-                execution_flow = input._to_yaml(  # pylint: disable=protected-access
-                    routeno=idx,
-                    next_iri=self.output_iri,
-                    next_steptype=self.steptype,
-                )
-                
-            else:
-                raise TypeError("input should be Value or MappingStep")
-       
-        if next_iri:
-            if next_steptype.name == StepType.FUNCTION.name and self.triplestore:
-                model_iri = self.triplestore.value(
-                    predicate=hasOutput,  # Assuming EMMO
-                    object=next_iri,
-                    default="function",
-                    any=True,
-                )
-                if model_iri:
-                    label = self.triplestore.value(
-                        subject=model_iri,
-                        predicate=RDFS.label,
-                        default=self._iri(model_iri),
-                        any=True,
-                    )
-                function_entry = {}
-                function_entry["calcjob"] = "openmodel.{}".format(label)
-                function_entry["inputs"] = {}
-                n = 1
-                for input in current_ctx:
-                    function_entry["inputs"]["input{}".format(n)] = "{{ get_dlite_istance_by_label(\"{}\") }}".format(input["label"])    
-                    n = n + 1
-                function_entry["postprocess"] = ["{{ ctx.current.outputs[\"output_data\"] | to_ctx(\"{}_output\") }}".format(label)]
+    def addChild(self, iri: str, predicate: str) -> "Node":
+        """Add a child to the node.
 
-                execution_flow.append(function_entry)
+        Args:
+            iri (str): the IRI of the child node.
+            predicate (str): the relation to the child node.
 
+        Returns:
+            Node: the child node.
+        """
+
+        node = Node(self.depth + 1, iri, predicate)
+        self.children.append(node)
+
+        return node
+
+    def addNodeChild(self, node: "Node", predicate: str) -> None:
+        """Add a Node object as a child and, if necessary, update the depth of all its children.
+
+        Args:
+            node (Node): The Node object to be added as a child.
+            predicate (str): The relation to the child node.
+        """
+
+        if node.depth == self.depth + 1 and node.predicate == predicate:
+            self.children.append(node)
         else:
-            # Final step
-            collection_label = input.output_iri.split("#")[1].lower()
-            input_entry = {}
-            input_entry["workflow"] = "execflow.pipeline"
-            input_entry["inputs"] = {}
-            input_entry["inputs"]["pipeline"] = "file://random/path/pipeline_for_{}_output.yaml".format(collection_label)  # Generate random reference
-            input_entry["inputs"]["run_pipleline"] = "get_{}_output".format(collection_label)  # Generate random pipeline name
+            node = deepcopy(node)
+            node.predicate = predicate
+            node.depth = self.depth + 1
+            self.children.append(node)
+            self._updateChildrenDepth(node)
 
-            execution_flow.append(input_entry)
+    def export(self, fileName: str) -> None:
+        """Serialize a node as JSON and export it to a file.
 
-        return execution_flow
-    
+        Args:
+            node (Node): The node to be serialized.
+            fileName (str): The name of the file to export the JSON data.
+        """
 
-    def get_workflow_yaml(self, routeno: int) -> str:
-        workflow_yaml = {}
-        workflow_yaml["steps"] = self._to_yaml(routeno, "", StepType.UNSPECIFIED)
-    
-        return yaml.dump(workflow_yaml)
+        with open(f"{fileName}.json", "w") as file:
+            json.dump(self._serialize(), file, indent=4)
 
+        with open(f"{fileName}.yaml", "w") as file:
+            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
+    def accept(self, visitor):
+        """Accept a visitor and visit the node.
 
-class OntoFlowEngineValue(Value):
+        Args:
+            visitor: The visitor to be accepted.
+        """
 
-    def adjust_cost(self, predicate_dict, costs):
-         
-        total_cost = 0
-        for cost_definition_key in predicate_dict.keys():
-            cost_definition = predicate_dict[cost_definition_key]
-            if self.output_iri in cost_definition:
-                # find the cost_defintion
-                print({key: value for key, value in costs.items() if value.get('namespace') == cost_definition_key})
-                cost_el = next(iter({key: value for key, value in costs.items() if value.get('namespace') == cost_definition_key}.values()))
-                if isinstance(cost_el.get("cost"), float):
-                    #unique cost
-                    total_cost =  total_cost + float(cost_el.get("cost"))
-                else:
-                    #value-dependent cost
-                    total_cost =  total_cost + float(cost_el.get("cost")[cost_definition[self.output_iri]])
-
-        self.cost = self.cost + total_cost
+        return visitor(self)
 
 
+class OntoFlowEngine:
+    def __init__(self, triplestore: Triplestore) -> None:
+        """Initialise the OntoFlow engine. Sets the triplestore and the data dictionary.
 
-class OntoFlowDMEngine():
+        Args:
+            triplestore (Triplestore): Triplestore to be used for the engine.
+        """
 
-    def __init__(self, triplestore, cost_file, mco_interface):
-        self.triplestore = triplestore
+        self.triplestore: Triplestore = triplestore
+        self.explored: dict = {}
 
-        # Parse YAML
-        cost_file = cost_file
-        yaml_parsed = None
-        with open(cost_file, "r") as file:
-            try:
-                yaml_parsed = yaml.safe_load(file)["function_costs"]["predicate"]
-                print(yaml_parsed)
-            except yaml.YAMLError as exc:
-                print(exc)
+    def _exploreNode(self, node: Node) -> None:
+        """Explore a node in the ontology and generate the tree.
+        Step 1: check if the node is an individual and, if it is, return.
+        Step 2: check if the node is a model and explore the inputs.
+        Step 3: check if the node is a subclass and explore it.
 
-        self.__validate_yaml(yaml_parsed)
+        Args:
+            node (Node): The node to explore.
+        """
 
-        # MCO
-        self.mco_interface = mco_interface
+        if self._individual(node):
+            logger.info(f"Node {node.iri} has an individual")
+            return
 
+        self._model(node)
 
-    def __validate_yaml(self, content):
+        self._subClass(node)
 
-        costs = {}
-        for predicate in content:
-            predicate_keys = list(predicate.keys())
-            predicate_name = predicate_keys[0]
+    def _individual(self, node: Node) -> bool:
+        """Check if the node is an individual, add it to the mapping and return.
 
-            if "namespace" not in predicate_keys:
-                raise Exception("Namespace not defined")
-            
-            if (predicate["self-contained"] and "cost" not in predicate_keys) or (not predicate["self-contained"] and "values" not in predicate_keys) :
-                raise Exception("Cost value not present")
-            
-            predicate_data = {}
-            predicate_data["namespace"] = predicate["namespace"]
+        Args:
+            node (Node): The node to check.
 
-            if predicate["self-contained"]:
-                predicate_data["cost"] = float(predicate["cost"])
+        Returns:
+            bool: True if the node is an individual, False otherwise
+        """
+
+        patterns = [
+            """SELECT ?sub ?rel ?obj WHERE {{
+                ?sub rdf:type {iri} .
+                BIND(rdf:type AS ?rel) .
+                BIND({iri} AS ?obj) .
+            }}"""
+        ]
+
+        individuals = self._query(patterns, node.iri)
+
+        for individual in individuals:
+            node.addChild(individual[0], "individual")
+
+        return len(individuals) > 0
+
+    def _model(self, node: Node) -> None:
+        """Check if the node is a model.
+        In case it is accessed via its output and explores the inputs.
+        The outputs and inputs are added to the mapping.
+
+        Args:
+            node (Node): The node to check.
+        """
+
+        patternsOutput = [
+            """SELECT ?sub ?rel ?obj WHERE {{
+                ?sub rdf:type owl:Class ;
+                        rdfs:subClassOf ?restriction .
+                ?restriction rdf:type owl:Restriction ;
+                            owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                            ?p {iri} .
+                FILTER (?p IN (owl:onClass, owl:someValuesFrom))
+                BIND(emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 AS ?rel) .
+                BIND({iri} AS ?obj) .
+            }}""",
+        ]
+        patternsInput = [
+            """SELECT ?sub ?rel ?obj WHERE {{
+                {iri} rdf:type owl:Class ;
+                    rdfs:subClassOf ?restriction .
+                ?restriction rdf:type owl:Restriction ;
+                            owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                            ?p ?sub .
+                FILTER (?p IN (owl:onClass, owl:someValuesFrom))
+                BIND(emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 AS ?rel) .
+                BIND({iri} AS ?obj) .
+            }}""",
+        ]
+
+        outputs = self._query(patternsOutput, node.iri)
+
+        logger.info(f"Outputs models of {node.iri}: {outputs}")
+
+        for output in outputs:
+            oiri = output[0]
+            if oiri in self.explored:
+                node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                specific_costs = {}
-                for value in predicate["values"]:
-                    specific_costs[value["value"]] = value["cost"]
+                ochild = node.addChild(oiri, "hasOutput")
+                self.explored[oiri] = ochild
+                inputs = self._query(patternsInput, oiri)
+                for input in inputs:
+                    iiri = input[0]
+                    if iiri in self.explored:
+                        ochild.addNodeChild(self.explored[iiri], "hasInput")
+                    else:
+                        ichild = ochild.addChild(iiri, "hasInput")
+                        self._exploreNode(ichild)
+                        self.explored[iiri] = ichild
 
-                predicate_data["cost"] = specific_costs
+    def _subClass(self, node: Node) -> None:
+        """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
 
-            costs[predicate_name] = predicate_data
+        Args:
+            node (Node): The node to check.
+        """
 
-        costs["value"] = {"cost": 0.0}
+        patterns = [
+            """SELECT ?sub ?rel ?obj WHERE {{
+                ?sub rdf:type owl:Class ;
+                        rdfs:subClassOf {iri} .
+                BIND(rdfs:subClassOf AS ?rel) .
+                BIND({iri} as ?obj) .
+            }}"""
+        ]
 
-        print(costs)
+        subclasses = self._query(patterns, node.iri)
 
-        
-        # Navigation predicate are mandatory, check if all of them exists
-        if "mapsTo" not in costs or "instanceOf" not in costs or "subClassOf" not in costs or "function" not in costs or "label" not in costs:
-            raise Exception("Navigation predicate are mandatory: mapsTo, instanceOf, subClassOf, function, label")
-        
-        self.costs = costs
+        logger.info(f"Subclasses of {node.iri}: {subclasses}")
 
-    def instance_routes(self, meta, instances, allow_incomplete=False,
-                        quantity=Quantity, **kwargs):
-        """Find all mapping routes for populating an instance of `meta`.
+        for subclass in subclasses:
+            iri = subclass[0]
+            if iri in self.explored:
+                node.addNodeChild(self.explored[iri], "subClassOf")
+            else:
+                child = node.addChild(iri, "subClassOf")
+                self._exploreNode(child)
+                self.explored[iri] = child
 
-        Arguments:
-            meta: Metadata for the instance we will create.
-            instances: sequence of instances that the new intance will be
-                populated from.
-            self.triplestore: self.triplestore containing the mappings.
-            allow_incomplete: Whether to allow not populating all properties
-                of the returned instance.
-            quantity: Class implementing quantities with units.  Defaults to
-                pint.Quantity.
-            kwargs: Keyword arguments passed to mapping_route().
+    def _query(self, patterns: list[str], iri: str) -> list:
+        """Query the triplestore using the given patterns.
+
+        Args:
+            patterns (str | list[str]): The patterns to query the triplestore.
+            iri (str): The IRI of the node to query.
 
         Returns:
-            A dict mapping property names to a MappingStep instance.
+            list: The results of the query.
         """
-        if isinstance(meta, str):
-            meta = dlite.get_instance(meta)
-        if isinstance(instances, dlite.Instance):
-            instances = [instances]
 
-        # These lines populated sources starting from dlite instances with raw data
-        # OntoFlow works on the ontological plan, so we don't want to have raw data but just references
-        # Here we can substitute dlite istances with a datamodels reader
-        sources = {}
-        for inst in instances:
-            props = {p.name: p for p in inst.meta['properties']}
-            for k, v in inst.properties.items():
-                uri = f'{inst.meta.uri}#{k}'
-                uri_references = list(self.triplestore.objects(uri, "http://example.com/demo-ontology#hasReference"))
-                sources[uri] = uri_references[0] if uri_references else None
-                # sources[uri] = quantity(v, props[k].unit)
+        results = []
 
-        default_function_costs = []
-        default_function_costs.append(("mapsTo", self.costs["mapsTo"]["cost"]))
-        default_function_costs.append(("function", self.costs["function"]["cost"]))
-        default_function_costs.append(("instanceOf", self.costs["instanceOf"]["cost"]))
-        default_function_costs.append(("instanceOf", self.costs["instanceOf"]["cost"]))
-        default_function_costs.append(("value", 0.0))
-        
-        filtered_cost = {k: v for k, v in self.costs.items() if k not in ["mapsTo","instanceOf","subClassOf","function","label", "value"]}
-        custom_costs = {}
-        for key in filtered_cost.keys():
-            entry = filtered_cost[key]
-            custom_costs[entry["namespace"]] = {s: o for s, o in self.triplestore.subject_objects(entry["namespace"])}
+        for pattern in patterns:
+            iriForm = f"<{iri}>" if iri[0] != "<" else iri
+            q = pattern.format(iri=iriForm)
+            logger.info("\n{}\n".format(q))
+            results += self.triplestore.query(q)
 
-        routes = {}
-        for prop in meta['properties']:
-            target = f'{meta.uri}#{prop.name}'
-            try:
-                # route = self.mapping_route(target, sources, triplestore=self.triplestore, **kwargs)
-                route = tripper_mapping_routes(target, sources, triplestore=self.triplestore, mappingstep_class=OntoFlowEngineMappingStep, value_class=OntoFlowEngineValue, default_costs=default_function_costs, **kwargs)
-                route.adjust_cost(custom_costs, self.costs)
-            # except MissingRelationError:
-            except Exception:
-                if allow_incomplete:
-                    continue
-                raise
-            if not allow_incomplete and not route.number_of_routes():
-                raise InsufficientMappingError(f'no mappings for {target}')
-            routes[prop.name] = route
+        logger.info(results)
+        return results
 
-        return routes
+    def getMappingRoute(self, target: str) -> Node:
+        """Get the mapping route from the target to all the possible sources.
 
-
-    def getmappingroute(self, meta, instances, routedict=None, id=None,
-                    allow_incomplete=False, quantity=Quantity, **kwargs):
-        """Create a new instance of `meta` populated with the selected mapping
-        routes.
-
-        This is a convenient function that combines instance_routes() and
-        instantiate_from_routes().  If you want to investigate the possible
-        routes, you will probably want to call instance_routes() and
-        instantiate_from_routes() instead.
-
-        Arguments:
-            meta: Metadata to instantiate.
-            instances: Sequence of instances with source values.
-            self.triplestore: self.triplestore instance.
-                It is safe to pass a generator expression too.
-            routedict: Dict mapping property names to route number to select for
-                the given property.  The default is to select the route with
-                lowest cost.
-            id: URI of instance to create.
-            allow_incomplete: Whether to allow not populating all properties
-                of the returned instance.
-            quantity: Class implementing quantities with units.  Defaults to
-                pint.Quantity.
-
-        Keyword arguments (passed to mapping_route()):
-            function_repo: Dict mapping function IRIs to corresponding Python
-                function.  Default is to use `self.triplestore.function_repo`.
-            function_mappers: Sequence of mapping functions that takes
-                `self.triplestore` as argument and return a dict mapping output IRIs
-                to a list of `(function_iri, [input_iris, ...])` tuples.
-            mapsTo: IRI of 'mapsTo' in `self.triplestore`.
-            instanceOf: IRI of 'instanceOf' in `self.triplestore`.
-            subClassOf: IRI of 'subClassOf' in `self.triplestore`.  Set it to None if
-                subclasses should not be considered.
-            label: IRI of 'label' in `self.triplestore`.  Used for naming function
-                input parameters.  The default is to use rdfs:label.
-            hasUnit: IRI of 'hasUnit' in `self.triplestore`.
-            hasCost: IRI of 'hasCost' in `self.triplestore`.
+        Args:
+            target (str): The target data to be found.
 
         Returns:
-            New instance.
+            Node: The mapping starting from the root node.
         """
-        if isinstance(meta, str):
-            meta = dlite.get_instance(meta)
 
-        routes = self.instance_routes(
-            meta=meta,
-            instances=instances,
-            allow_incomplete=allow_incomplete,
-            quantity=quantity,
-            **kwargs
-        )
+        logger.info(f"Getting mapping route for {target}")
+        root = Node(0, target, "")
 
-        print("-------------FORMULA ROUTES------------")
-        print(routes["formula"].show())
+        self._exploreNode(root)
 
-        # best_routes = routes
-        best_routes = {}
-        for k,v in routes.items():
-            best_routes[k] = self.mco_interface.get_best_route(v)["root"]
-
-        return best_routes
+        return root
