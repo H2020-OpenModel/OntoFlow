@@ -29,7 +29,7 @@
                                             "children": [
                                                 {
                                                     "depth": 6,
-                                                    "iri": "http://webprotege.stanford.edu/MoltemplateProcess1",
+                                                    "iri": "http://webprotege.stanford.edu/MoltemplateProcess2",
                                                     "predicate": "hasOutput",
                                                     "children": [
                                                         {
@@ -53,7 +53,7 @@
                                                 },
                                                 {
                                                     "depth": 6,
-                                                    "iri": "http://webprotege.stanford.edu/MoltemplateProcess2",
+                                                    "iri": "http://webprotege.stanford.edu/MoltemplateProcess1",
                                                     "predicate": "hasOutput",
                                                     "children": [
                                                         {

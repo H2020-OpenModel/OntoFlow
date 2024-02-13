@@ -23,6 +23,7 @@ ts.remove_database(
 )
 ts.parse(ONTOLOGY_PATH, "turtle")
 
+ts.bind("emmo", "http://emmo.info/emmo#")
 ts.bind("base", "http://webprotege.stanford.edu/")
 
 engine = OntoFlowEngine(triplestore=ts)
