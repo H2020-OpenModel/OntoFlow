@@ -36,6 +36,20 @@ or add it as dependency
 git+https://github.com/H2020-OpenModel/OntoFlow@<commit code>
 ```
 
+## Tests
+---
+To test the proper functioning of OntoFlow, there are a number of tests that can be performed. You need to install all the proper dependencies
+
+```
+pip install .[tests]
+```
+
+Tests can be found in the test folder. To run them, you can use the following command
+
+```
+python -m unittest tests/test_*.py
+```
+
 ## Examples
 ---
 OntoFlow comes with some examples to test its functionality and see how it works. To be able to use them install its complete version
@@ -44,6 +58,4 @@ OntoFlow comes with some examples to test its functionality and see how it works
 pip install .[examples]
 ```
 
-This will install also the [PyBackTrip](https://github.com/xAlessandroC/PyBackTrip) dependency for backends support.
-
-Examples can be found in the `examples` folder. For the moment, please, refer only to the [formula generation](https://github.com/H2020-OpenModel/OntoFlow/blob/main/examples/datamodel_generation/formula_generation.py) example.
+Examples can be found in the `examples` folder. For the moment, please, refer only to the [ss3](https://github.com/H2020-OpenModel/OntoFlow/blob/main/examples/ss3_example/test.py) and the [openmodel_example](https://github.com/H2020-OpenModel/OntoFlow/blob/main/examples/openmodel_example/test.py) examples.
