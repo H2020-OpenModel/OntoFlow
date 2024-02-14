@@ -266,7 +266,7 @@ class OntoFlowEngine:
         """Query the triplestore using the given patterns.
 
         Args:
-            patterns (str | list[str]): The patterns to query the triplestore.
+            patterns (list[str]): The patterns to query the triplestore.
             iri (str): The IRI of the node to query.
 
         Returns:
