@@ -69,7 +69,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
     def tearDown(self):
         self.__triplestore.remove_database(
             backend="fuseki",
-            triplestore_url="http://localhost:3030",
+            triplestore_url=self.__triplestore_url,
             database="openmodel",
         )
         pass
