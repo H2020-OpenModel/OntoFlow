@@ -41,7 +41,7 @@ git+https://github.com/H2020-OpenModel/OntoFlow@<commit code>
 To test the proper functioning of OntoFlow, there are a number of tests that can be performed. You need to install all the proper dependencies
 
 ```
-pip install .[tests]
+pip install '.[tests]'
 ```
 
 Tests can be found in the test folder. To run them, you can use the following command
@@ -63,7 +63,7 @@ TRIPLESTORE_URL=<triplestore url> python -m unittest tests/test_search_algorithm
 OntoFlow comes with some examples to test its functionality and see how it works. To be able to use them install its complete version
 
 ```
-pip install .[examples]
+pip install '.[examples]'
 ```
 
 By default the triplestore url is set to the http://localhost:3030 endpoint for local testing. If you want to change it, you can set the `TRIPLESTORE_URL` environment variable to the desired endpoint.
