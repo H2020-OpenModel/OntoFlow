@@ -3,6 +3,7 @@ ontoflow.egg-info
 old.txt
 *.pyc
 .vscode
+output.*
 
 build/
 
