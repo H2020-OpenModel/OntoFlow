@@ -47,10 +47,11 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
     def setUp(self):
         self.__database_name = "openmodel"  # Fixed in the backend - make parametric
+        self.__triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
         self.__triplestore = Triplestore(
             backend="fuseki",
             base_iri="http://example.com/ontology#",
-            triplestore_url="http://localhost:3030",
+            triplestore_url=self.__triplestore_url,
             database=self.__database_name,
         )
         self.__triplestore.bind("base", "http://webprotege.stanford.edu/")
