@@ -14,12 +14,13 @@ ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "openmodel_
 
 ROOT = "http://webprotege.stanford.edu/Density"
 
+__triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
-    backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"
+    backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
 )
 
 ts.remove_database(
-    backend="fuseki", triplestore_url="http://localhost:3030", database="openmodel"
+    backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
 )
 ts.parse(ONTOLOGY_PATH, "turtle")
 

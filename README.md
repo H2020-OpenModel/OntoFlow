@@ -47,8 +47,16 @@ pip install .[tests]
 Tests can be found in the test folder. To run them, you can use the following command
 
 ```
-python -m unittest tests/test_*.py
+python -m unittest test_search_algorithm.py
 ```
+
+By default the triplestore url is set to the http://localhost:3030 endpoint for local testing. If you want to change it, you can set the `TRIPLESTORE_URL` environment variable to the desired endpoint.
+
+```
+TRIPLESTORE_URL=<triplestore url> python -m unittest test_search_algorithm.py
+```
+
+
 
 ## Examples
 ---
@@ -57,5 +65,7 @@ OntoFlow comes with some examples to test its functionality and see how it works
 ```
 pip install .[examples]
 ```
+
+By default the triplestore url is set to the http://localhost:3030 endpoint for local testing. If you want to change it, you can set the `TRIPLESTORE_URL` environment variable to the desired endpoint.
 
 Examples can be found in the `examples` folder. For the moment, please, refer only to the [ss3](https://github.com/H2020-OpenModel/OntoFlow/blob/main/examples/ss3_example/test.py) and the [openmodel_example](https://github.com/H2020-OpenModel/OntoFlow/blob/main/examples/openmodel_example/test.py) examples.
