@@ -2,10 +2,13 @@ import os
 import sys
 from pathlib import Path
 
-# sys.path.append(f"{str(Path.home())}/Workspace/OpenModel/OntoFlow")
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
+# sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
+# from ontoflow.engine import OntoFlowEngine
 
-from ontoflow.engine import OntoFlowEngine
+sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent.parent))
+from OntoFlow.ontoflow.engine import OntoFlowEngine
+
+
 from tripper import Triplestore
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
