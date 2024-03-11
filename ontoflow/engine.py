@@ -1,6 +1,6 @@
 import json
 from copy import deepcopy
-from typing import List
+from typing import Union
 
 import yaml
 from tripper import Triplestore
@@ -9,7 +9,9 @@ from ontoflow.log.logger import logger
 
 
 class Node:
-    def __init__(self, depth: int, iri: str, predicate: str):
+    def __init__(
+        self, depth: int, iri: str, predicate: str, id: Union[int, None] = None
+    ):
         """Initialise a node in the ontology tree.
 
         Args:
@@ -21,7 +23,8 @@ class Node:
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
-        self.children: List["Node"] = []
+        self.id: Union[int, None] = id
+        self.children: list["Node"] = []
 
     def __str__(self) -> str:
         """String representation of the node structure.
@@ -36,7 +39,7 @@ class Node:
 
         return result
 
-    def _serialize(self) -> dict:
+    def _serialize(self, path: Union[list, None] = None) -> dict:
         """Dictionary representation of the node structure.
 
         Returns:
@@ -48,11 +51,19 @@ class Node:
             "iri": self.iri,
         }
 
+        if self.id is not None:
+            ser["id"] = self.id
+
         if self.predicate:
             ser["predicate"] = self.predicate
 
         if len(self.children) > 0:
-            ser["children"] = [child._serialize() for child in self.children]
+            if path and self.children[0].id is not None:
+                p = path.pop(0)
+                ser["children"] = [self.children[p]._serialize(path)]
+            else:
+                ser["children"] = [child._serialize(path) for child in self.children]
+
 
         return ser
 
@@ -67,18 +78,19 @@ class Node:
             child.depth = node.depth + 1
             self._updateChildrenDepth(child)
 
-    def addChild(self, iri: str, predicate: str) -> "Node":
+    def addChild(self, iri: str, predicate: str, id: Union[int, None] = None) -> "Node":
         """Add a child to the node.
 
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
+            id (int): the id of the child node. Defaults to None.
 
         Returns:
             Node: the child node.
         """
 
-        node = Node(self.depth + 1, iri, predicate)
+        node = Node(self.depth + 1, iri, predicate, id)
         self.children.append(node)
 
         return node
@@ -216,12 +228,14 @@ class OntoFlowEngine:
 
         logger.info(f"Outputs models of {node.iri}: {outputs}")
 
-        for output in outputs:
+        n = len(outputs)
+
+        for i, output in enumerate(outputs):
             oiri = output[0]
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput")
+                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None)
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -284,6 +298,15 @@ class OntoFlowEngine:
         logger.info(results)
         return results
 
+    def _getPaths(self, node: Node, path: list, paths: list) -> None:
+        if node.id is not None:
+            path.append(node.id)
+        if node.children:
+            for child in node.children:
+                self._getPaths(child, list(path), paths)
+        elif path and path not in paths:
+            paths.append(path)
+
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
 
@@ -298,5 +321,24 @@ class OntoFlowEngine:
         root = Node(0, target, "")
 
         self._exploreNode(root)
+
+        paths = []
+
+        self._getPaths(root, [], paths)
+
+        logger.info(f"Paths: {paths}")
+
+        res = []
+
+        for path in paths:
+            print(path)
+            res.append({
+                "path": ', '.join(str(p) for p in path),
+                "mapping": root._serialize(path)
+            
+            })
+
+        with open(f"paths.json", "w") as file:
+            json.dump(res, file, indent=4)
 
         return root
