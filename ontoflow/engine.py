@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from typing import Union
+from random import random
 
 import yaml
 from tripper import Triplestore
@@ -10,7 +11,12 @@ from ontoflow.log.logger import logger
 
 class Node:
     def __init__(
-        self, depth: int, iri: str, predicate: str, id: Union[int, None] = None
+        self,
+        depth: int,
+        iri: str,
+        predicate: str,
+        pathId: Union[int, None] = None,
+        kpis: list = [],
     ):
         """Initialise a node in the ontology tree.
 
@@ -18,13 +24,17 @@ class Node:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
+            pathId (int): the id of the path. Defaults to None.
+            kpis (dict): the KPIs of the node. Defaults to {}.
         """
 
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
-        self.id: Union[int, None] = id
+        self.pathId: Union[int, None] = pathId
         self.children: list["Node"] = []
+        self.kpis = self._getKPIs(iri, kpis)
+        # Add KPIs as an array of key->value pairs
 
     def __str__(self) -> str:
         """String representation of the node structure.
@@ -42,6 +52,9 @@ class Node:
     def _serialize(self, path: Union[list, None] = None) -> dict:
         """Dictionary representation of the node structure.
 
+        Args:
+            path (list): the path to be serialised. Defaults to None.
+
         Returns:
             dict: the dictionary representation of the node structure.
         """
@@ -49,21 +62,21 @@ class Node:
         ser = {
             "depth": self.depth,
             "iri": self.iri,
+            "kpis": self.kpis,
         }
 
-        if self.id is not None:
-            ser["id"] = self.id
+        if self.pathId is not None:
+            ser["pathId"] = self.pathId
 
         if self.predicate:
             ser["predicate"] = self.predicate
 
         if len(self.children) > 0:
-            if path and self.children[0].id is not None:
+            if path and self.children[0].pathId is not None:
                 p = path.pop(0)
                 ser["children"] = [self.children[p]._serialize(path)]
             else:
                 ser["children"] = [child._serialize(path) for child in self.children]
-
 
         return ser
 
@@ -78,19 +91,41 @@ class Node:
             child.depth = node.depth + 1
             self._updateChildrenDepth(child)
 
-    def addChild(self, iri: str, predicate: str, id: Union[int, None] = None) -> "Node":
+    def _getKPIs(self, iri: str, kpis: list) -> dict:
+        """Get the KPIs of a node.
+
+        Args:
+            iri (str): The IRI of the node.
+            kpis (list): The KPIs of the node.
+
+        Returns:
+            dict: The KPIs of the node.
+        """
+
+        _kpis = {}
+
+        for kpi in kpis:
+            _kpis[kpi] = round(random(), 2)
+
+
+        return _kpis
+
+    def addChild(
+        self, iri: str, predicate: str, pathId: Union[int, None] = None, kpis: list = []
+    ) -> "Node":
         """Add a child to the node.
 
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
-            id (int): the id of the child node. Defaults to None.
+            pathId (int): the pathId of the child node. Defaults to None.
+            params (list): the KPIs of the child node. Defaults to [].
 
         Returns:
             Node: the child node.
         """
-
-        node = Node(self.depth + 1, iri, predicate, id)
+        # before of creating the new Node find the KPIs so they can be added to the node
+        node = Node(self.depth + 1, iri, predicate, pathId, kpis)
         self.children.append(node)
 
         return node
@@ -116,7 +151,6 @@ class Node:
         """Serialize a node as JSON and export it to a file.
 
         Args:
-            node (Node): The node to be serialized.
             fileName (str): The name of the file to export the JSON data.
         """
 
@@ -147,7 +181,7 @@ class OntoFlowEngine:
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
 
-    def _exploreNode(self, node: Node) -> None:
+    def _exploreNode(self, node: Node, kpis: list) -> None:
         """Explore a node in the ontology and generate the tree.
         Step 1: check if the node is an individual and, if it is, return.
         Step 2: check if the node is a model and explore the inputs.
@@ -155,17 +189,18 @@ class OntoFlowEngine:
 
         Args:
             node (Node): The node to explore.
+            kpis (list): The KPIs to be added on the node.
         """
 
-        if self._individual(node):
+        if self._individual(node, kpis):
             logger.info(f"Node {node.iri} has an individual")
             return
 
-        self._model(node)
+        self._model(node, kpis)
 
-        self._subClass(node)
+        self._subClass(node, kpis)
 
-    def _individual(self, node: Node) -> bool:
+    def _individual(self, node: Node, kpis: list) -> bool:
         """Check if the node is an individual, add it to the mapping and return.
 
         Args:
@@ -186,11 +221,11 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for individual in individuals:
-            node.addChild(individual[0], "individual")
+            node.addChild(individual[0], "individual", kpis=kpis)
 
         return len(individuals) > 0
 
-    def _model(self, node: Node) -> None:
+    def _model(self, node: Node, kpis: list) -> None:
         """Check if the node is a model.
         In case it is accessed via its output and explores the inputs.
         The outputs and inputs are added to the mapping.
@@ -235,7 +270,7 @@ class OntoFlowEngine:
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None)
+                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None, kpis)
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -243,11 +278,11 @@ class OntoFlowEngine:
                     if iiri in self.explored:
                         ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
-                        ichild = ochild.addChild(iiri, "hasInput")
-                        self._exploreNode(ichild)
+                        ichild = ochild.addChild(iiri, "hasInput", kpis=kpis)
+                        self._exploreNode(ichild, kpis)
                         self.explored[iiri] = ichild
 
-    def _subClass(self, node: Node) -> None:
+    def _subClass(self, node: Node, kpis: list) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
 
         Args:
@@ -272,8 +307,8 @@ class OntoFlowEngine:
             if iri in self.explored:
                 node.addNodeChild(self.explored[iri], "subClassOf")
             else:
-                child = node.addChild(iri, "subClassOf")
-                self._exploreNode(child)
+                child = node.addChild(iri, "subClassOf", kpis=kpis)
+                self._exploreNode(child, kpis)
                 self.explored[iri] = child
 
     def _query(self, patterns: list[str], iri: str) -> list:
@@ -298,17 +333,28 @@ class OntoFlowEngine:
         logger.info(results)
         return results
 
-    def _getPaths(self, node: Node, path: list, paths: list) -> None:
-        if node.id is not None:
-            path.append(node.id)
+    def _getPathsKpis(self, node: Node, path: list, paths: list) -> None:
+        """Get all the paths from the root node to the leaf nodes with their KPIs.
+
+        Args:
+            node (Node): The node to get the paths from.
+            path (list): The current path.
+            paths (list): The list of all paths.
+        """
+
+        if node.pathId is not None:
+            path.append(node.pathId)
         if node.children:
             for child in node.children:
-                self._getPaths(child, list(path), paths)
+                self._getPathsKpis(child, list(path), paths)
         elif path and path not in paths:
             paths.append(path)
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
+        Step 1: build the tree.
+        Step 2: extract the routes and their KPIs.
+        Step 3: pass the routes to the MCO to get the best one.
 
         Args:
             target (str): The target data to be found.
@@ -318,13 +364,16 @@ class OntoFlowEngine:
         """
 
         logger.info(f"Getting mapping route for {target}")
-        root = Node(0, target, "")
+        kpis = ["var1", "var2", "var3", "var4", "var5", "var6"]
 
-        self._exploreNode(root)
+        root = Node(0, target, "", kpis=kpis)
+
+        self._exploreNode(root, kpis)
 
         paths = []
+        kpis = {}
 
-        self._getPaths(root, [], paths)
+        self._getPathsKpis(root, [], paths) #Understand how to get the KPIs sum associated to each path
 
         logger.info(f"Paths: {paths}")
 
@@ -332,11 +381,13 @@ class OntoFlowEngine:
 
         for path in paths:
             print(path)
-            res.append({
-                "path": ', '.join(str(p) for p in path),
-                "mapping": root._serialize(path)
-            
-            })
+            res.append(
+                {
+                    "path": ", ".join(str(p) for p in path),
+                    "mapping": root._serialize(path),
+                    # Add the KPIs sum associated to each path obtained from the _getPathsKpis method
+                }
+            )
 
         with open(f"paths.json", "w") as file:
             json.dump(res, file, indent=4)
