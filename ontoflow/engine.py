@@ -390,10 +390,19 @@ class OntoFlowEngine:
                 }
             )
 
+        mco = []
+        mco.append(kpis)
+
+        for r in res:
+            mco.append([r["kpis"][kpi] for kpi in kpis])
+
         with open(f"paths.json", "w") as file:
             json.dump(paths, file, indent=4)
 
         with open(f"res.json", "w") as file:
             json.dump(res, file, indent=4)
+
+        with open(f"mco.json", "w") as file:
+            json.dump(mco, file, indent=4)
 
         return root
