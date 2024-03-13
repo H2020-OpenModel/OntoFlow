@@ -1,5 +1,6 @@
 import json
 from copy import deepcopy
+from os import path
 from typing import Union
 from random import random
 
@@ -25,7 +26,7 @@ class Node:
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
             pathId (int): the id of the path. Defaults to None.
-            kpis (dict): the KPIs of the node. Defaults to {}.
+            kpis (list): the KPIs of the node. Defaults to [].
         """
 
         self.depth: int = depth
@@ -34,7 +35,6 @@ class Node:
         self.pathId: Union[int, None] = pathId
         self.children: list["Node"] = []
         self.kpis = self._getKPIs(iri, kpis)
-        # Add KPIs as an array of key->value pairs
 
     def __str__(self) -> str:
         """String representation of the node structure.
@@ -96,7 +96,7 @@ class Node:
 
         Args:
             iri (str): The IRI of the node.
-            kpis (list): The KPIs of the node.
+            kpis (list): The KPIs to be retrieved.
 
         Returns:
             dict: The KPIs of the node.
@@ -106,7 +106,6 @@ class Node:
 
         for kpi in kpis:
             _kpis[kpi] = round(random(), 2)
-
 
         return _kpis
 
@@ -119,12 +118,12 @@ class Node:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
             pathId (int): the pathId of the child node. Defaults to None.
-            params (list): the KPIs of the child node. Defaults to [].
+            kpis (list): the KPIs of the child node. Defaults to [].
 
         Returns:
             Node: the child node.
         """
-        # before of creating the new Node find the KPIs so they can be added to the node
+
         node = Node(self.depth + 1, iri, predicate, pathId, kpis)
         self.children.append(node)
 
@@ -205,6 +204,7 @@ class OntoFlowEngine:
 
         Args:
             node (Node): The node to check.
+            kpis (list): The KPIs to be added on the node.
 
         Returns:
             bool: True if the node is an individual, False otherwise
@@ -232,6 +232,7 @@ class OntoFlowEngine:
 
         Args:
             node (Node): The node to check.
+            kpis (list): The KPIs to be added on the node.
         """
 
         patternsOutput = [
@@ -287,6 +288,7 @@ class OntoFlowEngine:
 
         Args:
             node (Node): The node to check.
+            kpis (list): The KPIs to be added on the node.
         """
 
         patterns = [
@@ -333,22 +335,25 @@ class OntoFlowEngine:
         logger.info(results)
         return results
 
-    def _getPathsKpis(self, node: Node, path: list, paths: list) -> None:
-        """Get all the paths from the root node to the leaf nodes with their KPIs.
+    def _getPathsKpis(self, node: Node, path: dict, paths: list) -> None:
+        """Get all the possible paths and their KPIs.
 
         Args:
-            node (Node): The node to get the paths from.
-            path (list): The current path.
-            paths (list): The list of all paths.
+            node (Node): The starting node.
+            path (dict): Dict containing the path and KPIs.
+            paths (list): The resulting list of paths with their KPIs.
         """
 
         if node.pathId is not None:
-            path.append(node.pathId)
-        if node.children:
-            for child in node.children:
-                self._getPathsKpis(child, list(path), paths)
-        elif path and path not in paths:
+            path = deepcopy(path)
+            path["path"].append(node.pathId)
             paths.append(path)
+        for k, v in node.kpis.items():
+            if k not in path["kpis"]:
+                path["kpis"][k] = []
+            path["kpis"][k].append(v)
+        for child in node.children:
+            self._getPathsKpis(child, path, paths)
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
@@ -371,25 +376,24 @@ class OntoFlowEngine:
         self._exploreNode(root, kpis)
 
         paths = []
-        kpis = {}
-
-        self._getPathsKpis(root, [], paths) #Understand how to get the KPIs sum associated to each path
-
-        logger.info(f"Paths: {paths}")
+        path = {"path": [], "kpis": {}}
+        self._getPathsKpis(root, path, paths)
 
         res = []
 
         for path in paths:
-            print(path)
             res.append(
                 {
-                    "path": ", ".join(str(p) for p in path),
-                    "mapping": root._serialize(path),
-                    # Add the KPIs sum associated to each path obtained from the _getPathsKpis method
+                    "path": ", ".join(str(p) for p in path["path"]),
+                    "mapping": root._serialize(path["path"]),
+                    "kpis": {kpi: sum(path["kpis"][kpi]) for kpi in kpis},
                 }
             )
 
         with open(f"paths.json", "w") as file:
+            json.dump(paths, file, indent=4)
+
+        with open(f"res.json", "w") as file:
             json.dump(res, file, indent=4)
 
         return root
