@@ -9,7 +9,6 @@ from .mco import mco_calc
 from .node import Node
 
 from osp.core.utils import pretty_print
-from osp.wrappers.sim_cmcl_mods_wrapper import MoDS_Session
 
 
 class OntoFlowEngine:
@@ -25,9 +24,9 @@ class OntoFlowEngine:
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
-        Step 1: check if the node is an individual and, if it is, return.
-        Step 2: check if the node is a model and explore the inputs.
-        Step 3: check if the node is a subclass and explore it.
+        Step 1: Check if the node is an individual and, if it is, return.
+        Step 2: Check if the node is a model and explore the inputs.
+        Step 3: Check if the node is a subclass and explore it.
 
         Args:
             node (Node): The node to explore.
@@ -61,7 +60,7 @@ class OntoFlowEngine:
 
         individuals = self._query(patterns, node.iri)
 
-        for individual in individuals:
+        for i, individual in enumerate(individuals):
             node.addChild(individual[0], "individual")
 
         return len(individuals) > 0
@@ -196,9 +195,9 @@ class OntoFlowEngine:
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
-        Step 1: build the tree.
-        Step 2: extract the routes and their KPIs.
-        Step 3: pass the routes to the MCO to get the best one.
+        Step 1: Build the tree.
+        Step 2: Extract the routes and their KPIs.
+        Step 3: Pass the routes to the MCO to get the ranking.
 
         Args:
             target (str): The target data to be found.
@@ -208,42 +207,41 @@ class OntoFlowEngine:
         """
 
         logger.info(f"Getting mapping route for {target}")
-        kpis = ["ModelId", "ModelParameter", "Cost1", "Cost2"]
+        kpis = ["ModelParameter", "Cost1", "Cost2"]
 
+        # Build the tree
         root = Node(0, target, "", kpis=kpis)
-
         self._exploreNode(root)
 
+        # Extract the routes and their KPIs
         paths = []
         path = {"path": [], "kpis": {}}
         self._getPathsKpis(root, path, paths)
 
-        res = []
+        res = {"routes": []}
 
-        for path in paths:
-            res.append(
-                {
-                    "path": ", ".join(str(p) for p in path["path"]),
-                    "mapping": root._serialize(path["path"]),
-                    "kpis": {kpi: sum(path["kpis"][kpi]) for kpi in kpis},
-                }
-            )
+        for i, path in enumerate(paths):
+            route = {
+                "path": root._serialize(path["path"]),
+                "kpis": {kpi: sum(path["kpis"][kpi]) for kpi in kpis},
+            }
+            route["kpis"]["ModelId"] = i
+            res["routes"].append(route)
 
+        kpis.append("ModelId")
+
+        # Pass the routes to the MCO to get the ranking
         mco = []
         mco.append(kpis)
 
-        for r in res:
+        for r in res["routes"]:
             mco.append([r["kpis"][kpi] for kpi in kpis])
 
-        logger.info(f"MCO: {mco}")
+        ranking = mco_calc(mco)
 
-        pareto_front, job_id = mco_calc(mco)
+        res["ranking"] = ranking
 
-        if pareto_front:
-            pretty_print(pareto_front[0], open("pareto_front.txt", "w"))
-        if job_id:
-            pretty_print(job_id[0], open("job_id.txt", "w"))
-
+        # Print the results
         with open(f"res.json", "w") as file:
             json.dump(res, file, indent=4)
 

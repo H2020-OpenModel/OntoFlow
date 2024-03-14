@@ -106,7 +106,7 @@ class Node:
         return _kpis
 
     def addChild(
-        self, iri: str, predicate: str, pathId: Union[int, None] = None, kpis: list = []
+        self, iri: str, predicate: str, pathId: Union[int, None] = None
     ) -> "Node":
         """Add a child to the node.
 

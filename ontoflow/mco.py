@@ -16,7 +16,7 @@ logger.handlers[0].setFormatter(
 
 
 def mco_calc(data):
-    logger.info("################ Start: MCO Calc Example ################")
+    logger.info("################ Start: MCO Calc ################")
     logger.info("Setting up the simulation inputs")
 
     mcdm_simulation = mods.MultiCriteriaDecisionMaking()
@@ -37,7 +37,11 @@ def mco_calc(data):
         ),
         # Second cost of model (e.g. uncertainty of final result)
         mods.Variable(
-            name="Cost2", type="output", objective="Minimise", maximum="35.0", weight="3"
+            name="Cost2",
+            type="output",
+            objective="Minimise",
+            maximum="35.0",
+            weight="3",
         ),
     )
 
@@ -79,15 +83,21 @@ def mco_calc(data):
         pareto_front = search.find_cuds_objects_by_oclass(
             mods.ParetoFront, wrapper, rel=None
         )
-        job_id = search.find_cuds_objects_by_oclass(mods.JobID, wrapper, rel=None)
 
-        logger.info("Printing the simulation results.")
+        ranking = []
 
         if pareto_front:
             pretty_print(pareto_front[0])
-        if job_id:
-            pretty_print(job_id[0])
+            rank = search.find_cuds_objects_by_oclass(
+                mods.RankedDataPoint, pareto_front[0], rel=None
+            )
+            for el in rank:
+                for item in search.find_cuds_objects_by_oclass(
+                    mods.DataPointItem, el, rel=mods.hasPart
+                ):
+                    if item.name == "ModelId":
+                        ranking.append(int(item.value.split(".")[0]))
 
-    logger.info("################ End: MoDS OntoFlow MCDM Example ################")
+    logger.info("################ End: MCO Calc ################")
 
-    return pareto_front, job_id
+    return ranking
