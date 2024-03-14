@@ -1,0 +1,24 @@
+- Cuds object:
+  uid: eb143513-d6f1-4bf1-91b3-236c2050695a
+  type: mods.ParetoFront
+  superclasses: cuba.Entity, mods.DataSet, mods.OutputData, mods.ParetoFront
+  description: 
+    To Be Determined
+
+   |_Relationship mods.hasPart:
+     -  mods.RankedDataPoint cuds object:
+        uid: 0e08c187-8e79-4f2b-a565-669114d6258d
+        ranking: 1
+         |_Relationship mods.hasPart:
+           -  mods.DataPointItem cuds object named <Cost1>:
+           .  uid: 04ac9f91-82ae-4f5a-bd54-3c048d3a092e
+           .  value: 3.08
+           -  mods.DataPointItem cuds object named <Cost2>:
+           .  uid: 56f76e94-6b46-4bfc-a230-f497fcf187ad
+           .  value: 6.16
+           -  mods.DataPointItem cuds object named <ModelId>:
+           .  uid: e0cadce8-065e-45e7-b835-87f84eccb53a
+           .  value: 4.67
+           -  mods.DataPointItem cuds object named <ModelParameter>:
+              uid: d6cd617a-5d13-4bd5-8c81-4bcb16a3ccc2
+              value: 5.08
