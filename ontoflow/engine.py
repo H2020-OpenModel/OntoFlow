@@ -9,6 +9,7 @@ from .mco import mco_calc
 from .node import Node
 
 from osp.core.utils import pretty_print
+from osp.wrappers.sim_cmcl_mods_wrapper import MoDS_Session
 
 
 class OntoFlowEngine:
@@ -22,7 +23,7 @@ class OntoFlowEngine:
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
 
-    def _exploreNode(self, node: Node, kpis: list) -> None:
+    def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
         Step 1: check if the node is an individual and, if it is, return.
         Step 2: check if the node is a model and explore the inputs.
@@ -30,23 +31,21 @@ class OntoFlowEngine:
 
         Args:
             node (Node): The node to explore.
-            kpis (list): The KPIs to be added on the node.
         """
 
-        if self._individual(node, kpis):
+        if self._individual(node):
             logger.info(f"Node {node.iri} has an individual")
             return
 
-        self._model(node, kpis)
+        self._model(node)
 
-        self._subClass(node, kpis)
+        self._subClass(node)
 
-    def _individual(self, node: Node, kpis: list) -> bool:
+    def _individual(self, node: Node) -> bool:
         """Check if the node is an individual, add it to the mapping and return.
 
         Args:
             node (Node): The node to check.
-            kpis (list): The KPIs to be added on the node.
 
         Returns:
             bool: True if the node is an individual, False otherwise
@@ -63,18 +62,17 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for individual in individuals:
-            node.addChild(individual[0], "individual", kpis=kpis)
+            node.addChild(individual[0], "individual")
 
         return len(individuals) > 0
 
-    def _model(self, node: Node, kpis: list) -> None:
+    def _model(self, node: Node) -> None:
         """Check if the node is a model.
         In case it is accessed via its output and explores the inputs.
         The outputs and inputs are added to the mapping.
 
         Args:
             node (Node): The node to check.
-            kpis (list): The KPIs to be added on the node.
         """
 
         patternsOutput = [
@@ -113,7 +111,7 @@ class OntoFlowEngine:
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None, kpis)
+                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None)
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -121,16 +119,15 @@ class OntoFlowEngine:
                     if iiri in self.explored:
                         ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
-                        ichild = ochild.addChild(iiri, "hasInput", kpis=kpis)
-                        self._exploreNode(ichild, kpis)
+                        ichild = ochild.addChild(iiri, "hasInput")
+                        self._exploreNode(ichild)
                         self.explored[iiri] = ichild
 
-    def _subClass(self, node: Node, kpis: list) -> None:
+    def _subClass(self, node: Node) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
 
         Args:
             node (Node): The node to check.
-            kpis (list): The KPIs to be added on the node.
         """
 
         patterns = [
@@ -151,8 +148,8 @@ class OntoFlowEngine:
             if iri in self.explored:
                 node.addNodeChild(self.explored[iri], "subClassOf")
             else:
-                child = node.addChild(iri, "subClassOf", kpis=kpis)
-                self._exploreNode(child, kpis)
+                child = node.addChild(iri, "subClassOf")
+                self._exploreNode(child)
                 self.explored[iri] = child
 
     def _query(self, patterns: list[str], iri: str) -> list:
@@ -215,7 +212,7 @@ class OntoFlowEngine:
 
         root = Node(0, target, "", kpis=kpis)
 
-        self._exploreNode(root, kpis)
+        self._exploreNode(root)
 
         paths = []
         path = {"path": [], "kpis": {}}
@@ -237,7 +234,7 @@ class OntoFlowEngine:
 
         for r in res:
             mco.append([r["kpis"][kpi] for kpi in kpis])
-        
+
         logger.info(f"MCO: {mco}")
 
         pareto_front, job_id = mco_calc(mco)

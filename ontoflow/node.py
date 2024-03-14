@@ -29,6 +29,7 @@ class Node:
         self.predicate: str = predicate
         self.pathId: Union[int, None] = pathId
         self.children: list["Node"] = []
+        self.kpisList: list = kpis
         self.kpis = self._getKPIs(iri, kpis)
 
     def __str__(self) -> str:
@@ -119,7 +120,7 @@ class Node:
             Node: the child node.
         """
 
-        node = Node(self.depth + 1, iri, predicate, pathId, kpis)
+        node = Node(self.depth + 1, iri, predicate, pathId, self.kpisList)
         self.children.append(node)
 
         return node
