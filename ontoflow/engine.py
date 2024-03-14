@@ -237,6 +237,8 @@ class OntoFlowEngine:
 
         for r in res:
             mco.append([r["kpis"][kpi] for kpi in kpis])
+        
+        logger.info(f"MCO: {mco}")
 
         pareto_front, job_id = mco_calc(mco)
 
@@ -245,13 +247,7 @@ class OntoFlowEngine:
         if job_id:
             pretty_print(job_id[0], open("job_id.txt", "w"))
 
-        with open(f"paths.json", "w") as file:
-            json.dump(paths, file, indent=4)
-
         with open(f"res.json", "w") as file:
             json.dump(res, file, indent=4)
-
-        with open(f"mco.json", "w") as file:
-            json.dump(mco, file, indent=4)
 
         return root

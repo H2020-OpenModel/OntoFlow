@@ -4,6 +4,9 @@ ontoflow.egg-info
 *.pyc
 .vscode
 output.*
+examples/**/*.json
+examples/**/*.yaml
+examples/**/*.txt
 build/
 
 
