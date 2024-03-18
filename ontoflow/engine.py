@@ -1,14 +1,12 @@
 import json
 from copy import deepcopy
 
-from ontoflow.log.logger import logger
+from .log.logger import logger
 
 from tripper import Triplestore
 
 from .mco import mco_calc
 from .node import Node
-
-from osp.core.utils import pretty_print
 
 
 class OntoFlowEngine:
@@ -61,7 +59,7 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for i, individual in enumerate(individuals):
-            node.addChild(individual[0], "individual")
+            node.addChild(individual[0], "individual", i if len(individuals) > 1 else None)
 
         return len(individuals) > 0
 
@@ -182,16 +180,25 @@ class OntoFlowEngine:
             paths (list): The resulting list of paths with their KPIs.
         """
 
+        if paths is None:
+            paths = []
+        if path is None:
+            path = {'path': [], 'kpis': {}}
+
         if node.pathId is not None:
-            path = deepcopy(path)
-            path["path"].append(node.pathId)
-            paths.append(path)
+            new_path = deepcopy(path)
+            new_path['path'].append(node.pathId)
+            paths.append(new_path)
+
         for k, v in node.kpis.items():
-            if k not in path["kpis"]:
-                path["kpis"][k] = []
-            path["kpis"][k].append(v)
+            if k not in path['kpis']:
+                path['kpis'][k] = []
+            path['kpis'][k].append(v)
+
         for child in node.children:
             self._getPathsKpis(child, path, paths)
+
+        return paths
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
@@ -217,6 +224,8 @@ class OntoFlowEngine:
         paths = []
         path = {"path": [], "kpis": {}}
         self._getPathsKpis(root, path, paths)
+
+        print(paths)
 
         res = {"routes": []}
 
