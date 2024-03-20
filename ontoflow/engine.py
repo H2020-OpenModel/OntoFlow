@@ -130,14 +130,15 @@ class Node:
 
     def _visualize(self):
 
-        node_string = "\"{}\" [shape=box]".format(self.iri)
+        node_string = []
+        node_string.append("\"{}\" [shape=box]".format(self.iri))
 
         for child in self.children:
-            node_string += "\n{}".format(child._visualize())
+            node_string.append("{}".format(child._visualize()))
             dir_back = "back" if child.predicate == "hasOutput" else "forward"
-            node_string += "\n\"{}\" -> \"{}\" [label=\"{}\", dir=\"{}\", color=\"{}\"]".format(self.iri, child.iri, child.predicate, dir_back, "black")
+            node_string.append("\"{}\" -> \"{}\" [label=\"{}\", dir=\"{}\", color=\"{}\"]".format(self.iri, child.iri, child.predicate, dir_back, "black"))
 
-        return node_string
+        return "\n".join(node_string)
 
 
     def accept(self, visitor):
