@@ -61,7 +61,9 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for i, individual in enumerate(individuals):
-            node.addChild(individual[0], "individual")
+            node.addChild(
+                individual[0], "individual", i if len(individuals) > 1 else None
+            )
 
         return len(individuals) > 0
 
@@ -173,25 +175,41 @@ class OntoFlowEngine:
         logger.info(results)
         return results
 
-    def _getPathsKpis(self, node: Node, path: dict, paths: list) -> None:
+    def _getPathsKpis(self, node: Node, path=[], kpis=None) -> None:
         """Get all the possible paths and their KPIs.
 
         Args:
             node (Node): The starting node.
-            path (dict): Dict containing the path and KPIs.
-            paths (list): The resulting list of paths with their KPIs.
+            path (list): List of nodes with pathId in the path.
+            kpis (dict): The KPIs of the path.
         """
+        if kpis is None:
+            kpis = {kpi: [] for kpi in node.kpis.keys()}
 
+        # Add pathId to path if it exists
         if node.pathId is not None:
-            path = deepcopy(path)
-            path["path"].append(node.pathId)
-            paths.append(path)
-        for k, v in node.kpis.items():
-            if k not in path["kpis"]:
-                path["kpis"][k] = []
-            path["kpis"][k].append(v)
+            path.append(node.pathId)
+
+        # If this node has KPIs, add them to the current KPIs
+        for kpi in node.kpis.keys():
+            kpis[kpi].append(node.kpis[kpi])
+
+        # If this node is a leaf (has no children), add the path and KPIs to the results
+        if not node.children:
+            return [{"path": path, "kpis": kpis}]
+
+        # Otherwise, recurse on the children
+        results = []
         for child in node.children:
-            self._getPathsKpis(child, path, paths)
+            results.extend(
+                self._getPathsKpis(
+                    child,
+                    list(path),
+                    {kpi: list(values) for kpi, values in kpis.items()},
+                )
+            )
+
+        return results
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
@@ -214,9 +232,7 @@ class OntoFlowEngine:
         self._exploreNode(root)
 
         # Extract the routes and their KPIs
-        paths = []
-        path = {"path": [], "kpis": {}}
-        self._getPathsKpis(root, path, paths)
+        paths = self._getPathsKpis(root)
 
         res = {"routes": []}
 
