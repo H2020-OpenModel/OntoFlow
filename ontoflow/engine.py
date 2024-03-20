@@ -1,14 +1,12 @@
 import json
 from copy import deepcopy
 
-from ontoflow.log.logger import logger
+from .log.logger import logger
 
 from tripper import Triplestore
 
 from .mco import mco_calc
 from .node import Node
-
-from osp.core.utils import pretty_print
 
 
 class OntoFlowEngine:
@@ -211,6 +209,8 @@ class OntoFlowEngine:
 
         return results
 
+        return paths
+
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
@@ -233,6 +233,8 @@ class OntoFlowEngine:
 
         # Extract the routes and their KPIs
         paths = self._getPathsKpis(root)
+
+        print(paths)
 
         res = {"routes": []}
 
