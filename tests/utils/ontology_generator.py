@@ -20,8 +20,6 @@ input_count = 0
 
 
 def visualize(g, name="example.png"):
-    import sys
-
     stream = io.StringIO()
     rdf2dot(g, stream)
     (graph,) = pydot.graph_from_dot_data(stream.getvalue())

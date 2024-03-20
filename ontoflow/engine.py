@@ -1,4 +1,5 @@
 import json
+import subprocess
 from copy import deepcopy
 from typing import List
 
@@ -114,6 +115,31 @@ class Node:
         with open(f"{fileName}.yaml", "w") as file:
             yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
+    def visualize(self, output = None,  format = "png") -> str:
+        node_string = "digraph G {\n" + self._visualize() + "\n}"
+
+        if output is not None:
+           subprocess.run(
+                args=["dot", f"-T{format}", "-o", output],
+                shell=False,
+                check=True,
+                input=node_string.encode(),
+            ) 
+
+        return node_string
+
+    def _visualize(self):
+
+        node_string = "\"{}\" [shape=box]".format(self.iri)
+
+        for child in self.children:
+            node_string += "\n{}".format(child._visualize())
+            dir_back = "back" if child.predicate == "hasOutput" else "forward"
+            node_string += "\n\"{}\" -> \"{}\" [label=\"{}\", dir=\"{}\", color=\"{}\"]".format(self.iri, child.iri, child.predicate, dir_back, "black")
+
+        return node_string
+
+
     def accept(self, visitor):
         """Accept a visitor and visit the node.
 
@@ -121,7 +147,7 @@ class Node:
             visitor: The visitor to be accepted.
         """
 
-        return visitor(self)
+        return visitor.visit(self)
 
 
 class OntoFlowEngine:

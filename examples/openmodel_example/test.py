@@ -32,3 +32,5 @@ engine = OntoFlowEngine(triplestore=ts)
 mapping = engine.getMappingRoute(ROOT)
 
 mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
+
+print(mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png")))
