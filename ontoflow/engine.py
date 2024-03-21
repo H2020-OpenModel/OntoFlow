@@ -196,10 +196,9 @@ class OntoFlowEngine:
         res = {"routes": []}
 
         for route in root.routes:
-            res["routes"].append( {
-                "path": route['route']._serialize(),
-                "kpis": route["kpis"]
-            })
+            res["routes"].append(
+                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
+            )
 
         kpis.append("ModelId")
 
