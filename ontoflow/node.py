@@ -1,8 +1,9 @@
-from typing import Union, Optional
-from copy import deepcopy
-from random import random
 import json
 import yaml
+import subprocess
+from copy import deepcopy
+from random import random
+from typing import Union, Optional
 
 
 class RouteKPI:
@@ -87,6 +88,29 @@ class Node:
             routes.append(route)
 
         self.routes = routes
+
+    def visualize(self, output: str = None, format: str = "png") -> str:
+        """Visualize the node and its children as a graph.
+
+        Args:
+            output (str): The name of the file to export the graph. Defaults to None.
+            format (str): The format of the file to export the graph. Defaults to "png".
+
+        Returns:
+            str: the string representation of the graph.
+        """
+
+        nodeString = "digraph G {\n" + self._visualize() + "\n}"
+
+        if output is not None:
+            subprocess.run(
+                args=["dot", f"-T{format}", "-o", output],
+                shell=False,
+                check=True,
+                input=nodeString.encode(),
+            )
+
+        return nodeString
 
     def export(self, fileName: str) -> None:
         """Serialize a node as JSON and export it to a file.
@@ -227,6 +251,27 @@ class Node:
             ser["children"] = [child._serialize() for child in self.children]
 
         return ser
+
+    def _visualize(self) -> str:
+        """Visualize the node and its children as a graph.
+
+        Returns:
+            str: the string representation of the graph.
+        """
+
+        nodeString = []
+        nodeString.append('"{}" [shape=box]'.format(self.iri))
+
+        for child in self.children:
+            nodeString.append("{}".format(child._visualize()))
+            dirBack = "back" if child.predicate == "hasOutput" else "forward"
+            nodeString.append(
+                '"{}" -> "{}" [label="{}", dir="{}", color="{}"]'.format(
+                    self.iri, child.iri, child.predicate, dirBack, "black"
+                )
+            )
+
+        return "\n".join(nodeString)
 
     def __str__(self) -> str:
         """String representation of the node structure.
