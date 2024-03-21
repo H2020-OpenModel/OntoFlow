@@ -6,6 +6,7 @@ ontoflow.egg-info
 examples/**/*.json
 examples/**/*.yaml
 examples/**/*.txt
+examples/**/*.png
 build/
 
 
