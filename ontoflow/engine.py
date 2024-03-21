@@ -182,15 +182,16 @@ class OntoFlowEngine:
             kpis (dict): The KPIs of the path.
         """
         if kpis is None:
-            kpis = {kpi: [] for kpi in node.kpis.keys()}
+            kpis = {kpi: 0 for kpi in node.kpis.keys()}
 
         # Add pathId to path if it exists
         if node.pathId is not None:
             path.append(node.pathId)
 
         # If this node has KPIs, add them to the current KPIs
+        print(kpis, node.kpis.keys())
         for kpi in node.kpis.keys():
-            kpis[kpi].append(node.kpis[kpi])
+            kpis[kpi] += node.kpis[kpi]
 
         # If this node is a leaf (has no children), add the path and KPIs to the results
         if not node.children:
@@ -203,13 +204,11 @@ class OntoFlowEngine:
                 self._getPathsKpis(
                     child,
                     list(path),
-                    {kpi: list(values) for kpi, values in kpis.items()},
+                    {kpi: values for kpi, values in kpis.items()},
                 )
             )
 
         return results
-
-        return paths
 
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
@@ -241,7 +240,7 @@ class OntoFlowEngine:
         for i, path in enumerate(paths):
             route = {
                 "path": root._serialize(path["path"]),
-                "kpis": {kpi: sum(path["kpis"][kpi]) for kpi in kpis},
+                "kpis": {kpi: path["kpis"][kpi] for kpi in kpis},
             }
             route["kpis"]["ModelId"] = i
             res["routes"].append(route)
