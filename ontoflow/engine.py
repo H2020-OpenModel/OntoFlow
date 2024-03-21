@@ -240,7 +240,7 @@ class OntoFlowEngine:
         for i, path in enumerate(paths):
             route = {
                 "path": root._serialize(path["path"]),
-                "kpis": {kpi: path["kpis"][kpi] for kpi in kpis},
+                "kpis": path["kpis"]
             }
             route["kpis"]["ModelId"] = i
             res["routes"].append(route)
