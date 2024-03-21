@@ -1,5 +1,4 @@
 import json
-from copy import deepcopy
 
 from .log.logger import logger
 
@@ -173,43 +172,6 @@ class OntoFlowEngine:
         logger.info(results)
         return results
 
-    def _getPathsKpis(self, node: Node, path=[], kpis=None) -> None:
-        """Get all the possible paths and their KPIs.
-
-        Args:
-            node (Node): The starting node.
-            path (list): List of nodes with pathId in the path.
-            kpis (dict): The KPIs of the path.
-        """
-        if kpis is None:
-            kpis = {kpi: 0 for kpi in node.kpis.keys()}
-
-        # Add pathId to path if it exists
-        if node.pathId is not None:
-            path.append(node.pathId)
-
-        # If this node has KPIs, add them to the current KPIs
-        print(kpis, node.kpis.keys())
-        for kpi in node.kpis.keys():
-            kpis[kpi] += node.kpis[kpi]
-
-        # If this node is a leaf (has no children), add the path and KPIs to the results
-        if not node.children:
-            return [{"path": path, "kpis": kpis}]
-
-        # Otherwise, recurse on the children
-        results = []
-        for child in node.children:
-            results.extend(
-                self._getPathsKpis(
-                    child,
-                    list(path),
-                    {kpi: values for kpi, values in kpis.items()},
-                )
-            )
-
-        return results
-
     def getMappingRoute(self, target: str) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
@@ -226,24 +188,18 @@ class OntoFlowEngine:
         logger.info(f"Getting mapping route for {target}")
         kpis = ["ModelParameter", "Cost1", "Cost2"]
 
-        # Build the tree
+        # Build the tree and get the routes
         root = Node(0, target, "", kpis=kpis)
         self._exploreNode(root)
-
-        # Extract the routes and their KPIs
-        paths = self._getPathsKpis(root)
-
-        print(paths)
+        root.generateRoutes()
 
         res = {"routes": []}
 
-        for i, path in enumerate(paths):
-            route = {
-                "path": root._serialize(path["path"]),
-                "kpis": path["kpis"]
-            }
-            route["kpis"]["ModelId"] = i
-            res["routes"].append(route)
+        for route in root.routes:
+            res["routes"].append( {
+                "path": route['route']._serialize(),
+                "kpis": route["kpis"]
+            })
 
         kpis.append("ModelId")
 
@@ -251,7 +207,7 @@ class OntoFlowEngine:
         mco = []
         mco.append(kpis)
 
-        for r in res["routes"]:
+        for r in root.routes:
             mco.append([r["kpis"][kpi] for kpi in kpis])
 
         ranking = mco_calc(mco)
