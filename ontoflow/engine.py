@@ -1,9 +1,8 @@
 import json
 
-from .log.logger import logger
-
 from tripper import Triplestore
 
+from .log.logger import logger
 from .mco import mco_calc
 from .node import Node
 
@@ -18,6 +17,53 @@ class OntoFlowEngine:
 
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
+
+    def getMappingRoute(self, target: str) -> Node:
+        """Get the mapping route from the target to all the possible sources.
+        Step 1: Build the tree.
+        Step 2: Extract the routes and their KPIs.
+        Step 3: Pass the routes to the MCO to get the ranking.
+
+        Args:
+            target (str): The target data to be found.
+
+        Returns:
+            Node: The mapping starting from the root node.
+        """
+
+        logger.info(f"Getting mapping route for {target}")
+        kpis = ["ModelParameter", "Cost1", "Cost2"]
+
+        # Build the tree and get the routes
+        root = Node(0, target, "", kpis=kpis)
+        self._exploreNode(root)
+        root.generateRoutes()
+
+        res = {"routes": []}
+
+        for route in root.routes:
+            res["routes"].append(
+                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
+            )
+
+        kpis.append("ModelId")
+
+        # Pass the routes to the MCO to get the ranking
+        mco = []
+        mco.append(kpis)
+
+        for r in root.routes:
+            mco.append([r["kpis"][kpi] for kpi in kpis])
+
+        ranking = mco_calc(mco)
+
+        res["ranking"] = ranking
+
+        # Print the results
+        with open(f"res.json", "w") as file:
+            json.dump(res, file, indent=4)
+
+        return root
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
@@ -171,50 +217,3 @@ class OntoFlowEngine:
 
         logger.info(results)
         return results
-
-    def getMappingRoute(self, target: str) -> Node:
-        """Get the mapping route from the target to all the possible sources.
-        Step 1: Build the tree.
-        Step 2: Extract the routes and their KPIs.
-        Step 3: Pass the routes to the MCO to get the ranking.
-
-        Args:
-            target (str): The target data to be found.
-
-        Returns:
-            Node: The mapping starting from the root node.
-        """
-
-        logger.info(f"Getting mapping route for {target}")
-        kpis = ["ModelParameter", "Cost1", "Cost2"]
-
-        # Build the tree and get the routes
-        root = Node(0, target, "", kpis=kpis)
-        self._exploreNode(root)
-        root.generateRoutes()
-
-        res = {"routes": []}
-
-        for route in root.routes:
-            res["routes"].append(
-                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
-            )
-
-        kpis.append("ModelId")
-
-        # Pass the routes to the MCO to get the ranking
-        mco = []
-        mco.append(kpis)
-
-        for r in root.routes:
-            mco.append([r["kpis"][kpi] for kpi in kpis])
-
-        ranking = mco_calc(mco)
-
-        res["ranking"] = ranking
-
-        # Print the results
-        with open(f"res.json", "w") as file:
-            json.dump(res, file, indent=4)
-
-        return root

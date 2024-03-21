@@ -1,8 +1,14 @@
-import json
-import yaml
+from typing import Union, Optional
 from copy import deepcopy
 from random import random
-from typing import Optional, Union
+import json
+import yaml
+
+
+class RouteKPI:
+    def __init__(self, route: "Node", kpis: dict[str, float]):
+        self.route = route
+        self.kpis = kpis
 
 
 class Node:
@@ -30,78 +36,81 @@ class Node:
         self.pathId: Union[int, None] = pathId
         self.children: list["Node"] = []
         self.kpisList: list = kpis
-        self.kpis = self._getKPIs(iri, kpis)
-        self.routes: list = []
+        self.kpis = self._getKpis(iri, kpis)
+        self.routes: list[RouteKPI] = []
 
-    def __str__(self) -> str:
-        """String representation of the node structure.
-
-        Returns:
-            str: the string representation of the node structure.
-        """
-
-        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
-        for child in self.children:
-            result += str(child)
-
-        return result
-
-    def _serialize(self) -> dict:
-        """Dictionary representation of the node structure.
-
-        Returns:
-            dict: the dictionary representation of the node structure.
-        """
-
-        ser = {"depth": self.depth, "iri": self.iri}
-
-        if self.kpis:
-            ser["kpis"] = self.kpis
-
-        if self.pathId is not None:
-            ser["pathId"] = self.pathId
-
-        if self.predicate:
-            ser["predicate"] = self.predicate
-
-        if len(self.children) > 0:
-            ser["children"] = [child._serialize() for child in self.children]
-
-        return ser
-
-    def _getRoute(self, path: list) -> "Node":
-        """Get all the possible routes from a node.
+    def addChild(
+        self, iri: str, predicate: str, pathId: Union[int, None] = None
+    ) -> "Node":
+        """Add a child to the node.
 
         Args:
-            path (list): the path to be serialised. Defaults to [].
+            iri (str): the IRI of the child node.
+            predicate (str): the relation to the child node.
+            pathId (int): the pathId of the child node. Defaults to None.
 
         Returns:
-            Node: the node representing the route.
+            Node: the child node.
         """
 
-        node = Node(self.depth, self.iri, self.predicate)
-
-        if len(self.children) > 0:
-            if path and self.children[0].pathId is not None:
-                p: int = path.pop(0)
-                node.children = [self.children[p]._getRoute(path)]
-            else:
-                node.children = [child._getRoute(path) for child in self.children]
+        node = Node(self.depth + 1, iri, predicate, pathId, self.kpisList)
+        self.children.append(node)
 
         return node
 
-    def _updateChildrenDepth(self, node: "Node") -> None:
-        """Recursively update the depth of all children of a node.
+    def addNodeChild(self, node: "Node", predicate: str) -> None:
+        """Add a Node object as a child and, if necessary, update the depth of all its children.
 
         Args:
-            node (Node): The Node object whose children's depth is to be updated.
+            node (Node): The Node object to be added as a child.
+            predicate (str): The relation to the child node.
         """
 
-        for child in node.children:
-            child.depth = node.depth + 1
-            self._updateChildrenDepth(child)
+        if node.depth == self.depth + 1 and node.predicate == predicate:
+            self.children.append(node)
+        else:
+            node = deepcopy(node)
+            node.predicate = predicate
+            node.depth = self.depth + 1
+            self.children.append(node)
+            self._updateChildrenDepth(node)
 
-    def _getKPIs(self, iri: str, kpis: list) -> dict:
+    def generateRoutes(self) -> None:
+        """Generate all the possible routes and their KPIs, and save the structure in the Node as routes."""
+
+        routes = []
+        paths = self._getPathsKpis()
+
+        for i, path in enumerate(paths):
+            route = {"route": self._getRoute(path["path"]), "kpis": path["kpis"]}
+            route["kpis"]["ModelId"] = i
+            routes.append(route)
+
+        self.routes = routes
+
+    def export(self, fileName: str) -> None:
+        """Serialize a node as JSON and export it to a file.
+
+        Args:
+            fileName (str): The name of the file to export the JSON data.
+        """
+
+        with open(f"{fileName}.json", "w") as file:
+            json.dump(self._serialize(), file, indent=4)
+
+        with open(f"{fileName}.yaml", "w") as file:
+            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
+
+    def accept(self, visitor):
+        """Accept a visitor and visit the node.
+
+        Args:
+            visitor: The visitor to be accepted.
+        """
+
+        return visitor(self)
+
+    def _getKpis(self, iri: str, kpis: list) -> dict:
         """Get the KPIs of a node.
 
         Args:
@@ -164,77 +173,70 @@ class Node:
 
         return results
 
-    def addChild(
-        self, iri: str, predicate: str, pathId: Union[int, None] = None
-    ) -> "Node":
-        """Add a child to the node.
+    def _getRoute(self, path: list) -> "Node":
+        """Get all the possible routes from a node.
 
         Args:
-            iri (str): the IRI of the child node.
-            predicate (str): the relation to the child node.
-            pathId (int): the pathId of the child node. Defaults to None.
+            path (list): the path to be serialised. Defaults to [].
 
         Returns:
-            Node: the child node.
+            Node: the node representing the route.
         """
 
-        node = Node(self.depth + 1, iri, predicate, pathId, self.kpisList)
-        self.children.append(node)
+        node = Node(self.depth, self.iri, self.predicate)
+
+        if len(self.children) > 0:
+            if path and self.children[0].pathId is not None:
+                p: int = path.pop(0)
+                node.children = [self.children[p]._getRoute(path)]
+            else:
+                node.children = [child._getRoute(path) for child in self.children]
 
         return node
 
-    def addNodeChild(self, node: "Node", predicate: str) -> None:
-        """Add a Node object as a child and, if necessary, update the depth of all its children.
+    def _updateChildrenDepth(self, node: "Node") -> None:
+        """Recursively update the depth of all children of a node.
 
         Args:
-            node (Node): The Node object to be added as a child.
-            predicate (str): The relation to the child node.
+            node (Node): The Node object whose children's depth is to be updated.
         """
 
-        if node.depth == self.depth + 1 and node.predicate == predicate:
-            self.children.append(node)
-        else:
-            node = deepcopy(node)
-            node.predicate = predicate
-            node.depth = self.depth + 1
-            self.children.append(node)
-            self._updateChildrenDepth(node)
+        for child in node.children:
+            child.depth = node.depth + 1
+            self._updateChildrenDepth(child)
 
-    def generateRoutes(self) -> list:
-        """Generate all the possible routes and their KPIs.
+    def _serialize(self) -> dict:
+        """Dictionary representation of the node structure.
 
         Returns:
-            list: The list of all possible routes and their KPIs.
+            dict: the dictionary representation of the node structure.
         """
 
-        routes = []
-        paths = self._getPathsKpis()
+        ser = {"depth": self.depth, "iri": self.iri}
 
-        for i, path in enumerate(paths):
-            route = {"route": self._getRoute(path["path"]), "kpis": path["kpis"]}
-            route["kpis"]["ModelId"] = i
-            routes.append(route)
+        if self.kpis:
+            ser["kpis"] = self.kpis
 
-        self.routes = routes
+        if self.pathId is not None:
+            ser["pathId"] = self.pathId
 
-    def export(self, fileName: str) -> None:
-        """Serialize a node as JSON and export it to a file.
+        if self.predicate:
+            ser["predicate"] = self.predicate
 
-        Args:
-            fileName (str): The name of the file to export the JSON data.
+        if len(self.children) > 0:
+            ser["children"] = [child._serialize() for child in self.children]
+
+        return ser
+
+    def __str__(self) -> str:
+        """String representation of the node structure.
+
+        Returns:
+            str: the string representation of the node structure.
         """
 
-        with open(f"{fileName}.json", "w") as file:
-            json.dump(self._serialize(), file, indent=4)
+        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
+        for child in self.children:
+            result += str(child)
 
-        with open(f"{fileName}.yaml", "w") as file:
-            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
-
-    def accept(self, visitor):
-        """Accept a visitor and visit the node.
-
-        Args:
-            visitor: The visitor to be accepted.
-        """
-
-        return visitor(self)
+        return result
