@@ -11,18 +11,22 @@ from ontoflow.log.logger import logger
 
 
 class Node:
-    def __init__(self, depth: int, iri: str, predicate: str):
+    def __init__(self, depth: int, iri: str, predicate: str, route_choices: int = 1, local_choices: int = 0):
         """Initialise a node in the ontology tree.
 
         Args:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
+            route_choices (int): the number of routes underlying the node.
+            local_choices (int): the number of possible elements you can select from the node.
         """
 
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
+        self.route_choices = route_choices
+        self.local_choices = local_choices
         self.children: List["Node"] = []
 
     def __str__(self) -> str:
@@ -32,7 +36,7 @@ class Node:
             str: the string representation of the node structure.
         """
 
-        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
+        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Route choices: {self.route_choices}, Local choices: {self.local_choices},  Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
         for child in self.children:
             result += str(child)
 
@@ -50,11 +54,15 @@ class Node:
             "iri": self.iri,
         }
 
+        ser["choices"] = self.route_choices
+        ser["local_choices"] = self.local_choices
+
         if self.predicate:
             ser["predicate"] = self.predicate
 
         if len(self.children) > 0:
             ser["children"] = [child._serialize() for child in self.children]
+
 
         return ser
 
@@ -69,7 +77,7 @@ class Node:
             child.depth = node.depth + 1
             self._updateChildrenDepth(child)
 
-    def addChild(self, iri: str, predicate: str) -> "Node":
+    def addChild(self, iri: str, predicate: str, route_choices: int = 1, local_choices: int = 0) -> "Node":
         """Add a child to the node.
 
         Args:
@@ -80,7 +88,7 @@ class Node:
             Node: the child node.
         """
 
-        node = Node(self.depth + 1, iri, predicate)
+        node = Node(self.depth + 1, iri, predicate, route_choices, local_choices)
         self.children.append(node)
 
         return node
@@ -132,7 +140,7 @@ class Node:
     def _visualize(self):
 
         node_string = []
-        node_string.append("\"{}\" [shape=box]".format(self.iri))
+        node_string.append("\"{}\" [shape=box] [xlabel=\"r: {}\nl: {}\"]".format(self.iri, self.route_choices, self.local_choices))
 
         for child in self.children:
             node_string += child._visualize()
@@ -141,17 +149,19 @@ class Node:
 
         return node_string
     
-
+    # Older version: if you want to separate this logic from the search algorithm 
+    # def get_number_routes(self):
+    #     if len(self.children) > 0:
+    #         if self.children[0].predicate == "individual":
+    #             return len(self.children)
+    #         elif self.children[0].predicate == "hasInput":
+    #             return math.prod([child.get_number_routes() for child in self.children])
+    #         else:
+    #             return sum([child.get_number_routes() for child in self.children])
+    #     else:
+    #         return 1
     def get_number_routes(self):
-        if len(self.children) > 0:
-            if self.children[0].predicate == "individual":
-                return len(self.children)
-            elif self.children[0].predicate == "hasInput":
-                return math.prod([child.get_number_routes() for child in self.children])
-            else:
-                return sum([child.get_number_routes() for child in self.children])
-        else:
-            return 1
+        return self.route_choices
 
 
     def accept(self, visitor):
@@ -215,6 +225,10 @@ class OntoFlowEngine:
 
         for individual in individuals:
             node.addChild(individual[0], "individual")
+        
+        if len(individuals) > 0:
+            node.route_choices = sum([child.route_choices for child in node.children])
+            node.local_choices = len(individuals)
 
         return len(individuals) > 0
 
@@ -270,8 +284,17 @@ class OntoFlowEngine:
                         ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
                         ichild = ochild.addChild(iiri, "hasInput")
+                        logger.info("Exploring {}, choices {}".format(iiri, ichild.route_choices))
                         self._exploreNode(ichild)
+                        logger.info("Explored {}, choices {}".format(iiri, ichild.route_choices))
                         self.explored[iiri] = ichild
+
+                if len(inputs) > 0:
+                    ochild.route_choices = math.prod([child.route_choices for child in ochild.children])
+                    ochild.local_choices = 1
+        if len(outputs) > 0:
+            node.route_choices = sum([child.route_choices for child in node.children])
+            node.local_choices = len(outputs)
 
     def _subClass(self, node: Node) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
@@ -301,6 +324,10 @@ class OntoFlowEngine:
                 child = node.addChild(iri, "subClassOf")
                 self._exploreNode(child)
                 self.explored[iri] = child
+
+        if len(subclasses) > 0:
+            node.route_choices = sum([child.route_choices for child in node.children])
+            node.local_choices = len(subclasses)
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
