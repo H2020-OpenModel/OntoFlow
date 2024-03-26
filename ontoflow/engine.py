@@ -1,4 +1,5 @@
 import json
+import math
 import subprocess
 from copy import deepcopy
 from typing import List
@@ -116,7 +117,7 @@ class Node:
             yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
     def visualize(self, output = None,  format = "png") -> str:
-        node_string = "digraph G {\n" + self._visualize() + "\n}"
+        node_string = "digraph G {\n" + "\n".join(list(set(self._visualize()))) + "\n}"
 
         if output is not None:
            subprocess.run(
@@ -134,11 +135,23 @@ class Node:
         node_string.append("\"{}\" [shape=box]".format(self.iri))
 
         for child in self.children:
-            node_string.append("{}".format(child._visualize()))
+            node_string += child._visualize()
             dir_back = "back" if child.predicate == "hasOutput" else "forward"
             node_string.append("\"{}\" -> \"{}\" [label=\"{}\", dir=\"{}\", color=\"{}\"]".format(self.iri, child.iri, child.predicate, dir_back, "black"))
 
-        return "\n".join(node_string)
+        return node_string
+    
+
+    def get_number_routes(self):
+        if len(self.children) > 0:
+            if self.children[0].predicate == "individual":
+                return len(self.children)
+            elif self.children[0].predicate == "hasInput":
+                return math.prod([child.get_number_routes() for child in self.children])
+            else:
+                return sum([child.get_number_routes() for child in self.children])
+        else:
+            return 1
 
 
     def accept(self, visitor):
@@ -148,7 +161,7 @@ class Node:
             visitor: The visitor to be accepted.
         """
 
-        return visitor.visit(self)
+        return visitor(self)
 
 
 class OntoFlowEngine:
