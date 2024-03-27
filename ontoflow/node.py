@@ -3,7 +3,7 @@ import yaml
 import subprocess
 from copy import deepcopy
 from random import random
-from typing import Union, Optional
+from typing import Optional
 
 
 class RouteKPI:
@@ -20,7 +20,7 @@ class Node:
         predicate: str,
         routeChoices: int = 1,
         localChoices: int = 0,
-        # pathId: Union[int, None] = None,
+        # pathId: Optional[int] = None,
         kpis: list = [],
     ):
         """Initialise a node in the ontology tree.
@@ -40,7 +40,7 @@ class Node:
         self.predicate: str = predicate
         self.routeChoices: int = routeChoices
         self.localChoices: int = localChoices
-        # self.pathId: Union[int, None] = pathId
+        # self.pathId: Optional[int] = pathId
         self.children: list["Node"] = []
         self.kpisList: list = kpis
         # self.kpis = self._getKpis(iri, kpis)
