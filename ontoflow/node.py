@@ -1,7 +1,7 @@
 import json
 import yaml
 import subprocess
-from copy import deepcopy
+from copy import copy, deepcopy
 from random import random
 from typing import Optional
 
@@ -253,13 +253,13 @@ class Node:
         """
 
         if self.localChoices > 1:
-            cpy = deepcopy(self)
+            cpy = copy(self)
             cpy.children = []
             children = self.children[path[0]]._getRoute(path[1:])
             cpy.children.append(children)
             return cpy
         else:
-            cpy = deepcopy(self)
+            cpy = copy(self)
             cpy.children = []
             for child in self.children:
                 children = child._getRoute(path)
