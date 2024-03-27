@@ -3,7 +3,10 @@ OntoFlow.egg-info
 ontoflow.egg-info
 *.pyc
 .vscode
-output.*
+*.png
+*.json
+*.yaml
+*.jpg
 build/
 
 

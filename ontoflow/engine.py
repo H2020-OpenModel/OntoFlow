@@ -1,7 +1,7 @@
 import json
 import math
 import subprocess
-from copy import deepcopy
+from copy import deepcopy, copy
 from typing import List
 
 import yaml
@@ -162,6 +162,61 @@ class Node:
     #         return 1
     def get_number_routes(self):
         return self.route_choices
+    
+
+    def get_route_mappings(self):
+        route_mapping = []
+
+        if self.route_choices > 1:
+            if self.local_choices >= self.route_choices:
+                # Sono l'ultimo punto di scelta
+                route_mapping = [[idx] for idx, _ in enumerate(self.children)]
+
+            else:
+                if self.local_choices > 1:
+                    # Sono un punto di scelta ma non l'ultimo
+                    for idx, child in enumerate(self.children):
+                        temp_route = child.get_route_mappings()
+                        for el in temp_route:
+                            el.insert(0, idx)
+                            route_mapping.append(el)
+                else:
+                    # Non sono un punto di scelta, ma ci sono altre route da trovare, delego
+                    for idx, child in enumerate(self.children):
+                        temp = child.get_route_mappings()
+                        route_mapping += temp
+            route_mapping = list(filter(lambda x: len(x) > 0, route_mapping))
+        else:
+            route_mapping = [[]]
+
+        return route_mapping
+    
+
+    def get_route(self, route_idx = 0):
+        routes_mapping = self.get_route_mappings() #FIXME: Cache the routes mapping so that we do not compute it each time
+        selected_mapping = routes_mapping[route_idx]
+
+        route_node = self.__choose_node(selected_mapping)
+
+        return route_node
+    
+
+    def __choose_node(self, mapping):
+        logger.info("Choosing node {}".format(self.iri))
+        if self.local_choices > 1:
+            copy_node = copy(self)
+            copy_node.children = []
+            copy_children = self.children[mapping[0]].__choose_node(mapping[1:])
+            copy_node.children.append(copy_children)
+            return copy_node
+        else:
+            copy_node = copy(self)
+            copy_node.children = []
+            for child in self.children:
+                copy_children = child.__choose_node(mapping)
+                copy_node.children.append(copy_children)
+            return copy_node
+            
 
 
     def accept(self, visitor):

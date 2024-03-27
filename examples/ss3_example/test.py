@@ -36,3 +36,7 @@ mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
 print(mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png")))
 print("Number of routes found: {}".format(mapping.get_number_routes()))
 
+# print(mapping.get_route_mappings())
+mappings = mapping.get_route_mappings()
+for i in range(len(mappings)):
+    print(mapping.get_route(route_idx=i).visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output_{}.png".format(i))))
