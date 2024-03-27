@@ -1,4 +1,5 @@
 import json
+from math import prod
 
 from tripper import Triplestore
 
@@ -38,8 +39,17 @@ class OntoFlowEngine:
         root = Node(0, target, "", kpis=kpis)
         self._exploreNode(root)
         root.generateRoutes()
-
         res = {"routes": []}
+
+        for route in root.routes:
+            res["routes"].append(
+                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
+            )
+
+        with open(f"res.json", "w") as file:
+            json.dump(res, file, indent=4)
+
+        """res = {"routes": []}
 
         for route in root.routes:
             res["routes"].append(
@@ -61,7 +71,7 @@ class OntoFlowEngine:
 
         # Print the results
         with open(f"res.json", "w") as file:
-            json.dump(res, file, indent=4)
+            json.dump(res, file, indent=4)"""
 
         return root
 
@@ -103,10 +113,12 @@ class OntoFlowEngine:
 
         individuals = self._query(patterns, node.iri)
 
-        for i, individual in enumerate(individuals):
-            node.addChild(
-                individual[0], "individual", i if len(individuals) > 1 else None
-            )
+        for individual in individuals:
+            node.addChild(individual[0], "individual")
+
+        if len(individuals) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(individuals)
 
         return len(individuals) > 0
 
@@ -148,14 +160,12 @@ class OntoFlowEngine:
 
         logger.info(f"Outputs models of {node.iri}: {outputs}")
 
-        n = len(outputs)
-
-        for i, output in enumerate(outputs):
+        for output in outputs:
             oiri = output[0]
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput", i if n > 1 else None)
+                ochild = node.addChild(oiri, "hasOutput")
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -166,6 +176,16 @@ class OntoFlowEngine:
                         ichild = ochild.addChild(iiri, "hasInput")
                         self._exploreNode(ichild)
                         self.explored[iiri] = ichild
+
+                if len(inputs) > 0:
+                    ochild.routeChoices = prod(
+                        [child.routeChoices for child in ochild.children]
+                    )
+                    ochild.localChoices = 1
+
+        if len(outputs) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(outputs)
 
     def _subClass(self, node: Node) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
@@ -195,6 +215,10 @@ class OntoFlowEngine:
                 child = node.addChild(iri, "subClassOf")
                 self._exploreNode(child)
                 self.explored[iri] = child
+
+        if len(subclasses) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(subclasses)
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.

@@ -10,7 +10,7 @@ from tripper import Triplestore
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "ss3.ttl")
+ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "ss3_v2.ttl")
 
 ROOT = "http://open-model.eu/ontologies/ss3#FenicsOutput"
 
@@ -33,3 +33,8 @@ engine = OntoFlowEngine(triplestore=ts)
 mapping = engine.getMappingRoute(ROOT)
 
 mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
+
+for i in range(len(mapping.routes)):
+    mapping.routes[i]["route"].visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, f"output_{i}.png"))
+
+mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png"))
