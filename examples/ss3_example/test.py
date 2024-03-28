@@ -2,7 +2,9 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent.parent))
+sys.path.append(
+    os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent.parent)
+)
 from OntoFlow.ontoflow.engine import OntoFlowEngine
 
 from tripper import Triplestore
@@ -29,11 +31,8 @@ ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 
 engine = OntoFlowEngine(triplestore=ts)
 
-mapping = engine.getMappingRoute(ROOT)
-
-mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
-
-for i in range(len(mapping.routes)):
-    mapping.routes[i]["route"].visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, f"output_{i}.png"))
-
-mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png"))
+bestRoute = engine.getBestRoute(ROOT, ["ModelParameter", "Cost1", "Cost2"])
+bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
+bestRoute.visualize(
+    output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png")
+)

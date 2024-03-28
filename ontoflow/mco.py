@@ -24,7 +24,7 @@ def mco_calc(data):
 
     mcdm_algorithm.add(
         # A value uniquely identifying the model (curretnly must be numerical)
-        mods.Variable(name="ModelId", type="input"),
+        mods.Variable(name="Id", type="input"),
         # Optional (e.g. step size) can have multiple of these
         mods.Variable(name="ModelParameter", type="input"),
         # First cost of model (e.g. time)
@@ -48,7 +48,7 @@ def mco_calc(data):
     mcdm_simulation.add(mcdm_algorithm)
 
     # data = [
-    #     ["ModelId", "ModelParameter", "Cost1", "Cost2"],
+    #     ["Id", "ModelParameter", "Cost1", "Cost2"],
     #     [1.0, 0.2, 20.0, 0.001],
     #     [2.0, 0.4, 17.0, 0.003],
     #     [3.0, 0.6, 16.0, 0.03],
@@ -91,12 +91,15 @@ def mco_calc(data):
             rank = search.find_cuds_objects_by_oclass(
                 mods.RankedDataPoint, pareto_front[0], rel=None
             )
-            for el in rank:
-                for item in search.find_cuds_objects_by_oclass(
-                    mods.DataPointItem, el, rel=mods.hasPart
-                ):
-                    if item.name == "ModelId":
-                        ranking.append(int(item.value.split(".")[0]))
+            if rank and len(rank) > 0:  # Add a check for non-empty list
+                for el in rank:
+                    items = search.find_cuds_objects_by_oclass(
+                        mods.DataPointItem, el, rel=mods.hasPart
+                    )
+                    if items and len(items) > 0:  # Add a check for non-empty item
+                        for item in items:
+                            if item.name == "Id":
+                                ranking.append(int(item.value.split(".")[0]))
 
     logger.info("################ End: MCO Calc ################")
 

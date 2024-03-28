@@ -1,5 +1,6 @@
 import json
 from math import prod
+from random import random
 
 from tripper import Triplestore
 
@@ -18,8 +19,9 @@ class OntoFlowEngine:
 
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
+        self.kpis: list = []
 
-    def getMappingRoute(self, target: str) -> Node:
+    def getBestRoute(self, target: str, kpis: list[str]) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPIs.
@@ -33,47 +35,33 @@ class OntoFlowEngine:
         """
 
         logger.info(f"Getting mapping route for {target}")
-        kpis = ["ModelParameter", "Cost1", "Cost2"]
+        self.kpis = kpis
 
         # Build the tree and get the routes
-        root = Node(0, target, "", kpis=kpis)
+        root = Node(0, target, "", kpis=self._getKpis(target))
         self._exploreNode(root)
         root.generateRoutes()
-        res = {"routes": []}
 
-        for route in root.routes:
-            res["routes"].append(
-                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
-            )
-
-        with open(f"res.json", "w") as file:
-            json.dump(res, file, indent=4)
-
-        """res = {"routes": []}
-
-        for route in root.routes:
-            res["routes"].append(
-                {"path": route["route"]._serialize(), "kpis": route["kpis"]}
-            )
-
-        kpis.append("ModelId")
+        self.kpis.append("Id")
 
         # Pass the routes to the MCO to get the ranking
-        mco = []
-        mco.append(kpis)
+        mco: list = [self.kpis]
 
         for r in root.routes:
-            mco.append([r["kpis"][kpi] for kpi in kpis])
+            mco.append([r.costs[kpi] for kpi in kpis])
 
         ranking = mco_calc(mco)
 
-        res["ranking"] = ranking
-
         # Print the results
-        with open(f"res.json", "w") as file:
-            json.dump(res, file, indent=4)"""
+        result = {
+            "routes": [route._serialize() for route in root.routes],
+            "ranking": ranking,
+        }
 
-        return root
+        with open(f"result.json", "w") as file:
+            json.dump(result, file, indent=4)
+
+        return root.routes[ranking[0]]
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
@@ -114,7 +102,7 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for individual in individuals:
-            node.addChild(individual[0], "individual")
+            node.addChild(individual[0], "individual", self._getKpis(individual[0]))
 
         if len(individuals) > 0:
             node.routeChoices = sum([child.routeChoices for child in node.children])
@@ -165,7 +153,7 @@ class OntoFlowEngine:
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput")
+                ochild = node.addChild(oiri, "hasOutput", self._getKpis(oiri))
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -173,7 +161,7 @@ class OntoFlowEngine:
                     if iiri in self.explored:
                         ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
-                        ichild = ochild.addChild(iiri, "hasInput")
+                        ichild = ochild.addChild(iiri, "hasInput", self._getKpis(iiri))
                         self._exploreNode(ichild)
                         self.explored[iiri] = ichild
 
@@ -212,13 +200,30 @@ class OntoFlowEngine:
             if iri in self.explored:
                 node.addNodeChild(self.explored[iri], "subClassOf")
             else:
-                child = node.addChild(iri, "subClassOf")
+                child = node.addChild(iri, "subClassOf", self._getKpis(iri))
                 self._exploreNode(child)
                 self.explored[iri] = child
 
         if len(subclasses) > 0:
             node.routeChoices = sum([child.routeChoices for child in node.children])
             node.localChoices = len(subclasses)
+
+    def _getKpis(self, iri: str) -> dict:
+        """Get the KPIs of the node.
+
+        Args:
+            iri (str): The IRI of the node to get the KPIs.
+
+        Returns:
+            dict: The KPIs of the node.
+        """
+
+        _kpis = {}
+
+        for kpi in self.kpis:
+            _kpis[kpi] = round(random(), 2)
+
+        return _kpis
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
@@ -236,8 +241,8 @@ class OntoFlowEngine:
         for pattern in patterns:
             iriForm = f"<{iri}>" if iri[0] != "<" else iri
             q = pattern.format(iri=iriForm)
-            logger.info("\n{}\n".format(q))
+            # logger.info("\n{}\n".format(q))
             results += self.triplestore.query(q)
 
-        logger.info(results)
+        # logger.info(results)
         return results

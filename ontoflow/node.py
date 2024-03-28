@@ -1,15 +1,9 @@
 import json
 import yaml
 import subprocess
-from copy import copy, deepcopy
-from random import random
+
+from copy import deepcopy
 from typing import Optional
-
-
-class RouteKPI:
-    def __init__(self, route: "Node", kpis: dict[str, float]):
-        self.route = route
-        self.kpis = kpis
 
 
 class Node:
@@ -18,10 +12,9 @@ class Node:
         depth: int,
         iri: str,
         predicate: str,
+        kpis: dict[str, float] = {},
         routeChoices: int = 1,
         localChoices: int = 0,
-        # pathId: Optional[int] = None,
-        kpis: list = [],
     ):
         """Initialise a node in the ontology tree.
 
@@ -29,44 +22,38 @@ class Node:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
-            routeChoices (int): the number of routes underlying the node. Defaults to 0.
-            localChoices (int): the number of possible elements you can select from the node. Defaults to 1.
-            pathId (int): the id of the path. Defaults to None.
             kpis (list): the KPIs of the node. Defaults to [].
+            routeChoices (int): the number of routes underlying the node. Defaults to 1.
+            localChoices (int): the number of possible elements you can select from the node. Defaults to 0.
         """
 
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
+        self.kpis: dict[str, float] = kpis
         self.routeChoices: int = routeChoices
         self.localChoices: int = localChoices
-        # self.pathId: Optional[int] = pathId
+        self.costs: dict[str, float] = deepcopy(kpis)
         self.children: list["Node"] = []
-        self.kpisList: list = kpis
-        # self.kpis = self._getKpis(iri, kpis)
-        self.routes: list[RouteKPI] = []
+        self.routes: list["Node"] = []
 
     def addChild(
         self,
         iri: str,
         predicate: str,
-        routeChoices: int = 1,
-        localChoices: int = 0,
+        kpis: dict[str, float],
     ) -> "Node":
         """Add a child to the node.
 
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
-            pathId (int): the pathId of the child node. Defaults to None.
 
         Returns:
             Node: the child node.
         """
 
-        node = Node(
-            self.depth + 1, iri, predicate, routeChoices, localChoices, self.kpisList
-        )
+        node = Node(self.depth + 1, iri, predicate, kpis)
         self.children.append(node)
 
         return node
@@ -95,13 +82,13 @@ class Node:
         paths = self._getPaths()
 
         for i, path in enumerate(paths):
-            route = {"route": self._getRoute(path)}
-            route["kpis"] = {"ModelId": i}
+            route = self._getRoute(path)
+            route.costs["Id"] = i
             routes.append(route)
 
         self.routes = routes
 
-    def visualize(self, output: str = None, format: str = "png") -> str:
+    def visualize(self, output: Optional[str] = None, format: str = "png") -> str:
         """Visualize the node and its children as a graph.
 
         Args:
@@ -146,96 +133,34 @@ class Node:
 
         return visitor(self)
 
-    '''def _getKpis(self, iri: str, kpis: list) -> dict:
-        """Get the KPIs of a node.
-
-        Args:
-            iri (str): The IRI of the node.
-            kpis (list): The KPIs to be retrieved.
-
-        Returns:
-            dict: The KPIs of the node.
-        """
-
-        _kpis = {}
-
-        for kpi in kpis:
-            _kpis[kpi] = round(random(), 2)
-
-        return _kpis'''
-
-    '''def _getPathsKpis(
-        self, node: Optional["Node"] = None, path: list = [], kpis: dict = None
-    ) -> list:
-        """Get all the possible paths and their KPIs.
-
-        Args:
-            node (Node): The starting node.
-            path (list): List of nodes with pathId in the path.
-            kpis (dict): The KPIs of the path.
-
-        Returns:
-            list: The list of all possible routes and their KPIs.
-        """
-
-        if not node:
-            node = self
-
-        if kpis is None:
-            kpis = {kpi: 0 for kpi in node.kpis.keys()}
-
-        # Add pathId to path if it exists
-        if node.pathId is not None:
-            path.append(node.pathId)
-
-        # If this node has KPIs, sum them to the current KPIs
-        for kpi in node.kpis.keys():
-            kpis[kpi] += node.kpis[kpi]
-
-        # If this node is a leaf (has no children), add the path and KPIs to the results
-        if not node.children:
-            return [{"path": path, "kpis": kpis}]
-
-        # Otherwise, recurse on the children
-        results = []
-        for child in node.children:
-            results.extend(
-                self._getPathsKpis(
-                    child,
-                    list(path),
-                    {kpi: values for kpi, values in kpis.items()},
-                )
-            )
-
-        return results'''
-
     def _getPaths(self) -> list[list[int]]:
         """Get all the possible paths from a node.
 
         Returns:
-            list: the list of all possible paths.
+            list[list[int]]: the list of all possible paths as list of integers.
         """
 
         paths = []
 
         if self.routeChoices > 1:
             if self.localChoices >= self.routeChoices:
-                # Sono l'ultimo punto di scelta
-                paths = [[idx] for idx, _ in enumerate(self.children)]
+                # Last choice point
+                paths = [[i] for i in range(len(self.children))]
 
             else:
                 if self.localChoices > 1:
-                    # Sono un punto di scelta ma non l'ultimo
-                    for idx, child in enumerate(self.children):
-                        temp_route = child._getPaths()
-                        for el in temp_route:
-                            el.insert(0, idx)
+                    # Choice point, and there are other routes to find
+                    for i, child in enumerate(self.children):
+                        tmp = child._getPaths()
+                        for el in tmp:
+                            el.insert(0, i)
                             paths.append(el)
                 else:
-                    # Non sono un punto di scelta, ma ci sono altre route da trovare, delego
-                    for idx, child in enumerate(self.children):
-                        temp = child._getPaths()
-                        paths += temp
+                    # Not a choice point, and there are other routes to find
+                    for i, child in enumerate(self.children):
+                        tmp = child._getPaths()
+                        paths += tmp
+
             paths = list(filter(lambda x: len(x) > 0, paths))
         else:
             paths = [[]]
@@ -252,19 +177,20 @@ class Node:
             Node: the node representing the route.
         """
 
+        cpy = deepcopy(self)
+        cpy.children = []
+
         if self.localChoices > 1:
-            cpy = copy(self)
-            cpy.children = []
-            children = self.children[path[0]]._getRoute(path[1:])
-            cpy.children.append(children)
-            return cpy
+            cpy.children.append(self.children[path[0]]._getRoute(path[1:]))
         else:
-            cpy = copy(self)
-            cpy.children = []
             for child in self.children:
-                children = child._getRoute(path)
-                cpy.children.append(children)
-            return cpy
+                cpy.children.append(child._getRoute(path))
+
+        for child in cpy.children:
+            for k, v in child.costs.items():
+                cpy.costs[k] = round(cpy.costs[k] + v, 2)
+
+        return cpy
 
     def _updateChildrenDepth(self, node: "Node") -> None:
         """Recursively update the depth of all children of a node.
@@ -289,11 +215,8 @@ class Node:
         ser["routeChoices"] = self.routeChoices
         ser["localChoices"] = self.localChoices
 
-        # if self.kpis:
-        #     ser["kpis"] = self.kpis
-
-        # if self.pathId is not None:
-        #     ser["pathId"] = self.pathId
+        if self.kpis:
+            ser["kpis"] = self.kpis
 
         if self.predicate:
             ser["predicate"] = self.predicate
@@ -311,7 +234,11 @@ class Node:
         """
 
         nodeString = []
-        nodeString.append('"{}" [shape=box]'.format(self.iri))
+        nodeString.append(
+            '"{}" [shape=box] [xlabel="r: {}\nl: {}"]'.format(
+                self.iri, self.routeChoices, self.localChoices
+            )
+        )
 
         for child in self.children:
             nodeString.append("{}".format(child._visualize()))

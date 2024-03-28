@@ -32,11 +32,11 @@ ts.bind("base", "http://webprotege.stanford.edu/")
 
 engine = OntoFlowEngine(triplestore=ts)
 
-mapping = engine.getMappingRoute(ROOT)
+mapping = engine.getBestRoute(ROOT, ["ModelParameter", "Cost1", "Cost2"])
 
 mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
 
 for i in range(len(mapping.routes)):
-    mapping.routes[i]["route"].visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, f"output_{i}.png"))
+    mapping.routes[i].visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, f"output_{i}.png"))
 
 mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png"))
