@@ -21,7 +21,7 @@ class OntoFlowEngine:
         self.explored: dict = {}
         self.kpis: list = []
 
-    def getBestRoute(self, target: str, kpis: list[str]) -> Node:
+    def getBestRoute(self, target: str, kpis: list[str], log: bool = False) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPIs.
@@ -29,6 +29,8 @@ class OntoFlowEngine:
 
         Args:
             target (str): The target data to be found.
+            kpis (list[str]): The KPIs to be used for the MCO.
+            log (bool): Whether to log the results. Defaults to False.
 
         Returns:
             Node: The mapping starting from the root node.
@@ -52,14 +54,24 @@ class OntoFlowEngine:
 
         ranking = mco_calc(mco)
 
-        # Print the results
-        result = {
-            "routes": [route._serialize() for route in root.routes],
-            "ranking": ranking,
-        }
+        if log:
+            logger.info("Printing the results")
+            root.export("root")
+            root.visualize("root")
 
-        with open(f"result.json", "w") as file:
-            json.dump(result, file, indent=4)
+            for i, route in enumerate(root.routes):
+                route.export(f"route_{i}")
+                route.visualize(f"route_{i}")
+
+            with open(f"result.json", "w") as file:
+                json.dump(
+                    {
+                        "routes": [route._serialize() for route in root.routes],
+                        "ranking": ranking,
+                    },
+                    file,
+                    indent=4,
+                )
 
         return root.routes[ranking[0]]
 
@@ -241,8 +253,8 @@ class OntoFlowEngine:
         for pattern in patterns:
             iriForm = f"<{iri}>" if iri[0] != "<" else iri
             q = pattern.format(iri=iriForm)
-            # logger.info("\n{}\n".format(q))
+            logger.info("\n{}\n".format(q))
             results += self.triplestore.query(q)
 
-        # logger.info(results)
+        logger.info(results)
         return results

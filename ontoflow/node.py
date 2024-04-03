@@ -103,7 +103,7 @@ class Node:
 
         if output is not None:
             subprocess.run(
-                args=["dot", f"-T{format}", "-o", output],
+                args=["dot", f"-T{format}", "-o", f"{output}.{format}"],
                 shell=False,
                 check=True,
                 input=nodeString.encode(),

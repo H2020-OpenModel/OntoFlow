@@ -31,8 +31,8 @@ ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 
 engine = OntoFlowEngine(triplestore=ts)
 
-bestRoute = engine.getBestRoute(ROOT, ["ModelParameter", "Cost1", "Cost2"])
-bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
+bestRoute = engine.getBestRoute(ROOT, ["ModelParameter", "Cost1", "Cost2"], True)
+bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
 bestRoute.visualize(
-    output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png")
+    output=os.path.join(Path(os.path.abspath(__file__)).parent, "best")
 )
