@@ -3,7 +3,10 @@ OntoFlow.egg-info
 ontoflow.egg-info
 *.pyc
 .vscode
-output.*
+examples/**/*.json
+examples/**/*.yaml
+examples/**/*.txt
+examples/**/*.png
 build/
 
 

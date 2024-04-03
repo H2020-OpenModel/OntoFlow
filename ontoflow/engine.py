@@ -1,127 +1,12 @@
 import json
-from copy import deepcopy
-from typing import List
+from math import prod
+from random import random
 
-import yaml
 from tripper import Triplestore
 
-from ontoflow.log.logger import logger
-
-
-class Node:
-    def __init__(self, depth: int, iri: str, predicate: str):
-        """Initialise a node in the ontology tree.
-
-        Args:
-            depth (int): the depth of the node in the tree.
-            iri (str): the IRI of the node.
-            predicate (str): the relation the parent node.
-        """
-
-        self.depth: int = depth
-        self.iri: str = iri
-        self.predicate: str = predicate
-        self.children: List["Node"] = []
-
-    def __str__(self) -> str:
-        """String representation of the node structure.
-
-        Returns:
-            str: the string representation of the node structure.
-        """
-
-        result = f"""Depth: {self.depth}, IRI: {self.iri}, Parent Predicate: {self.predicate}, Children ({len(self.children)}){":" if len(self.children) > 0 else ""}\n"""
-        for child in self.children:
-            result += str(child)
-
-        return result
-
-    def _serialize(self) -> dict:
-        """Dictionary representation of the node structure.
-
-        Returns:
-            dict: the dictionary representation of the node structure.
-        """
-
-        ser = {
-            "depth": self.depth,
-            "iri": self.iri,
-        }
-
-        if self.predicate:
-            ser["predicate"] = self.predicate
-
-        if len(self.children) > 0:
-            ser["children"] = [child._serialize() for child in self.children]
-
-        return ser
-
-    def _updateChildrenDepth(self, node: "Node") -> None:
-        """Recursively update the depth of all children of a node.
-
-        Args:
-            node (Node): The Node object whose children's depth is to be updated.
-        """
-
-        for child in node.children:
-            child.depth = node.depth + 1
-            self._updateChildrenDepth(child)
-
-    def addChild(self, iri: str, predicate: str) -> "Node":
-        """Add a child to the node.
-
-        Args:
-            iri (str): the IRI of the child node.
-            predicate (str): the relation to the child node.
-
-        Returns:
-            Node: the child node.
-        """
-
-        node = Node(self.depth + 1, iri, predicate)
-        self.children.append(node)
-
-        return node
-
-    def addNodeChild(self, node: "Node", predicate: str) -> None:
-        """Add a Node object as a child and, if necessary, update the depth of all its children.
-
-        Args:
-            node (Node): The Node object to be added as a child.
-            predicate (str): The relation to the child node.
-        """
-
-        if node.depth == self.depth + 1 and node.predicate == predicate:
-            self.children.append(node)
-        else:
-            node = deepcopy(node)
-            node.predicate = predicate
-            node.depth = self.depth + 1
-            self.children.append(node)
-            self._updateChildrenDepth(node)
-
-    def export(self, fileName: str) -> None:
-        """Serialize a node as JSON and export it to a file.
-
-        Args:
-            node (Node): The node to be serialized.
-            fileName (str): The name of the file to export the JSON data.
-        """
-
-        with open(f"{fileName}.json", "w") as file:
-            json.dump(self._serialize(), file, indent=4)
-
-        with open(f"{fileName}.yaml", "w") as file:
-            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
-
-    def accept(self, visitor):
-        """Accept a visitor and visit the node.
-
-        Args:
-            visitor: The visitor to be accepted.
-        """
-
-        return visitor(self)
+from .log.logger import logger
+from .mco import Mco
+from .node import Node
 
 
 class OntoFlowEngine:
@@ -134,12 +19,67 @@ class OntoFlowEngine:
 
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
+        self.kpis: list = []
+
+    def getBestRoute(self, target: str, kpis: list[dict], log: bool = False) -> Node:
+        """Get the mapping route from the target to all the possible sources.
+        Step 1: Build the tree.
+        Step 2: Extract the routes and their KPIs.
+        Step 3: Pass the routes to the MCO to get the ranking.
+
+        Args:
+            target (str): The target data to be found.
+            kpis (list[dict]): The KPIs to be used for the MCO.
+            log (bool): Whether to log the results. Defaults to False.
+
+        Returns:
+            Node: The mapping starting from the root node.
+        """
+
+        logger.info(f"Getting mapping route for {target}")
+        self.kpis = [kpi["name"] for kpi in kpis]
+
+        # Build the tree and get the routes
+        root = Node(0, target, "", kpis=self._getKpis(target))
+        self._exploreNode(root)
+        root.generateRoutes()
+        self.kpis.append("Id")
+
+        # Pass the routes to the MCO to get the ranking
+        mco = Mco(kpis)
+
+        values: list = [self.kpis]
+
+        for r in root.routes:
+            values.append([r.costs[kpi] for kpi in self.kpis])
+
+        ranking = mco.mco_calc(values)
+
+        if log:
+            logger.info("Printing the results")
+            root.export("root")
+            root.visualize("root")
+
+            for i, route in enumerate(root.routes):
+                route.visualize(f"route_{i}")
+
+            with open(f"result.json", "w") as file:
+                json.dump(
+                    {
+                        "routes": [route._serialize() for route in root.routes],
+                        "ranking": ranking,
+                    },
+                    file,
+                    indent=4,
+                )
+
+        return root.routes[ranking[0]]
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
-        Step 1: check if the node is an individual and, if it is, return.
-        Step 2: check if the node is a model and explore the inputs.
-        Step 3: check if the node is a subclass and explore it.
+        Step 1: Check if the node is an individual and, if it is, return.
+        Step 2: Check if the node is a model and explore the inputs.
+        Step 3: Check if the node is a subclass and explore it.
 
         Args:
             node (Node): The node to explore.
@@ -174,7 +114,11 @@ class OntoFlowEngine:
         individuals = self._query(patterns, node.iri)
 
         for individual in individuals:
-            node.addChild(individual[0], "individual")
+            node.addChild(individual[0], "individual", self._getKpis(individual[0]))
+
+        if len(individuals) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(individuals)
 
         return len(individuals) > 0
 
@@ -221,7 +165,7 @@ class OntoFlowEngine:
             if oiri in self.explored:
                 node.addNodeChild(self.explored[oiri], "hasOutput")
             else:
-                ochild = node.addChild(oiri, "hasOutput")
+                ochild = node.addChild(oiri, "hasOutput", self._getKpis(oiri))
                 self.explored[oiri] = ochild
                 inputs = self._query(patternsInput, oiri)
                 for input in inputs:
@@ -229,9 +173,19 @@ class OntoFlowEngine:
                     if iiri in self.explored:
                         ochild.addNodeChild(self.explored[iiri], "hasInput")
                     else:
-                        ichild = ochild.addChild(iiri, "hasInput")
+                        ichild = ochild.addChild(iiri, "hasInput", self._getKpis(iiri))
                         self._exploreNode(ichild)
                         self.explored[iiri] = ichild
+
+                if len(inputs) > 0:
+                    ochild.routeChoices = prod(
+                        [child.routeChoices for child in ochild.children]
+                    )
+                    ochild.localChoices = 1
+
+        if len(outputs) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(outputs)
 
     def _subClass(self, node: Node) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
@@ -258,9 +212,32 @@ class OntoFlowEngine:
             if iri in self.explored:
                 node.addNodeChild(self.explored[iri], "subClassOf")
             else:
-                child = node.addChild(iri, "subClassOf")
+                child = node.addChild(iri, "subClassOf", self._getKpis(iri))
                 self._exploreNode(child)
                 self.explored[iri] = child
+
+        if len(subclasses) > 0:
+            node.routeChoices = sum([child.routeChoices for child in node.children])
+            node.localChoices = len(subclasses)
+
+    def _getKpis(self, iri: str) -> dict:
+        """Get the KPIs of the node.
+
+        Args:
+            iri (str): The IRI of the node to get the KPIs.
+
+        Returns:
+            dict: The KPIs of the node.
+        """
+
+        _kpis = {}
+
+        for kpi in self.kpis:
+            _kpis[kpi] = round(
+                random(), 2
+            )  # TODO: get KPIs using query on a KPIs ontology, using IRI and KPI list as parameters
+
+        return _kpis
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
@@ -283,20 +260,3 @@ class OntoFlowEngine:
 
         logger.info(results)
         return results
-
-    def getMappingRoute(self, target: str) -> Node:
-        """Get the mapping route from the target to all the possible sources.
-
-        Args:
-            target (str): The target data to be found.
-
-        Returns:
-            Node: The mapping starting from the root node.
-        """
-
-        logger.info(f"Getting mapping route for {target}")
-        root = Node(0, target, "")
-
-        self._exploreNode(root)
-
-        return root

@@ -90,6 +90,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         # [] - Assert on number of routes, how to disitnguish between them?
         self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T2(self):
         target_node = URIRef(example_ns.Target)
@@ -114,6 +115,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         print(expected_structure)
 
         self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T4(self):
         target_node = URIRef(example_ns.Target)
@@ -139,6 +141,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         print(expected_structure)
 
         self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T5(self):
         target_node = URIRef(example_ns.Target)
@@ -166,6 +169,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         print(expected_structure)
 
         self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T7(self):
         target_node = URIRef(example_ns.Target)
@@ -204,6 +208,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             routes.accept(visitor_flat_structure),
             [expected_structure_a, expected_structure_b],
         )
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T8(self):
         target_node = URIRef(example_ns.Target)
@@ -245,6 +250,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             routes.accept(visitor_flat_structure),
             [expected_structure_a, expected_structure_b],
         )
+        self.assertEqual(routes.routeChoices, 1)
 
     def test_T9(self):
         target_node = URIRef(example_ns.Target)
@@ -289,6 +295,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             routes.accept(visitor_flat_structure),
             [expected_structure_a, expected_structure_b],
         )
+        self.assertEqual(routes.routeChoices, 2)
 
     def test_T10(self):
         target_node = URIRef(example_ns.Target)
@@ -338,6 +345,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             routes.accept(visitor_flat_structure),
             [expected_structure_a, expected_structure_b],
         )
+        self.assertEqual(routes.routeChoices, 2)
 
     def test_T11(self):
         target_node = URIRef(example_ns.Target)
@@ -398,3 +406,65 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             routes.accept(visitor_flat_structure),
             [expected_structure_a, expected_structure_b],
         )
+        self.assertEqual(routes.routeChoices, 2)
+
+    def test_T12(self):
+        target_node = URIRef(example_ns.Target)
+        subclass_node_a = add_subclass(self.__graph, target_node)
+        subclass_node_b = add_subclass(self.__graph, target_node)
+        individual_node_a = add_individual(self.__graph, subclass_node_a)
+        individual_node_b = add_individual(self.__graph, subclass_node_a)
+        individual_node_c = add_individual(self.__graph, subclass_node_b)
+
+        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        self.__triplestore.parse(source=ontology_stream, format="turtle")
+
+        expected_structure_a = [
+            str(target_node),
+            str(subclass_node_a),
+            str(individual_node_a),
+            str(individual_node_b),
+            str(subclass_node_b),
+            str(individual_node_c),
+        ]
+        expected_structure_b = [
+            str(target_node),
+            str(subclass_node_b),
+            str(individual_node_c),
+            str(subclass_node_a),
+            str(individual_node_a),
+            str(individual_node_b),
+        ]
+
+        expected_structure_c = [
+            str(target_node),
+            str(subclass_node_a),
+            str(individual_node_b),
+            str(individual_node_a),
+            str(subclass_node_b),
+            str(individual_node_c),
+        ]
+        expected_structure_d = [
+            str(target_node),
+            str(subclass_node_b),
+            str(individual_node_c),
+            str(subclass_node_a),
+            str(individual_node_b),
+            str(individual_node_a),
+        ]
+
+        print(self.__graph.serialize(format="turtle"))
+
+        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        print(routes)
+
+        self.assertIn(
+            routes.accept(visitor_flat_structure),
+            [
+                expected_structure_a,
+                expected_structure_b,
+                expected_structure_c,
+                expected_structure_d,
+            ],
+        )
+        self.assertEqual(routes.routeChoices, 3)
