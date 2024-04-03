@@ -5,7 +5,9 @@ from pathlib import Path
 # sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
 # from ontoflow.engine import OntoFlowEngine
 
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent.parent))
+sys.path.append(
+    os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent.parent)
+)
 from OntoFlow.ontoflow.engine import OntoFlowEngine
 
 
@@ -13,7 +15,9 @@ from tripper import Triplestore
 
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
-ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl")
+ONTOLOGY_PATH = os.path.join(
+    Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"
+)
 
 ROOT = "http://webprotege.stanford.edu/Density"
 
@@ -32,11 +36,14 @@ ts.bind("base", "http://webprotege.stanford.edu/")
 
 engine = OntoFlowEngine(triplestore=ts)
 
-mapping = engine.getBestRoute(ROOT, ["ModelParameter", "Cost1", "Cost2"])
+kpis = [
+    {"name": "Cost1", "weight": 1, "maximise": True},
+    {"name": "Cost2", "weight": 3, "maximise": False},
+]
 
-mapping.export(os.path.join(Path(os.path.abspath(__file__)).parent, "output"))
+bestRoute = engine.getBestRoute(ROOT, kpis, True)
 
-for i in range(len(mapping.routes)):
-    mapping.routes[i].visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, f"output_{i}.png"))
-
-mapping.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "output.png"))
+bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+bestRoute.visualize(
+    output=os.path.join(Path(os.path.abspath(__file__)).parent, "best")
+)

@@ -5,7 +5,7 @@ from random import random
 from tripper import Triplestore
 
 from .log.logger import logger
-from .mco import mco_calc
+from .mco import Mco
 from .node import Node
 
 
@@ -21,7 +21,7 @@ class OntoFlowEngine:
         self.explored: dict = {}
         self.kpis: list = []
 
-    def getBestRoute(self, target: str, kpis: list[str], log: bool = False) -> Node:
+    def getBestRoute(self, target: str, kpis: list[dict], log: bool = False) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPIs.
@@ -29,7 +29,7 @@ class OntoFlowEngine:
 
         Args:
             target (str): The target data to be found.
-            kpis (list[str]): The KPIs to be used for the MCO.
+            kpis (list[dict]): The KPIs to be used for the MCO.
             log (bool): Whether to log the results. Defaults to False.
 
         Returns:
@@ -37,22 +37,23 @@ class OntoFlowEngine:
         """
 
         logger.info(f"Getting mapping route for {target}")
-        self.kpis = kpis
+        self.kpis = [kpi["name"] for kpi in kpis]
 
         # Build the tree and get the routes
         root = Node(0, target, "", kpis=self._getKpis(target))
         self._exploreNode(root)
         root.generateRoutes()
-
         self.kpis.append("Id")
 
         # Pass the routes to the MCO to get the ranking
-        mco: list = [self.kpis]
+        mco = Mco(kpis)
+
+        values: list = [self.kpis]
 
         for r in root.routes:
-            mco.append([r.costs[kpi] for kpi in kpis])
+            values.append([r.costs[kpi] for kpi in self.kpis])
 
-        ranking = mco_calc(mco)
+        ranking = mco.mco_calc(values)
 
         if log:
             logger.info("Printing the results")
@@ -60,7 +61,6 @@ class OntoFlowEngine:
             root.visualize("root")
 
             for i, route in enumerate(root.routes):
-                route.export(f"route_{i}")
                 route.visualize(f"route_{i}")
 
             with open(f"result.json", "w") as file:
@@ -233,7 +233,9 @@ class OntoFlowEngine:
         _kpis = {}
 
         for kpi in self.kpis:
-            _kpis[kpi] = round(random(), 2)
+            _kpis[kpi] = round(
+                random(), 2
+            )  # TODO: get KPIs using query on a KPIs ontology, using IRI and KPI list as parameters
 
         return _kpis
 
