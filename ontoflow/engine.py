@@ -230,14 +230,59 @@ class OntoFlowEngine:
             dict: The KPIs of the node.
         """
 
+        self.kpis.append("Accuracy")
+        self.kpis.append("CPUTime")
+
         _kpis = {}
+        node_kpis = self._get_node_kpis(iri)
+        logger.info("Node KPIs: {}".format(node_kpis))
 
         for kpi in self.kpis:
-            _kpis[kpi] = round(
-                random(), 2
-            )  # TODO: get KPIs using query on a KPIs ontology, using IRI and KPI list as parameters
+            _kpis[kpi] = node_kpis[kpi] if kpi in node_kpis else 0
 
         return _kpis
+    
+    def _get_node_kpis(self, iri: str, option_1: bool = True):
+        """
+        Get the KPIs of the node.
+        Implemented: Option 1. The cost is specified in an KPI individual
+        which is associated to the node class via a value restriction.
+
+        Alternative: the relation between the class and the KPI is specified only
+        at the individual level.
+
+        Args:
+            iri (str): The IRI of the node to get the KPIs.
+            option_1 (bool): Whether to use option 1. Defaults to True.
+
+        Returns:
+            dict: The KPIs of the node.
+        """
+        logger.info("Getting KPIs for {}".format(iri))
+
+        patterns = [
+            """SELECT ?base_kpi_class ?converter_fun ?kpi_value WHERE {{
+                {iri} rdfs:subClassOf ?bnode .
+                ?bnode rdf:type owl:Restriction .
+                ?bnode owl:onProperty example:hasKPI .
+                ?bnode owl:hasValue ?kpi_ind .
+                ?kpi_ind rdf:type ?kpi_class .
+                ?kpi_class rdfs:subClassOf+ ?base_kpi_class .
+                ?base_kpi_class rdfs:subClassOf example:KPI .
+                ?converter_fun emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ?kpi_class .
+                ?kpi_ind example:KPIValue ?kpi_value
+            }}""",
+        ]
+
+        node_kpis = {}
+        triples_kpis = self._query(patterns, iri)
+        for kpi in triples_kpis:
+            idx =  kpi[0].split("#")[-1]
+            node_kpis[idx] = {} 
+            node_kpis[idx]["value"] = self.triplestore.eval_function(kpi[1], args=(str(kpi[2]),))
+        
+        return node_kpis
+
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.

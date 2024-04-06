@@ -6,7 +6,7 @@ logging.basicConfig(
     format='%(asctime)s - [%(levelname)s]: %(message)s'
 )
 
-logger = logging.getLogger("TraCI_Worker")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLevelName(os.getenv("LOGGING_LEVEL", "INFO")))
 formatter = logging.Formatter('%(asctime)s - [%(levelname)s]: %(message)s')
 
