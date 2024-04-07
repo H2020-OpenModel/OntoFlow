@@ -43,7 +43,7 @@ class OntoFlowEngine:
         self.__kpa_triplestore.serialize(os.path.join(Path(os.path.abspath(__file__)).parent.parent, "ontologies", "kpa-converters.ttl"), "turtle")
 
 
-    def getBestRoute(self, target: str, kpis: list[dict], log: bool = False) -> Node:
+    def getBestRoute(self, target: str, kpis: list[dict], foldername: str = None) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPIs.
@@ -52,7 +52,7 @@ class OntoFlowEngine:
         Args:
             target (str): The target data to be found.
             kpis (list[dict]): The KPIs to be used for the MCO.
-            log (bool): Whether to log the results. Defaults to False.
+            foldername (str): The folder to save the results. Defaults to None.
 
         Returns:
             Node: The mapping starting from the root node.
@@ -77,15 +77,15 @@ class OntoFlowEngine:
 
         ranking = mco.mco_calc(values)
 
-        if log:
+        if foldername is not None:
             logger.info("Printing the results")
-            root.export("root")
-            root.visualize("root")
+            root.export(os.path.join(foldername, "root"))
+            root.visualize(os.path.join(foldername, "root"))
 
             for i, route in enumerate(root.routes):
-                route.visualize(f"route_{i}")
+                route.visualize(os.path.join(foldername, f"route_{i}"))
 
-            with open(f"result.json", "w") as file:
+            with open(os.path.join(foldername, f"result.json"), "w") as file:
                 json.dump(
                     {
                         "routes": [route._serialize() for route in root.routes],
