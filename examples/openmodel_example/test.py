@@ -33,8 +33,8 @@ ts.bind("base", "http://webprotege.stanford.edu/")
 engine = OntoFlowEngine(triplestore=ts)
 
 kpis = [
-    {"name": "Accuracy", "weight": 1, "maximise": True},
-    {"name": "SimulationTime", "weight": 3, "maximise": False},
+    {"name": "Accuracy", "weight": 3, "maximise": True},
+    {"name": "SimulationTime", "weight": 1, "maximise": False},
 ]
 
 # Get the best route

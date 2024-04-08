@@ -31,9 +31,9 @@ class OntoFlowEngine:
         # Setup internal knowldedge base for KPAs converters
         ontoflow_kpi_converters_ns = Namespace("http://open-model.eu/ontoflow/kpa-converters#")
         self.__kpa_triplestore: Triplestore = Triplestore(backend="rdflib", base_iri=ontoflow_kpi_converters_ns)
+        self.__kpa_triplestore.parse(os.path.join(Path(os.path.abspath(__file__)).parent.parent, "ontologies", "kpa.ttl"), "turtle")
         self.__kpa_triplestore.bind("kpa", ontoflow_kpi_ns)
         self.__kpa_triplestore.bind("kpa-converters", ontoflow_kpi_converters_ns)
-        self.__kpa_triplestore.parse(os.path.join(Path(os.path.abspath(__file__)).parent.parent, "ontologies", "kpa.ttl"), "turtle")
         init_converter_triplestore(self.__kpa_triplestore)
 
         # Just test
@@ -292,12 +292,8 @@ class OntoFlowEngine:
             }}""",
         ]
 
-        # FIXME: The bind call for the kpa namespace is not working properly. Why?
-        # FIXME: Need to explicitly specify the namespace in the query.
         internal_patters = [
-            """PREFIX kpa: <http://open-model.eu/ontoflow/kpa#>
-                PREFIX emmo: <http://emmo.info/emmo#>
-                SELECT ?base_kpa_class ?converter_fun ?kpa_class WHERE {{
+            """SELECT ?base_kpa_class ?converter_fun ?kpa_class WHERE {{
                 ?kpa_class rdfs:subClassOf+ ?base_kpa_class .
                 ?base_kpa_class rdfs:subClassOf kpa:KPA .
                 ?converter_fun emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ?kpa_class .
