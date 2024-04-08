@@ -6,10 +6,10 @@ from random import random
 
 from tripper import Triplestore, Namespace
 
-from .log.logger import logger
-from .mco import Mco
-from .node import Node
-from .cost_converters.converters import init_converter_triplestore
+from ontoflow.log.logger import logger
+from ontoflow.mco import Mco
+from ontoflow.node import Node
+from ontoflow.cost_converters.converters import init_converter_triplestore
 
 
 class OntoFlowEngine:
