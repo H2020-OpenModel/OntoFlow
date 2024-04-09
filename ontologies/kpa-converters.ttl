@@ -9,17 +9,18 @@
 <http://open-model.eu/ontoflow/kpa> a owl:Ontology ;
     owl:imports emmo:1.0.0-beta4 .
 
-kpa:BoolOpenSource a owl:Class ;
-    rdfs:comment "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en ;
-    rdfs:subClassOf kpa:OpenSource .
-
 kpa:KPAValue a owl:DatatypeProperty .
 
-kpa:NumericalOpenSource a owl:Class ;
-    rdfs:comment "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en ;
-    rdfs:subClassOf kpa:OpenSource .
-
 kpa:hasKPA a owl:ObjectProperty .
+
+kpa-converters:boolopensource_converter_7dcb673e a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
+    rdfs:label "boolopensource_converter"@en ;
+    emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 kpa:BoolOpenSource ;
+    emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 kpa:NumericalOpenSource ;
+    oteio:hasPypiPackageName "ontoflow.cost_converters"^^xsd:string ;
+    oteio:hasPythonFunctionName "boolopensource_converter"^^xsd:string ;
+    oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
+    oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
 
 kpa-converters:mirror_converter_e39a3a8f a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
     rdfs:label "mirror_converter"@en ;
@@ -32,7 +33,7 @@ kpa-converters:mirror_converter_e39a3a8f a emmo:EMMO_4299e344_a321_4ef2_a744_bac
     oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
     oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
 
-kpa-converters:ordinalaccuracy_converter_804a6737 a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
+kpa-converters:ordinalaccuracy_converter_41a4796e a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
     rdfs:label "ordinalaccuracy_converter"@en ;
     emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 kpa:OrdinalAccuracy ;
     emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 kpa:NumericalAccuracy ;
@@ -40,6 +41,17 @@ kpa-converters:ordinalaccuracy_converter_804a6737 a emmo:EMMO_4299e344_a321_4ef2
     oteio:hasPythonFunctionName "ordinalaccuracy_converter"^^xsd:string ;
     oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
     oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
+
+kpa:BoolOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:label "opensource_value"@en ;
+    rdfs:comment "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en ;
+    rdfs:subClassOf kpa:OpenSource .
+
+kpa:NumericalOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:comment "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en ;
+    rdfs:subClassOf kpa:OpenSource .
 
 kpa:OrdinalAccuracy a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;

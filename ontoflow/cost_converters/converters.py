@@ -6,6 +6,7 @@ def init_converter_triplestore(ts: Triplestore):
     ts.add_function(ordinalaccuracy_converter, expects=kpa_ns.OrdinalAccuracy, returns=kpa_ns.NumericalAccuracy, standard="emmo")
     ts.add_function(mirror_converter, expects=kpa_ns.NumericalAccuracy, returns=kpa_ns.NumericalAccuracy, standard="emmo")
     ts.add_function(mirror_converter, expects=kpa_ns.NumericalSimulationTime, returns=kpa_ns.NumericalSimulationTime, standard="emmo")
+    ts.add_function(boolopensource_converter, expects=kpa_ns.BoolOpenSource, returns=kpa_ns.NumericalOpenSource, standard="emmo")
 
 
 ## Mirror converters for NumericalKPAs
@@ -14,11 +15,18 @@ def mirror_converter(value):
 
 ## Accuracy Converters
 def ordinalaccuracy_converter(accuracy):
-    if accuracy == "High":
+    if accuracy.lower() == "high":
         return 50
-    elif accuracy == "Medium":
+    elif accuracy.lower() == "medium":
         return 25
-    elif accuracy == "Low":
+    elif accuracy.lower() == "low":
         return 5
+    else:
+        return 0
+    
+## OpenSource Converters
+def boolopensource_converter(opensource_value):
+    if opensource_value.lower() == "true":
+        return 1
     else:
         return 0

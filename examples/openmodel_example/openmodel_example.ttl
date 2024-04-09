@@ -161,6 +161,18 @@ emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 rdf:type owl:ObjectProperty .
             <http://open-model.eu/ontoflow/kpa#KPAValue> "Medium"^^xsd:string .
 
 
+###  http://open-model.eu/ontoflow/example#OpenSource_1
+:OpenSource_1 rdf:type owl:NamedIndividual ,
+                       <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
+              <http://open-model.eu/ontoflow/kpa#KPAValue> "true"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#OpenSource_2
+:OpenSource_2 rdf:type owl:NamedIndividual ,
+                       <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
+              <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:string .
+
+
 ###  http://open-model.eu/ontoflow/example#SimulationTime_1
 :SimulationTime_1 rdf:type owl:NamedIndividual ,
                            <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
@@ -182,12 +194,14 @@ emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 rdf:type owl:ObjectProperty .
 ###  http://webprotege.stanford.edu/WaterDensityDatasetInput1
 <http://webprotege.stanford.edu/WaterDensityDatasetInput1> rdf:type owl:NamedIndividual ,
                                                                     <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           <http://open-model.eu/ontoflow/kpa#hasKPA> :OpenSource_1 ;
                                                            rdfs:label "WaterDensityDatasetInput1"@en .
 
 
 ###  http://webprotege.stanford.edu/WaterDensityDatasetInput2
 <http://webprotege.stanford.edu/WaterDensityDatasetInput2> rdf:type owl:NamedIndividual ,
                                                                     <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           <http://open-model.eu/ontoflow/kpa#hasKPA> :OpenSource_2 ;
                                                            rdfs:label "WaterDensityDatasetInput2"@en .
 
 

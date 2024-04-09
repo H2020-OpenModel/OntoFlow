@@ -262,14 +262,9 @@ class OntoFlowEngine:
 
         return _kpis
     
-    def _get_node_kpis(self, iri: str, option_1: bool = True):
+    def _get_node_kpis(self, iri: str):
         """
         Get the KPIs of the node.
-        Implemented: Option 1. The cost is specified in an KPI individual
-        which is associated to the node class via a value restriction.
-
-        Alternative: the relation between the class and the KPI is specified only
-        at the individual level.
 
         Args:
             iri (str): The IRI of the node to get the KPIs.
@@ -290,6 +285,12 @@ class OntoFlowEngine:
                 ?kpa_ind kpa:KPAValue ?kpa_value .
                 FILTER(STRSTARTS(STR(?kpa_class), "{kpa_ns}"))
             }}""",
+            """SELECT ?kpa_class ?kpa_value ?kpa_ind WHERE {{
+                {iri} kpa:hasKPA ?kpa_ind .
+                ?kpa_ind rdf:type ?kpa_class .
+                ?kpa_ind kpa:KPAValue ?kpa_value .
+                FILTER(STRSTARTS(STR(?kpa_class), "{kpa_ns}"))
+            }}"""
         ]
 
         internal_patters = [

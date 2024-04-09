@@ -35,6 +35,7 @@ engine = OntoFlowEngine(triplestore=ts)
 kpis = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 1, "maximise": False},
+    {"name": "OpenSource", "weight": 5, "maximise": False},
 ]
 
 # Get the best route
