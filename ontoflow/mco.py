@@ -1,10 +1,9 @@
 import logging
 from dotenv import load_dotenv
 
-import osp.core.utils.simple_search as search
-
 from osp.core.namespaces import mods, cuba
 from osp.core.utils import pretty_print
+import osp.core.utils.simple_search as search
 from osp.wrappers.sim_cmcl_mods_wrapper import mods_session as ms
 
 logger = logging.getLogger(__name__)

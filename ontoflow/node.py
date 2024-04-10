@@ -48,6 +48,7 @@ class Node:
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
+            kpis (dict[str, float]): the KPIs of the child node.
 
         Returns:
             Node: the child node.
@@ -124,7 +125,7 @@ class Node:
         with open(f"{fileName}.yaml", "w") as file:
             yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
-    def accept(self, visitor):
+    def accept(self, visitor) -> None:
         """Accept a visitor and visit the node.
 
         Args:
@@ -171,7 +172,7 @@ class Node:
         """Get all the possible routes from a node.
 
         Args:
-            path (list): the path to be serialised. Defaults to [].
+            path (list[int]): the path to be serialised. Defaults to [].
 
         Returns:
             Node: the node representing the route.
