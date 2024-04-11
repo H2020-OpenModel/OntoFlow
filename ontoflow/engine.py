@@ -1,15 +1,16 @@
 import json
 import os
+from io import StringIO
 from math import prod
 from pathlib import Path
 from typing import Optional
-
-from tripper import Triplestore, Namespace
 
 from ontoflow.cost_converters.converters import init_converter_triplestore
 from ontoflow.log.logger import logger
 from ontoflow.mco import Mco
 from ontoflow.node import Node
+
+from tripper import Namespace, Triplestore
 
 
 class OntoFlowEngine:
@@ -45,11 +46,8 @@ class OntoFlowEngine:
         self.__kpaTriplestore.bind("kpa-converters", ontoflowKpiConvertersNs)
         init_converter_triplestore(self.__kpaTriplestore)
 
-        # Just test
-        import io
-
         self.triplestore.parse(
-            io.StringIO(self.__kpaTriplestore.serialize(format="turtle")), "turtle"
+            StringIO(self.__kpaTriplestore.serialize(format="turtle")), "turtle"
         )
 
         self.__kpaTriplestore.serialize(
