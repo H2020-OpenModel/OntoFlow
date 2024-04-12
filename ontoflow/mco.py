@@ -14,7 +14,29 @@ logger.handlers[0].setFormatter(
 )
 
 
+def mco_factory(engine: str, kpis: list[dict]) -> "Mco":
+    """Factory method for creating an MCO.
+
+    Args:
+        kpis (list[dict]): The KPIs to be used for the MCO.
+
+    Returns:
+        Mco: The MCO object.
+    """
+
+    if engine == "mods":
+        return ModsMco(kpis)
+    else:
+        raise ValueError(f"Unknown MCO engine: {engine}")
+    
+
 class Mco:
+    def __init__(self) -> None:
+        pass
+    def mco_calc(self, data: list[list[int]]) -> list[int]:
+        return []
+
+class ModsMco(Mco):
     def __init__(self, kpis: list[dict]):
         """Initialise the MCO.
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent, "ontoflow"))
 
-import io
+from io import StringIO
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
@@ -78,14 +78,14 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         target_node = URIRef(example_ns.Target)
         individual_node = add_individual(self.__graph, target_node)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure = [str(target_node), str(individual_node)]
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         # [] - Assert on number of routes, how to disitnguish between them?
@@ -97,7 +97,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         subclass_node = add_subclass(self.__graph, target_node)
         individual_node = add_individual(self.__graph, subclass_node)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure = [
@@ -108,7 +108,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -122,7 +122,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         generating_model, inputs = add_generating_model(self.__graph, target_node)
         individual_node = add_individual(self.__graph, inputs[0])
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure = [
@@ -134,7 +134,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -149,7 +149,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         subclass = add_subclass(self.__graph, inputs[0])
         individual_node = add_individual(self.__graph, subclass)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure = [
@@ -162,7 +162,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -177,7 +177,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         individual_node_a = add_individual(self.__graph, inputs[0])
         individual_node_b = add_individual(self.__graph, inputs[1])
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -199,7 +199,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -217,7 +217,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         subclass_b = add_subclass(self.__graph, inputs[1])
         individual_node_b = add_individual(self.__graph, subclass_b)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -241,7 +241,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -262,7 +262,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         )
         individual_node_a = add_individual(self.__graph, inputs_a[0])
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -286,7 +286,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -308,7 +308,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         subclass_a = add_subclass(self.__graph, inputs_a[0])
         individual_node_a = add_individual(self.__graph, subclass_a)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -336,7 +336,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -361,7 +361,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         subclass_a = add_subclass(self.__graph, inputs_c[0])
         individual_node_a = add_individual(self.__graph, subclass_a)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -397,7 +397,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         print(routes.accept(visitor_flat_structure))
@@ -416,7 +416,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         individual_node_b = add_individual(self.__graph, subclass_node_a)
         individual_node_c = add_individual(self.__graph, subclass_node_b)
 
-        ontology_stream = io.StringIO(self.__graph.serialize(format="turtle"))
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         expected_structure_a = [
@@ -455,7 +455,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getMappingRoute(str(target_node))
+        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
         print(routes)
 
         self.assertIn(
