@@ -22,7 +22,7 @@ class Node:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
-            kpis (list): the KPIs of the node. Defaults to [].
+            kpis (dict[str, float]): the KPIs of the node. Defaults to [].
             routeChoices (int): the number of routes underlying the node. Defaults to 1.
             localChoices (int): the number of possible elements you can select from the node. Defaults to 0.
         """
