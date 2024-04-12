@@ -43,7 +43,7 @@ class Node:
         predicate: str,
         kpis: dict[str, float],
     ) -> "Node":
-        """Add a child to the node.
+        """Creates a node instance using IRI, predicate, and KPIs, and adds it to the node as a child.
 
         Args:
             iri (str): the IRI of the child node.
@@ -90,7 +90,7 @@ class Node:
         self.routes = routes
 
     def visualize(self, output: Optional[str] = None, format: str = "png") -> str:
-        """Visualize the node and its children as a graph.
+        """Saves an image of the node and its children as a graph.
 
         Args:
             output (str): The name of the file to export the graph. Defaults to None.
@@ -113,7 +113,7 @@ class Node:
         return nodeString
 
     def export(self, fileName: str) -> None:
-        """Serialize a node as JSON and export it to a file.
+        """Serialize a node as JSON and YAML and saves them in a file.
 
         Args:
             fileName (str): The name of the file to export the JSON data.
@@ -169,10 +169,10 @@ class Node:
         return paths
 
     def _getRoute(self, path: list[int]) -> "Node":
-        """Get all the possible routes from a node.
+        """Get a route from the node following the path.
 
         Args:
-            path (list[int]): the path to be serialised. Defaults to [].
+            path (list[int]): the path representing the route. Defaults to [].
 
         Returns:
             Node: the node representing the route.
@@ -228,7 +228,7 @@ class Node:
         return ser
 
     def _visualize(self) -> str:
-        """Visualize the node and its children as a graph.
+        """Generate the elements of the graph to be exported from the Node.
 
         Returns:
             str: the string representation of the graph.
