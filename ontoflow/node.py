@@ -243,7 +243,9 @@ class Node:
 
         for child in self.children:
             nodeString.append("{}".format(child._visualize()))
-            dirBack = "back" if child.predicate == "hasOutput" else "forward"
+            dirBack = (
+                "back" if child.predicate in ["hasOutput", "subClassOf"] else "forward"
+            )
             nodeString.append(
                 '"{}" -> "{}" [label="{}", dir="{}", color="{}"]'.format(
                     self.iri, child.iri, child.predicate, dirBack, "black"

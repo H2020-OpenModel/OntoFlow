@@ -7,7 +7,7 @@ from typing import Optional
 
 from ontoflow.cost_converters.converters import init_converter_triplestore
 from ontoflow.log.logger import logger
-from ontoflow.mco import Mco, ModsMco, mco_factory
+from ontoflow.mco import ModsMco
 from ontoflow.node import Node
 
 from tripper import Namespace, Triplestore
@@ -86,7 +86,7 @@ class OntoFlowEngine:
         self.kpis.append("Id")
 
         # Pass the routes to the MCO to get the ranking
-        mco: Mco = mco_factory("mods", kpis)
+        mco: ModsMco = ModsMco(kpis)
 
         values: list = [self.kpis]
 
