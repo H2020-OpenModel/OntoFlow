@@ -1,17 +1,26 @@
-@prefix : <urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4#> .
+@prefix : <http://open-model.eu/ontoflow/example#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix emmo: <http://emmo.info/emmo#> .
-@base <urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://open-model.eu/ontoflow/example> .
 
-<urn:webprotege:ontology:346dbd1a-d64a-4d0c-b182-31e1fbc711b4> rdf:type owl:Ontology .
+<http://open-model.eu/ontoflow/example> rdf:type owl:Ontology ;
+                                         owl:imports <http://open-model.eu/ontoflow/kpa> .
 
 #################################################################
 #    Object Properties
 #################################################################
+
+###  http://emmo.info/emmo#EMMO_36e69413_8c59_4799_946c_10b05d266e22
+emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 rdf:type owl:ObjectProperty .
+
+
+###  http://emmo.info/emmo#EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840
+emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 rdf:type owl:ObjectProperty .
+
 
 #################################################################
 #    Classes
@@ -39,6 +48,10 @@
                                                                 [ rdf:type owl:Restriction ;
                                                                   owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                                                   owl:someValuesFrom <http://webprotege.stanford.edu/FluidDensity>
+                                                                ] ,
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                  owl:hasValue :SimulationTime_2
                                                                 ] ;
                                                 rdfs:label "LAMMPS2Density"@en .
 
@@ -65,6 +78,14 @@
                                                                   [ rdf:type owl:Restriction ;
                                                                     owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                                                     owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSLog>
+                                                                  ] ,
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                    owl:hasValue :Accuracy_3
+                                                                  ] ,
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                    owl:hasValue :SimulationTime_1
                                                                   ] ;
                                                   rdfs:label "LAMMPSSimulation"@en .
 
@@ -79,6 +100,14 @@
                                                                      [ rdf:type owl:Restriction ;
                                                                        owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                                                        owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSDatasetInput>
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                       owl:hasValue :Accuracy_2
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                       owl:hasValue :SimulationTime_3
                                                                      ] ;
                                                      rdfs:label "MoltemplateProcess1"@en .
 
@@ -93,6 +122,14 @@
                                                                      [ rdf:type owl:Restriction ;
                                                                        owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                                                        owl:someValuesFrom <http://webprotege.stanford.edu/LAMMPSDatasetInput>
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                       owl:hasValue :Accuracy_1
+                                                                     ] ,
+                                                                     [ rdf:type owl:Restriction ;
+                                                                       owl:onProperty <http://open-model.eu/ontoflow/kpa#hasKPA> ;
+                                                                       owl:hasValue :SimulationTime_1
                                                                      ] ;
                                                      rdfs:label "MoltemplateProcess2"@en .
 
@@ -106,14 +143,66 @@
 #    Individuals
 #################################################################
 
+###  http://open-model.eu/ontoflow/example#Accuracy_1
+:Accuracy_1 rdf:type owl:NamedIndividual ,
+                     <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
+            <http://open-model.eu/ontoflow/kpa#KPAValue> "High"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#Accuracy_2
+:Accuracy_2 rdf:type owl:NamedIndividual ,
+                     <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
+            <http://open-model.eu/ontoflow/kpa#KPAValue> "Low"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#Accuracy_3
+:Accuracy_3 rdf:type owl:NamedIndividual ,
+                     <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
+            <http://open-model.eu/ontoflow/kpa#KPAValue> "Medium"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#OpenSource_1
+:OpenSource_1 rdf:type owl:NamedIndividual ,
+                       <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
+              <http://open-model.eu/ontoflow/kpa#KPAValue> "true"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#OpenSource_2
+:OpenSource_2 rdf:type owl:NamedIndividual ,
+                       <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
+              <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:string .
+
+
+###  http://open-model.eu/ontoflow/example#SimulationTime_1
+:SimulationTime_1 rdf:type owl:NamedIndividual ,
+                           <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
+                  <http://open-model.eu/ontoflow/kpa#KPAValue> "3600"^^xsd:positiveInteger .
+
+
+###  http://open-model.eu/ontoflow/example#SimulationTime_2
+:SimulationTime_2 rdf:type owl:NamedIndividual ,
+                           <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
+                  <http://open-model.eu/ontoflow/kpa#KPAValue> "900"^^xsd:positiveInteger .
+
+
+###  http://open-model.eu/ontoflow/example#SimulationTime_3
+:SimulationTime_3 rdf:type owl:NamedIndividual ,
+                           <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
+                  <http://open-model.eu/ontoflow/kpa#KPAValue> "60"^^xsd:positiveInteger .
+
+
 ###  http://webprotege.stanford.edu/WaterDensityDatasetInput1
-<http://webprotege.stanford.edu/WaterDensityDatasetInput1> rdf:type <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+<http://webprotege.stanford.edu/WaterDensityDatasetInput1> rdf:type owl:NamedIndividual ,
+                                                                    <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           <http://open-model.eu/ontoflow/kpa#hasKPA> :OpenSource_1 ;
                                                            rdfs:label "WaterDensityDatasetInput1"@en .
 
 
 ###  http://webprotege.stanford.edu/WaterDensityDatasetInput2
-<http://webprotege.stanford.edu/WaterDensityDatasetInput2> rdf:type <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+<http://webprotege.stanford.edu/WaterDensityDatasetInput2> rdf:type owl:NamedIndividual ,
+                                                                    <http://webprotege.stanford.edu/WaterDensityDatasetInput> ;
+                                                           <http://open-model.eu/ontoflow/kpa#hasKPA> :OpenSource_2 ;
                                                            rdfs:label "WaterDensityDatasetInput2"@en .
 
 
-###  Generated by the OWL API (version 4.5.13) https://github.com/owlcs/owlapi
+###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi

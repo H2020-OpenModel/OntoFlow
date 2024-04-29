@@ -1,12 +1,16 @@
 import json
+import os
+from io import StringIO
 from math import prod
-from random import random
+from pathlib import Path
+from typing import Optional
 
-from tripper import Triplestore
+from ontoflow.cost_converters.converters import init_converter_triplestore
+from ontoflow.log.logger import logger
+from ontoflow.mco import ModsMco
+from ontoflow.node import Node
 
-from .log.logger import logger
-from .mco import Mco
-from .node import Node
+from tripper import Namespace, Triplestore
 
 
 class OntoFlowEngine:
@@ -21,7 +25,43 @@ class OntoFlowEngine:
         self.explored: dict = {}
         self.kpis: list = []
 
-    def getBestRoute(self, target: str, kpis: list[dict], log: bool = False) -> Node:
+        # Bind the namespace used for the KPI definition
+        ontoflowKpiNs = Namespace("http://open-model.eu/ontoflow/kpa#")
+        self.triplestore.bind("kpa", ontoflowKpiNs)
+
+        # Setup internal knowldedge base for KPAs converters
+        ontoflowKpiConvertersNs = Namespace(
+            "http://open-model.eu/ontoflow/kpa-converters#"
+        )
+        self.__kpaTriplestore: Triplestore = Triplestore(
+            backend="rdflib", base_iri=ontoflowKpiConvertersNs._iri
+        )
+        self.__kpaTriplestore.parse(
+            os.path.join(
+                Path(os.path.abspath(__file__)).parent.parent, "ontologies", "kpa.ttl"
+            ),
+            "turtle",
+        )
+        self.__kpaTriplestore.bind("kpa", ontoflowKpiNs)
+        self.__kpaTriplestore.bind("kpa-converters", ontoflowKpiConvertersNs)
+        init_converter_triplestore(self.__kpaTriplestore)
+
+        self.triplestore.parse(
+            StringIO(self.__kpaTriplestore.serialize(format="turtle")), "turtle"
+        )
+
+        self.__kpaTriplestore.serialize(
+            os.path.join(
+                Path(os.path.abspath(__file__)).parent.parent,
+                "ontologies",
+                "kpa-converters.ttl",
+            ),
+            "turtle",
+        )
+
+    def getBestRoute(
+        self, target: str, kpis: list[dict], foldername: Optional[str] = None
+    ) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPIs.
@@ -30,10 +70,10 @@ class OntoFlowEngine:
         Args:
             target (str): The target data to be found.
             kpis (list[dict]): The KPIs to be used for the MCO.
-            log (bool): Whether to log the results. Defaults to False.
+            foldername (str): The folder where to save the results. Defaults to None.
 
         Returns:
-            Node: The mapping starting from the root node.
+            Node: The best route in the mapping ranked by the MCO.
         """
 
         logger.info(f"Getting mapping route for {target}")
@@ -46,7 +86,7 @@ class OntoFlowEngine:
         self.kpis.append("Id")
 
         # Pass the routes to the MCO to get the ranking
-        mco = Mco(kpis)
+        mco: ModsMco = ModsMco(kpis)
 
         values: list = [self.kpis]
 
@@ -55,15 +95,15 @@ class OntoFlowEngine:
 
         ranking = mco.mco_calc(values)
 
-        if log:
+        if foldername is not None:
             logger.info("Printing the results")
-            root.export("root")
-            root.visualize("root")
+            root.export(os.path.join(foldername, "root"))
+            root.visualize(os.path.join(foldername, "root"))
 
             for i, route in enumerate(root.routes):
-                route.visualize(f"route_{i}")
+                route.visualize(os.path.join(foldername, f"route_{i}"))
 
-            with open(f"result.json", "w") as file:
+            with open(os.path.join(foldername, f"result.json"), "w") as file:
                 json.dump(
                     {
                         "routes": [route._serialize() for route in root.routes],
@@ -230,14 +270,76 @@ class OntoFlowEngine:
             dict: The KPIs of the node.
         """
 
+        # COMMENT: We get all the KPIs of the node and then filter. We could retrieve only the ones we need.
         _kpis = {}
+        nodeKpis = self._getNodeKpis(iri)
+        logger.info("Node KPIs: {}".format(nodeKpis))
 
         for kpi in self.kpis:
-            _kpis[kpi] = round(
-                random(), 2
-            )  # TODO: get KPIs using query on a KPIs ontology, using IRI and KPI list as parameters
+            _kpis[kpi] = nodeKpis[kpi]["value"] if kpi in nodeKpis else 0
 
         return _kpis
+
+    def _getNodeKpis(self, iri: str) -> dict:
+        """
+        Get the KPIs of the node.
+
+        Args:
+            iri (str): The IRI of the node to get the KPIs.
+
+        Returns:
+            dict: The KPIs of the node.
+        """
+        logger.info("Getting KPIs for {}".format(iri))
+
+        patterns = [
+            """SELECT ?kpa_class ?kpa_value WHERE {{
+                {iri} rdfs:subClassOf ?bnode .
+                ?bnode rdf:type owl:Restriction .
+                ?bnode owl:onProperty kpa:hasKPA .
+                ?bnode owl:hasValue ?kpa_ind .
+                ?kpa_ind rdf:type ?kpa_class .
+                ?kpa_ind kpa:KPAValue ?kpa_value .
+                FILTER(STRSTARTS(STR(?kpa_class), "{kpa_ns}"))
+            }}""",
+            """SELECT ?kpa_class ?kpa_value ?kpa_ind WHERE {{
+                {iri} kpa:hasKPA ?kpa_ind .
+                ?kpa_ind rdf:type ?kpa_class .
+                ?kpa_ind kpa:KPAValue ?kpa_value .
+                FILTER(STRSTARTS(STR(?kpa_class), "{kpa_ns}"))
+            }}""",
+        ]
+
+        internalPatters = [
+            """SELECT ?base_kpa_class ?converter_fun ?kpa_class WHERE {{
+                ?kpa_class rdfs:subClassOf+ ?base_kpa_class .
+                ?base_kpa_class rdfs:subClassOf kpa:KPA .
+                ?converter_fun emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ?kpa_class .
+
+                VALUES ?kpa_class {{{kpa_classes}}}
+            }}""",
+        ]
+
+        nodeKpis = {}
+        triplesKpis = self._query(patterns, iri)
+        kpaClassesFound = ["<{}>".format(kpi[0]) for kpi in triplesKpis]
+        kpaValues = {kpi[0]: kpi[1] for kpi in triplesKpis}
+
+        if len(kpaClassesFound) == 0:
+            return nodeKpis
+
+        # FIXME: Adjust the query function to be general with respect to the variable to substitute.
+        q = internalPatters[0].format(kpa_classes=" ".join(kpaClassesFound))
+        triplesKpisConverters = self.__kpaTriplestore.query(q)
+
+        for info in triplesKpisConverters:
+            idx = info[0].split("#")[-1]
+            nodeKpis[idx] = {}
+            nodeKpis[idx]["value"] = self.__kpaTriplestore.eval_function(
+                info[1], args=(str(kpaValues[info[2]]),)
+            )
+
+        return nodeKpis
 
     def _query(self, patterns: list[str], iri: str) -> list:
         """Query the triplestore using the given patterns.
@@ -254,7 +356,9 @@ class OntoFlowEngine:
 
         for pattern in patterns:
             iriForm = f"<{iri}>" if iri[0] != "<" else iri
-            q = pattern.format(iri=iriForm)
+            q = pattern.format(
+                iri=iriForm, kpa_ns=str(self.__kpaTriplestore.namespaces["kpa"])
+            )
             logger.info("\n{}\n".format(q))
             results += self.triplestore.query(q)
 

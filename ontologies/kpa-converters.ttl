@@ -1,0 +1,87 @@
+@prefix emmo: <http://emmo.info/emmo#> .
+@prefix kpa: <http://open-model.eu/ontoflow/kpa#> .
+@prefix kpa-converters: <http://open-model.eu/ontoflow/kpa-converters#> .
+@prefix oteio: <http://emmo.info/oteio#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://open-model.eu/ontoflow/kpa> a owl:Ontology ;
+    owl:imports emmo:1.0.0-beta4 .
+
+kpa:KPAValue a owl:DatatypeProperty .
+
+kpa:hasKPA a owl:ObjectProperty .
+
+kpa-converters:boolopensource_converter_7dcb673e a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
+    rdfs:label "boolopensource_converter"@en ;
+    emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 kpa:BoolOpenSource ;
+    emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 kpa:NumericalOpenSource ;
+    oteio:hasPypiPackageName "ontoflow.cost_converters"^^xsd:string ;
+    oteio:hasPythonFunctionName "boolopensource_converter"^^xsd:string ;
+    oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
+    oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
+
+kpa-converters:mirror_converter_e39a3a8f a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
+    rdfs:label "mirror_converter"@en ;
+    emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 kpa:NumericalAccuracy,
+        kpa:NumericalSimulationTime ;
+    emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 kpa:NumericalAccuracy,
+        kpa:NumericalSimulationTime ;
+    oteio:hasPypiPackageName "ontoflow.cost_converters"^^xsd:string ;
+    oteio:hasPythonFunctionName "mirror_converter"^^xsd:string ;
+    oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
+    oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
+
+kpa-converters:ordinalaccuracy_converter_41a4796e a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
+    rdfs:label "ordinalaccuracy_converter"@en ;
+    emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 kpa:OrdinalAccuracy ;
+    emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 kpa:NumericalAccuracy ;
+    oteio:hasPypiPackageName "ontoflow.cost_converters"^^xsd:string ;
+    oteio:hasPythonFunctionName "ordinalaccuracy_converter"^^xsd:string ;
+    oteio:hasPythonModuleName "ontoflow.cost_converters.converters"^^xsd:string ;
+    oteio:hasPythonPackageName "ontoflow.cost_converters"^^xsd:string .
+
+kpa:BoolOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:label "opensource_value"@en ;
+    rdfs:comment "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en ;
+    rdfs:subClassOf kpa:OpenSource .
+
+kpa:NumericalOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:comment "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en ;
+    rdfs:subClassOf kpa:OpenSource .
+
+kpa:OrdinalAccuracy a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:label "accuracy"@en ;
+    rdfs:comment "A performance attribute indicating the typical accuracy of a simulation tool. This takes the values of  High, Medium and Low"@en ;
+    rdfs:subClassOf emmo:EMMO_50ea1ec5_f157_41b0_b46b_a9032f17ca10,
+        kpa:Accuracy .
+
+kpa:SimulationTime a owl:Class ;
+    rdfs:subClassOf kpa:KPA .
+
+kpa:Accuracy a owl:Class ;
+    rdfs:subClassOf emmo:EMMO_f8bd64d5_5d3e_4ad4_a46e_c30714fecb7f,
+        kpa:KPA .
+
+kpa:NumericalSimulationTime a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:label "value"@en ;
+    rdfs:comment "A performance attribute indicating the typical simulation time, in seconds."@en ;
+    rdfs:subClassOf kpa:SimulationTime .
+
+kpa:OpenSource a owl:Class ;
+    rdfs:subClassOf kpa:KPA .
+
+kpa:KPA a owl:Class ;
+    rdfs:subClassOf emmo:EMMO_f658c301_ce93_46cf_9639_4eace2c5d1d5 .
+
+kpa:NumericalAccuracy a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
+        owl:Class ;
+    rdfs:label "value"@en ;
+    rdfs:comment "A performance attribute indicating a specific numerical cost for the Accuracy according to an internal logic."@en ;
+    rdfs:subClassOf kpa:Accuracy .
+
