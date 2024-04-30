@@ -1,102 +1,48 @@
+from importlib import import_module
 import logging
-from dotenv import load_dotenv
+import os
+from pkgutil import iter_modules
 
-from osp.core.namespaces import mods, cuba
-from osp.core.utils import pretty_print
-import osp.core.utils.simple_search as search
-from osp.wrappers.sim_cmcl_mods_wrapper import mods_session as ms
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
-logger.addHandler(logging.StreamHandler())
-logger.handlers[0].setFormatter(
-    logging.Formatter("%(levelname)s %(asctime)s [%(name)s]: %(message)s")
-)
+from ontoflow.node import Node
 
 
-class ModsMco:
-    def __init__(self, kpis: list[dict]):
-        """Initialise the MCO.
+class Mco:
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.ERROR)
+        self.logger.addHandler(logging.StreamHandler())
+        self.logger.handlers[0].setFormatter(
+            logging.Formatter("%(levelname)s %(asctime)s [%(name)s]: %(message)s")
+        )
 
-        Args:
-            kpis (list[dict]): The KPIs to be used for the MCO.
-        """
+    def mco_calc(self) -> list[int]:
+        return []
 
-        self.mcdm_simulation = mods.MultiCriteriaDecisionMaking()
-        mcdm_algorithm = mods.Algorithm(name="algorithm1", type="MCDM")
 
-        mcdm_algorithm.add(mods.Variable(name="Id", type="input"))
+def mco_ranking(engine: str, kpis: list[dict], node: Node) -> list[int]:
+    """Factory method for creating an MCO and getting the ranking of the routes.
 
-        for kpi in kpis:
-            mcdm_algorithm.add(
-                mods.Variable(
-                    name=kpi["name"],
-                    type="output",
-                    objective="Maximise" if kpi["maximise"] else "Minimise",
-                    weight=kpi["weight"],
-                )
-            )
+    Args:
+        engine (str): The engine to use for the MCO.
+        kpis (list[dict]): The KPIs to be used for the MCO.
+        node (Node): The node to be used for the MCO.
 
-        self.mcdm_simulation.add(mcdm_algorithm)
+    Returns:
+        list[int]: The ranking of the routes.
+    """
 
-    def mco_calc(self, data: list[list[int]]) -> list[int]:
-        """Calculate the MCO.
+    mcos_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcos")
 
-        Args:
-            data (list[list[int]]): The costs of the routes.
+    # Load all modules in the ontoflow.mcos package
+    mco_modules = {
+        name: import_module(f"ontoflow.mcos.{name}")
+        for _, name, _ in iter_modules(path=[mcos_dir])
+    }
 
-        Returns:
-            list[int]: The ranking of the routes.
-        """
+    # Check if the engine exists in the loaded modules
+    mco_engine = mco_modules.get(engine)
 
-        logger.info("################ Start: MCO Calc ################")
-        logger.info("Setting up the simulation inputs")
-
-        data_header = data[0]
-        data_values = data[1:]
-
-        input_data = mods.InputData()
-
-        for row in data_values:
-            data_point = mods.DataPoint()
-            for header, value in zip(data_header, row):
-                data_point.add(
-                    mods.DataPointItem(name=header, value=value),
-                    rel=mods.hasPart,
-                )
-            input_data.add(data_point, rel=mods.hasPart)
-
-        self.mcdm_simulation.add(input_data)
-
-        logger.info("Invoking the wrapper session")
-        # Construct a wrapper and run a new session
-        with ms.MoDS_Session() as session:
-            load_dotenv()
-            wrapper = cuba.wrapper(session=session)
-            wrapper.add(self.mcdm_simulation, rel=cuba.relationship)
-            wrapper.session.run()
-
-            pareto_front = search.find_cuds_objects_by_oclass(
-                mods.ParetoFront, wrapper, rel=None
-            )
-
-            ranking = []
-
-            if pareto_front:
-                pretty_print(pareto_front[0])
-                rank = search.find_cuds_objects_by_oclass(
-                    mods.RankedDataPoint, pareto_front[0], rel=None
-                )
-                if rank and len(rank) > 0:  # Add a check for non-empty list
-                    for el in rank:
-                        items = search.find_cuds_objects_by_oclass(
-                            mods.DataPointItem, el, rel=mods.hasPart
-                        )
-                        if items and len(items) > 0:  # Add a check for non-empty item
-                            for item in items:
-                                if item.name == "Id":
-                                    ranking.append(int(item.value.split(".")[0]))
-
-        logger.info("################ End: MCO Calc ################")
-
-        return ranking
+    if mco_engine is not None:
+        return getattr(mco_engine, engine.capitalize())(kpis, node).mco_calc()
+    else:
+        raise ValueError(f"Unknown MCO engine: {engine}")
