@@ -7,7 +7,7 @@ from typing import Optional
 
 from ontoflow.cost_converters.converters import init_converter_triplestore
 from ontoflow.log.logger import logger
-from ontoflow.mco import ModsMco
+from ontoflow.mco import mco_ranking
 from ontoflow.node import Node
 
 from tripper import Namespace, Triplestore
@@ -23,7 +23,7 @@ class OntoFlowEngine:
 
         self.triplestore: Triplestore = triplestore
         self.explored: dict = {}
-        self.kpis: list = []
+        self.kpis: list[str] = []
 
         # Bind the namespace used for the KPI definition
         ontoflowKpiNs = Namespace("http://open-model.eu/ontoflow/kpa#")
@@ -77,7 +77,7 @@ class OntoFlowEngine:
         """
 
         logger.info(f"Getting mapping route for {target}")
-        self.kpis = [kpi["name"] for kpi in kpis]
+        self.kpis.extend([kpi["name"] for kpi in kpis])
 
         # Build the tree and get the routes
         root = Node(0, target, "", kpis=self._getKpis(target))
@@ -85,15 +85,8 @@ class OntoFlowEngine:
         root.generateRoutes()
         self.kpis.append("Id")
 
-        # Pass the routes to the MCO to get the ranking
-        mco: ModsMco = ModsMco(kpis)
-
-        values: list = [self.kpis]
-
-        for r in root.routes:
-            values.append([r.costs[kpi] for kpi in self.kpis])
-
-        ranking = mco.mco_calc(values)
+        # Get the MCO ranking
+        ranking = mco_ranking("mods", kpis, root)
 
         if foldername is not None:
             logger.info("Printing the results")
