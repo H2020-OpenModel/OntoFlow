@@ -13,6 +13,7 @@ from tripper import Triplestore
 ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "ss3_v2.ttl")
 
 ROOT = "http://open-model.eu/ontologies/ss3#FenicsOutput"
+MCO = "mods"
 
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
@@ -37,8 +38,8 @@ kpis = [
 ]
 
 # Get the best route
-bestRoute = engine.getBestRoute(ROOT, kpis, str(Path(os.path.abspath(__file__)).parent))
-bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
-bestRoute.visualize(
-    output=os.path.join(Path(os.path.abspath(__file__)).parent, "best")
+bestRoute = engine.getBestRoute(
+    ROOT, kpis, MCO, str(Path(os.path.abspath(__file__)).parent)
 )
+bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))

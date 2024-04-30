@@ -15,6 +15,7 @@ ONTOLOGY_PATH = os.path.join(
 )
 
 ROOT = "http://webprotege.stanford.edu/Density"
+MCO = "mods"
 
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
@@ -39,9 +40,9 @@ kpis = [
 ]
 
 # Get the best route
-bestRoute = engine.getBestRoute(ROOT, kpis, str(Path(os.path.abspath(__file__)).parent))
+bestRoute = engine.getBestRoute(
+    ROOT, kpis, MCO, str(Path(os.path.abspath(__file__)).parent)
+)
 
 bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
-bestRoute.visualize(
-    output=os.path.join(Path(os.path.abspath(__file__)).parent, "best")
-)
+bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))

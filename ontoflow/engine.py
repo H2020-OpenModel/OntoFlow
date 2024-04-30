@@ -60,7 +60,11 @@ class OntoFlowEngine:
         )
 
     def getBestRoute(
-        self, target: str, kpis: list[dict], foldername: Optional[str] = None
+        self,
+        target: str,
+        kpis: list[dict],
+        mco: str = "mods",
+        foldername: Optional[str] = None,
     ) -> Node:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
@@ -70,6 +74,7 @@ class OntoFlowEngine:
         Args:
             target (str): The target data to be found.
             kpis (list[dict]): The KPIs to be used for the MCO.
+            mco (str): The MCO to be used. Defaults to "mods".
             foldername (str): The folder where to save the results. Defaults to None.
 
         Returns:
@@ -86,7 +91,7 @@ class OntoFlowEngine:
         self.kpis.append("Id")
 
         # Get the MCO ranking
-        ranking = mco_ranking("mods", kpis, root)
+        ranking = mco_ranking(mco, kpis, root)
 
         if foldername is not None:
             logger.info("Printing the results")
