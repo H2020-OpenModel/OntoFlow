@@ -1,6 +1,5 @@
-from importlib import import_module
-import logging
 import os
+from importlib import import_module
 from pkgutil import iter_modules
 
 from ontoflow.node import Node
@@ -8,12 +7,7 @@ from ontoflow.node import Node
 
 class Mco:
     def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.ERROR)
-        self.logger.addHandler(logging.StreamHandler())
-        self.logger.handlers[0].setFormatter(
-            logging.Formatter("%(levelname)s %(asctime)s [%(name)s]: %(message)s")
-        )
+        pass
 
     def mco_calc(self) -> list[int]:
         return []
