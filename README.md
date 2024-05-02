@@ -33,10 +33,16 @@ pip install .
 or add it as dependency
 
 ```
+git+https://github.com/H2020-OpenModel/OntoFlow@<commit code>
+```
+
+or install it with pip
+
+```
 pip install git+https://github.com/H2020-OpenModel/OntoFlow
 ```
 
-It is also possible to install a given tagged release, commit or branch by adding it to the end of the URL preceeded by an "@"-sign. For example: `pip install git+https://github.com/H2020-OpenModel/OntoFlow@<commit code>`.
+To install a given release, commit or branch, you can addit to the end of the URL preceeded by an "@"-sign. For example: `pip install git+https://github.com/H2020-OpenModel/OntoFlow@<commit code>`.
 
 
 ## Tests
