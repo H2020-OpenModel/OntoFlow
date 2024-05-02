@@ -14,6 +14,7 @@ from tests.utils.ontology_generator import (
     add_generating_model,
 )
 from ontoflow.engine import OntoFlowEngine
+from ontoflow.node import Node
 
 example_ns = Namespace("http://openmodel.ontoflow/examples#")
 example_individual_ns = Namespace("http://openmodel.ontoflow/examples/individuals#")
@@ -31,7 +32,7 @@ def visitor_flat_structure(node):
     Returns:
         list: The flattened structure of the ontology tree.
     """
-    flat_nodes = [node.iri]
+    flat_nodes = [str(node.iri)]
 
     for child in node.children:
         flat_nodes += visitor_flat_structure(child)
@@ -40,6 +41,15 @@ def visitor_flat_structure(node):
 
 
 class SearchAlgorithm_TestCase(unittest.TestCase):
+    """
+    This test suite is used to test the search algorithm of the OntoFlow engine.
+    In particular, it test the generation of the routes in the unified ontology tree and the split algorithm of the single routes.
+
+    Functions tested:
+    * _exploreNode
+    * generateRoutes
+    """
+
 
     @classmethod
     def setUpClass(cls):
@@ -85,12 +95,13 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
 
         # [] - Assert on number of routes, how to disitnguish between them?
-        self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(visitor_flat_structure(root_node), expected_structure)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T2(self):
         target_node = URIRef(example_ns.Target)
@@ -108,14 +119,15 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
 
-        print(routes.accept(visitor_flat_structure))
+        print(visitor_flat_structure(root_node))
         print(expected_structure)
 
-        self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(visitor_flat_structure(root_node), expected_structure)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T4(self):
         target_node = URIRef(example_ns.Target)
@@ -134,14 +146,16 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        
 
-        print(routes.accept(visitor_flat_structure))
+        print(visitor_flat_structure(root_node))
         print(expected_structure)
 
-        self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(visitor_flat_structure(root_node), expected_structure)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T5(self):
         target_node = URIRef(example_ns.Target)
@@ -162,14 +176,15 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
 
-        print(routes.accept(visitor_flat_structure))
+        print(visitor_flat_structure(root_node))
         print(expected_structure)
 
-        self.assertEqual(routes.accept(visitor_flat_structure), expected_structure)
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(visitor_flat_structure(root_node), expected_structure)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T7(self):
         target_node = URIRef(example_ns.Target)
@@ -199,16 +214,17 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
 
-        print(routes.accept(visitor_flat_structure))
+        print(visitor_flat_structure(root_node))
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [expected_structure_a, expected_structure_b],
         )
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T8(self):
         target_node = URIRef(example_ns.Target)
@@ -241,16 +257,18 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        
 
-        print(routes.accept(visitor_flat_structure))
+        print(visitor_flat_structure(root_node))
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [expected_structure_a, expected_structure_b],
         )
-        self.assertEqual(routes.routeChoices, 1)
+        self.assertEqual(len(root_node.routes), 1)
 
     def test_T9(self):
         target_node = URIRef(example_ns.Target)
@@ -284,18 +302,34 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(individual_node_a),
         ]
 
+        route_a = [
+            str(target_node),
+            str(generating_model_a),
+            str(inputs_a[0]),
+            str(individual_node_a),
+        ]
+        route_b = [
+            str(target_node),
+            str(generating_model_b),
+            str(inputs_b[0]),
+            str(individual_node_a),
+        ]
+
         print(self.__graph.serialize(format="turtle"))
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
-
-        print(routes.accept(visitor_flat_structure))
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        a = visitor_flat_structure(root_node.routes[0])
+        b = visitor_flat_structure(root_node.routes[1])
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [expected_structure_a, expected_structure_b],
         )
-        self.assertEqual(routes.routeChoices, 2)
+        self.assertEqual(len(root_node.routes), 2)
+        self.assertIn(a, [route_a, route_b])
+        self.assertIn(b, [route_a, route_b])
 
     def test_T10(self):
         target_node = URIRef(example_ns.Target)
@@ -334,18 +368,34 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(individual_node_a),
         ]
 
-        print(self.__graph.serialize(format="turtle"))
+        route_a = [
+            str(target_node),
+            str(generating_model_a),
+            str(inputs_a[0]),
+            str(subclass_a),
+            str(individual_node_a)
+        ]
+        route_b = [
+            str(target_node),
+            str(generating_model_b),
+            str(inputs_b[0]),
+            str(subclass_a),
+            str(individual_node_a)
+        ]
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
-
-        print(routes.accept(visitor_flat_structure))
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        a = visitor_flat_structure(root_node.routes[0])
+        b = visitor_flat_structure(root_node.routes[1])
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [expected_structure_a, expected_structure_b],
         )
-        self.assertEqual(routes.routeChoices, 2)
+        self.assertEqual(len(root_node.routes), 2)
+        self.assertIn(a, [route_a, route_b])
+        self.assertIn(b, [route_a, route_b])
 
     def test_T11(self):
         target_node = URIRef(example_ns.Target)
@@ -395,18 +445,38 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(individual_node_a),
         ]
 
-        print(self.__graph.serialize(format="turtle"))
+        route_a = [
+            str(target_node),
+            str(generating_model_a),
+            str(inputs_a[0]),
+            str(generating_model_c),
+            str(inputs_c[0]),
+            str(subclass_a),
+            str(individual_node_a)
+        ]
+        route_b = [
+            str(target_node),
+            str(generating_model_b),
+            str(inputs_b[0]),
+            str(generating_model_c),
+            str(inputs_c[0]),
+            str(subclass_a),
+            str(individual_node_a)
+        ]
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
-
-        print(routes.accept(visitor_flat_structure))
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        a = visitor_flat_structure(root_node.routes[0])
+        b = visitor_flat_structure(root_node.routes[1])
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [expected_structure_a, expected_structure_b],
         )
-        self.assertEqual(routes.routeChoices, 2)
+        self.assertEqual(len(root_node.routes), 2)
+        self.assertIn(a, [route_a, route_b])
+        self.assertIn(b, [route_a, route_b])
 
     def test_T12(self):
         target_node = URIRef(example_ns.Target)
@@ -453,13 +523,31 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(individual_node_a),
         ]
 
-        print(self.__graph.serialize(format="turtle"))
+        route_a = [
+            str(target_node),
+            str(subclass_node_a),
+            str(individual_node_a)
+        ]
+        route_b = [
+            str(target_node),
+            str(subclass_node_a),
+            str(individual_node_b)
+        ]
+        route_c = [
+            str(target_node),
+            str(subclass_node_b),
+            str(individual_node_c)
+        ]
 
-        routes = self.__ontoflow_engine.getBestRoute(str(target_node))
-        print(routes)
+        root_node = Node(0, target_node, "")
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+        a = visitor_flat_structure(root_node.routes[0])
+        b = visitor_flat_structure(root_node.routes[1])
+        c = visitor_flat_structure(root_node.routes[2])
 
         self.assertIn(
-            routes.accept(visitor_flat_structure),
+            visitor_flat_structure(root_node),
             [
                 expected_structure_a,
                 expected_structure_b,
@@ -467,4 +555,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
                 expected_structure_d,
             ],
         )
-        self.assertEqual(routes.routeChoices, 3)
+        self.assertEqual(len(root_node.routes), 3)
+        self.assertIn(a, [route_a, route_b, route_c])
+        self.assertIn(b, [route_a, route_b, route_c])
+        self.assertIn(c, [route_a, route_b, route_c])
