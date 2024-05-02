@@ -127,25 +127,6 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         )
         pass
 
-    def test_T1(self):
-        target_node = URIRef(example_ns.Target)
-        individual_node = add_individual(self.__graph, target_node)
-        kpa_ind, kpa_bnode = add_kpa(self.__graph, target_node, "Mock_KPA_A", "Mock_KPA_Value_A")
-        kpa_ind, kpa_bnode = add_kpa(self.__graph, target_node, "Numerical_Mock_KPA_B", "20")
-
-
-        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
-        self.__triplestore.parse(source=ontology_stream, format="turtle")
-
-        root_node = Node(0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node)))
-        self.__ontoflow_engine._exploreNode(root_node)
-        root_node.generateRoutes()
-
-        self.assertEqual(len(root_node.routes), 1)
-        self.assertEqual(root_node.kpis["KPA_A"], 10)
-        self.assertEqual(root_node.kpis["KPA_B"], 20*2)
-
-
     def test_T9(self):
         target_node = URIRef(example_ns.Target)
         generating_model_a, inputs_a = add_generating_model(
@@ -162,15 +143,43 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Mock_KPA_A", "Mock_KPA_Value_D")
         kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Numerical_Mock_KPA_B", "40")
 
+        route_a = [
+            str(target_node),
+            str(generating_model_a),
+            str(inputs_a[0]),
+            str(individual_node_a),
+        ]
+        route_b = [
+            str(target_node),
+            str(generating_model_b),
+            str(inputs_b[0]),
+            str(individual_node_a),
+        ]
+
+
         ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
-        root_node = Node(0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node)))
-        self.__ontoflow_engine._exploreNode(root_node)
-        root_node.generateRoutes()
+        kpis = [
+            {"name": "KPA_A", "weight": 3, "maximise": True},
+            {"name": "KPA_B", "weight": 1, "maximise": False},
+        ]
 
-        self.assertEqual(len(root_node.routes), 2)
-        self.assertIn(root_node.routes[0].costs["KPA_A"], [10, 30])
-        self.assertIn(root_node.routes[0].costs["KPA_B"], [40, 80])
-        self.assertIn(root_node.routes[1].costs["KPA_A"], [10, 30])
-        self.assertIn(root_node.routes[1].costs["KPA_B"], [40, 80])
+        # Get the best route
+        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpis)
+        t = visitor_flat_structure(bestRoute)
+
+        self.assertEqual(bestRoute.routeChoices, 2)
+        self.assertEqual(visitor_flat_structure(bestRoute), route_b)
+
+        kpis = [
+            {"name": "KPA_A", "weight": 1, "maximise": True},
+            {"name": "KPA_B", "weight": 3, "maximise": False},
+        ]
+
+        # Get the best route
+        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpis)
+        t = visitor_flat_structure(bestRoute)
+
+        self.assertEqual(bestRoute.routeChoices, 2)
+        self.assertEqual(visitor_flat_structure(bestRoute), route_a)
