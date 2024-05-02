@@ -7,11 +7,16 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <http://open-model.eu/ontoflow/kpa> a owl:Ontology ;
-    owl:imports emmo:1.0.0-beta4 .
+    owl:imports <https://w3id.org/emmo/1.0.0-rc1> .
 
-kpa:KPAValue a owl:DatatypeProperty .
+kpa:KPAValue a owl:DatatypeProperty ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The KPAValue property defines the quantitative or qualitative measure linked to a Key Performance Attribute (KPA) for an entity"@en ;
+    rdfs:subPropertyOf emmo:EMMO_b6292331_94af_4f00_976b_ea55960c2f1c .
 
-kpa:hasKPA a owl:ObjectProperty .
+kpa:hasKPA a owl:ObjectProperty ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The hasKPA property links an entity to a Key Performance Attribute (KPA)"@en ;
+    rdfs:range kpa:KPA ;
+    rdfs:subPropertyOf emmo:EMMO_e1097637_70d2_4895_973f_2396f04fa204 .
 
 kpa-converters:boolopensource_converter_7dcb673e a emmo:EMMO_4299e344_a321_4ef2_a744_bacfcce80afc ;
     rdfs:label "boolopensource_converter"@en ;
@@ -45,43 +50,47 @@ kpa-converters:ordinalaccuracy_converter_41a4796e a emmo:EMMO_4299e344_a321_4ef2
 kpa:BoolOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;
     rdfs:label "opensource_value"@en ;
-    rdfs:comment "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en ;
     rdfs:subClassOf kpa:OpenSource .
 
 kpa:NumericalOpenSource a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;
-    rdfs:comment "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en ;
     rdfs:subClassOf kpa:OpenSource .
 
 kpa:OrdinalAccuracy a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;
     rdfs:label "accuracy"@en ;
-    rdfs:comment "A performance attribute indicating the typical accuracy of a simulation tool. This takes the values of  High, Medium and Low"@en ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating the typical accuracy of a simulation tool. This takes the values of  High, Medium and Low"@en ;
     rdfs:subClassOf emmo:EMMO_50ea1ec5_f157_41b0_b46b_a9032f17ca10,
         kpa:Accuracy .
 
 kpa:SimulationTime a owl:Class ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Usual simulation time of tools"@en ;
     rdfs:subClassOf kpa:KPA .
 
 kpa:Accuracy a owl:Class ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The Accuracy metric for a process, model or task. It can be defined in heterogeneous way according to its subclasses"@en ;
     rdfs:subClassOf emmo:EMMO_f8bd64d5_5d3e_4ad4_a46e_c30714fecb7f,
         kpa:KPA .
 
 kpa:NumericalSimulationTime a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;
     rdfs:label "value"@en ;
-    rdfs:comment "A performance attribute indicating the typical simulation time, in seconds."@en ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating the typical simulation time, in seconds."@en ;
     rdfs:subClassOf kpa:SimulationTime .
 
 kpa:OpenSource a owl:Class ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The OpenSource metric defining whether a process, model or task is opensource"@en ;
     rdfs:subClassOf kpa:KPA .
-
-kpa:KPA a owl:Class ;
-    rdfs:subClassOf emmo:EMMO_f658c301_ce93_46cf_9639_4eace2c5d1d5 .
 
 kpa:NumericalAccuracy a emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a,
         owl:Class ;
     rdfs:label "value"@en ;
-    rdfs:comment "A performance attribute indicating a specific numerical cost for the Accuracy according to an internal logic."@en ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating a specific numerical cost for the Accuracy according to an internal logic."@en ;
     rdfs:subClassOf kpa:Accuracy .
+
+kpa:KPA a owl:Class ;
+    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The Key Performance Attribute (KPA) class defining technical attributes of models, processes or tasks"@en ;
+    rdfs:subClassOf emmo:EMMO_f658c301_ce93_46cf_9639_4eace2c5d1d5 .
 
