@@ -141,5 +141,38 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
 
+        self.assertEqual(len(root_node.routes), 1)
         self.assertEqual(root_node.kpis["KPA_A"], 10)
         self.assertEqual(root_node.kpis["KPA_B"], 20*2)
+
+
+    def test_T9(self):
+        target_node = URIRef(example_ns.Target)
+        generating_model_a, inputs_a = add_generating_model(
+            self.__graph, target_node, 1
+        )
+        generating_model_b, inputs_b = add_generating_model(
+            self.__graph, target_node, 1, inputs_a
+        )
+        individual_node_a = add_individual(self.__graph, inputs_a[0])
+
+        kpa_ind_a, kpa_bnode_a = add_kpa(self.__graph, generating_model_a, "Mock_KPA_A", "Mock_KPA_Value_A")
+        kpa_ind_a, kpa_bnode_a = add_kpa(self.__graph, generating_model_a, "Numerical_Mock_KPA_B", "20")
+
+        kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Mock_KPA_A", "Mock_KPA_Value_D")
+        kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Numerical_Mock_KPA_B", "40")
+
+        ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
+        self.__triplestore.parse(source=ontology_stream, format="turtle")
+
+        visualize(self.__graph, os.path.join(Path(os.path.abspath(__file__)).parent, "test_T9.png"))
+
+        root_node = Node(0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node)))
+        self.__ontoflow_engine._exploreNode(root_node)
+        root_node.generateRoutes()
+
+        self.assertEqual(len(root_node.routes), 2)
+        self.assertIn(root_node.routes[0].costs["KPA_A"], [10, 30])
+        self.assertIn(root_node.routes[0].costs["KPA_B"], [40, 80])
+        self.assertIn(root_node.routes[1].costs["KPA_A"], [10, 30])
+        self.assertIn(root_node.routes[1].costs["KPA_B"], [40, 80])
