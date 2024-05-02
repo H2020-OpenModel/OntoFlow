@@ -4,6 +4,8 @@ from osp.core.namespaces import mods, cuba
 import osp.core.utils.simple_search as search
 from osp.wrappers.sim_cmcl_mods_wrapper import mods_session as ms
 
+from ontoflow.log.logger import logger
+
 from ontoflow.node import Node
 from ontoflow.mco import Mco
 
@@ -16,8 +18,6 @@ class Mods(Mco):
             kpis (list[dict]): The KPIs to be used for the MCO.
             node (Node): The node to be used for the MCO.
         """
-
-        super().__init__()
 
         # Setup algorithm
         self.mcdm_simulation = mods.MultiCriteriaDecisionMaking()
@@ -53,8 +53,8 @@ class Mods(Mco):
             list[int]: The ranking of the routes.
         """
 
-        self.logger.info("################ Start: MCO Calc ################")
-        self.logger.info("Setting up the simulation inputs")
+        logger.info("################ Start: MCO Calc ################")
+        logger.info("Setting up the simulation inputs")
 
         data_header = self.data[0]
         data_values = self.data[1:]
@@ -72,7 +72,7 @@ class Mods(Mco):
 
         self.mcdm_simulation.add(input_data)
 
-        self.logger.info("Invoking the wrapper session")
+        logger.info("Invoking the wrapper session")
         # Construct a wrapper and run a new session
         with ms.MoDS_Session() as session:
             load_dotenv()
@@ -100,6 +100,6 @@ class Mods(Mco):
                                 if item.name == "Id":
                                     ranking.append(int(item.value.split(".")[0]))
 
-        self.logger.info("################ End: MCO Calc ################")
+        logger.info("################ End: MCO Calc ################")
 
         return ranking
