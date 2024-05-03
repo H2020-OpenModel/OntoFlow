@@ -2,7 +2,7 @@ import io
 import os
 import pydot
 from os.path import dirname, abspath
-from rdflib import Graph, URIRef, Namespace, BNode
+from rdflib import Graph, URIRef, Namespace, BNode, Literal
 from rdflib.tools.rdf2dot import rdf2dot
 
 example_ns = Namespace("http://openmodel.ontoflow/examples#")
@@ -12,7 +12,9 @@ rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
 emmo = Namespace("http://emmo.info/emmo#")
 webprotege = Namespace("http://webprotege.stanford.edu/")
+kpa = Namespace("http://open-model.eu/ontoflow/kpa#")
 
+kpa_count = 0
 individual_count = 0
 subclass_count = 0
 generating_model_count = 0
@@ -24,6 +26,22 @@ def visualize(g, name="example.png"):
     rdf2dot(g, stream)
     (graph,) = pydot.graph_from_dot_data(stream.getvalue())
     graph.write_png(os.path.join(dirname(dirname(abspath(__file__))), name))
+
+
+def add_kpa(graph, currentTarget, kpa_name, kpa_value):
+    global kpa_count
+    kpa_count += 1
+    kpa_individual = URIRef(example_individual_ns["kpa" + str(kpa_count)])
+    graph.add((kpa_individual, rdf.type, kpa.term(kpa_name)))
+    graph.add((kpa_individual, kpa.KPAValue, Literal(kpa_value)))
+
+    kpa_bnode = BNode()
+    graph.add((kpa_bnode, rdf.type, owl.Restriction))
+    graph.add((kpa_bnode, owl.onProperty, kpa.hasKPA))
+    graph.add((kpa_bnode, owl.hasValue, kpa_individual))
+    graph.add((currentTarget, rdfs.subClassOf, kpa_bnode))
+
+    return kpa_individual, kpa_bnode
 
 
 def add_individual(graph, currentTarget):

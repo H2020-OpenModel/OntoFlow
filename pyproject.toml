@@ -19,19 +19,16 @@ classifiers = [
 dependencies = [
   "pyyaml",
   "python-dotenv",
+  "rdflib",
+  "pydot",
   "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0",
-  "sim-cmcl-mods-wrapper @ git+https://github.com/EMMC-ASBL/MoDSInterface@dev-add-mcdm-algorithm-type"
+  "sim-cmcl-mods-wrapper @ git+https://github.com/EMMC-ASBL/MoDSInterface@dev-add-mcdm-algorithm-type",
 ]
 
 [project.optional-dependencies]
 examples = [
   "oteapi-asmod @ git+https://github.com/EMMC-ASBL/oteapi-asmod@eb7292b",
   "oteapi-core==0.4.1"
-]
-
-tests = [
-  "rdflib",
-  "pydot",
 ]
 
 [tool.setuptools]
