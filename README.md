@@ -56,13 +56,13 @@ pip install '.[tests]'
 Tests can be found in the test folder. To run them, you can use the following command
 
 ```
-python -m unittest tests/test_search_algorithm.py
+python -m unittest tests/*.py
 ```
 
 By default the triplestore url is set to the http://localhost:3030 endpoint for local testing. If you want to change it, you can set the `TRIPLESTORE_URL` environment variable to the desired endpoint.
 
 ```
-TRIPLESTORE_URL=<triplestore url> python -m unittest tests/test_search_algorithm.py
+TRIPLESTORE_URL=<triplestore url> python -m unittest tests/*.py
 ```
 
 
