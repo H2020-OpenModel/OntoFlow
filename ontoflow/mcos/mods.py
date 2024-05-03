@@ -5,7 +5,6 @@ import osp.core.utils.simple_search as search
 from osp.wrappers.sim_cmcl_mods_wrapper import mods_session as ms
 
 from ontoflow.log.logger import logger
-
 from ontoflow.node import Node
 from ontoflow.mco import Mco
 

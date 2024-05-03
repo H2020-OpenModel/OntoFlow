@@ -38,7 +38,7 @@ class OntoFlowEngine:
         )
         self.__kpaTriplestore.parse(
             os.path.join(
-                Path(os.path.abspath(__file__)).parent.parent, "ontologies", "kpa.ttl"
+                Path(os.path.abspath(__file__)).parent, "ontologies", "kpa.ttl"
             ),
             "turtle",
         )
@@ -52,7 +52,7 @@ class OntoFlowEngine:
 
         self.__kpaTriplestore.serialize(
             os.path.join(
-                Path(os.path.abspath(__file__)).parent.parent,
+                Path(os.path.abspath(__file__)).parent,
                 "ontologies",
                 "kpa-converters.ttl",
             ),

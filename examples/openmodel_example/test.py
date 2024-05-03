@@ -1,8 +1,6 @@
 import os
-import sys
 from pathlib import Path
 
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
 from ontoflow.engine import OntoFlowEngine
 
 from tripper import Triplestore
