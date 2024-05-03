@@ -13,7 +13,7 @@ from tests.utils.ontology_generator import (
     add_subclass,
     add_generating_model,
     add_kpa,
-    visualize
+    visualize,
 )
 from ontoflow.engine import OntoFlowEngine
 from ontoflow.node import Node
@@ -25,7 +25,6 @@ rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
 webprotege = Namespace("http://webprotege.stanford.edu/")
 kpa = Namespace("http://open-model.eu/ontoflow/kpa#")
 owl = Namespace("http://www.w3.org/2002/07/owl#")
-
 
 
 def visitor_flat_structure(node):
@@ -54,14 +53,15 @@ def converter_mock_a(mock_value):
     Returns:
         int: The converted KPA value.
     """
-    
+
     if mock_value == "Mock_KPA_Value_A":
         return 10
     elif mock_value == "Mock_KPA_Value_B":
         return 20
     else:
         return 30
-    
+
+
 def converter_mock_b(mock_value):
     """Mock function to convert the KPA value.
 
@@ -71,9 +71,9 @@ def converter_mock_b(mock_value):
     Returns:
         int: The converted KPA value.
     """
-    
+
     return int(mock_value) * 2
-    
+
 
 class SearchAlgorithm_TestCase(unittest.TestCase):
     """
@@ -81,7 +81,6 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
     In particular, it test whether the KPA and cost are retrieved and converted correctly.
 
     """
-
 
     @classmethod
     def setUpClass(cls):
@@ -106,11 +105,31 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
 
         # Create Mock KPA: KPA_A, KPA_B
         # Create its subclasses: Mock_KPA_A, Mock_KPA_B
-        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples([(kpa.KPA_A, rdf.type, owl.Class), (kpa.KPA_A, rdfs.subClassOf, kpa.KPA)])
-        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples([(kpa.KPA_B, rdf.type, owl.Class), (kpa.KPA_B, rdfs.subClassOf, kpa.KPA)])
-        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples([(kpa.Mock_KPA_A, rdfs.subClassOf, kpa.KPA_A), (kpa.Mock_KPA_B, rdfs.subClassOf, kpa.KPA_B), (kpa.Numerical_Mock_KPA_B, rdfs.subClassOf, kpa.KPA_B)])
-        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_function(converter_mock_a, expects=kpa.Mock_KPA_A, returns=kpa.Numerical_Mock_KPA_A, standard="emmo")
-        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_function(converter_mock_b, expects=kpa.Numerical_Mock_KPA_B, returns=kpa.Numerical_Mock_KPA_B, standard="emmo")
+        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples(
+            [(kpa.KPA_A, rdf.type, owl.Class), (kpa.KPA_A, rdfs.subClassOf, kpa.KPA)]
+        )
+        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples(
+            [(kpa.KPA_B, rdf.type, owl.Class), (kpa.KPA_B, rdfs.subClassOf, kpa.KPA)]
+        )
+        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_triples(
+            [
+                (kpa.Mock_KPA_A, rdfs.subClassOf, kpa.KPA_A),
+                (kpa.Mock_KPA_B, rdfs.subClassOf, kpa.KPA_B),
+                (kpa.Numerical_Mock_KPA_B, rdfs.subClassOf, kpa.KPA_B),
+            ]
+        )
+        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_function(
+            converter_mock_a,
+            expects=kpa.Mock_KPA_A,
+            returns=kpa.Numerical_Mock_KPA_A,
+            standard="emmo",
+        )
+        self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.add_function(
+            converter_mock_b,
+            expects=kpa.Numerical_Mock_KPA_B,
+            returns=kpa.Numerical_Mock_KPA_B,
+            standard="emmo",
+        )
         # with open(os.path.join(Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"), "w") as f:
         #            f.write(self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.serialize(format="turtle"))
         self.__ontoflow_engine.kpis.extend(["KPA_A", "KPA_B"])
@@ -130,21 +149,25 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
     def test_T1(self):
         target_node = URIRef(example_ns.Target)
         individual_node = add_individual(self.__graph, target_node)
-        kpa_ind, kpa_bnode = add_kpa(self.__graph, target_node, "Mock_KPA_A", "Mock_KPA_Value_A")
-        kpa_ind, kpa_bnode = add_kpa(self.__graph, target_node, "Numerical_Mock_KPA_B", "20")
-
+        kpa_ind, kpa_bnode = add_kpa(
+            self.__graph, target_node, "Mock_KPA_A", "Mock_KPA_Value_A"
+        )
+        kpa_ind, kpa_bnode = add_kpa(
+            self.__graph, target_node, "Numerical_Mock_KPA_B", "20"
+        )
 
         ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
-        root_node = Node(0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node)))
+        root_node = Node(
+            0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node))
+        )
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
 
         self.assertEqual(len(root_node.routes), 1)
         self.assertEqual(root_node.kpis["KPA_A"], 10)
-        self.assertEqual(root_node.kpis["KPA_B"], 20*2)
-
+        self.assertEqual(root_node.kpis["KPA_B"], 20 * 2)
 
     def test_T9(self):
         target_node = URIRef(example_ns.Target)
@@ -156,16 +179,26 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         )
         individual_node_a = add_individual(self.__graph, inputs_a[0])
 
-        kpa_ind_a, kpa_bnode_a = add_kpa(self.__graph, generating_model_a, "Mock_KPA_A", "Mock_KPA_Value_A")
-        kpa_ind_a, kpa_bnode_a = add_kpa(self.__graph, generating_model_a, "Numerical_Mock_KPA_B", "20")
+        kpa_ind_a, kpa_bnode_a = add_kpa(
+            self.__graph, generating_model_a, "Mock_KPA_A", "Mock_KPA_Value_A"
+        )
+        kpa_ind_a, kpa_bnode_a = add_kpa(
+            self.__graph, generating_model_a, "Numerical_Mock_KPA_B", "20"
+        )
 
-        kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Mock_KPA_A", "Mock_KPA_Value_D")
-        kpa_ind_b, kpa_bnode_b = add_kpa(self.__graph, generating_model_b, "Numerical_Mock_KPA_B", "40")
+        kpa_ind_b, kpa_bnode_b = add_kpa(
+            self.__graph, generating_model_b, "Mock_KPA_A", "Mock_KPA_Value_D"
+        )
+        kpa_ind_b, kpa_bnode_b = add_kpa(
+            self.__graph, generating_model_b, "Numerical_Mock_KPA_B", "40"
+        )
 
         ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
-        root_node = Node(0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node)))
+        root_node = Node(
+            0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node))
+        )
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
 

@@ -19,10 +19,10 @@ classifiers = [
 dependencies = [
   "pyyaml",
   "python-dotenv",
-  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0",
-  "sim-cmcl-mods-wrapper @ git+https://github.com/EMMC-ASBL/MoDSInterface@dev-add-mcdm-algorithm-type",
   "rdflib",
   "pydot",
+  "pybacktrip @ git+https://github.com/xAlessandroC/PyBackTrip@v2.0.0",
+  "sim-cmcl-mods-wrapper @ git+https://github.com/EMMC-ASBL/MoDSInterface@dev-add-mcdm-algorithm-type",
 ]
 
 [project.optional-dependencies]

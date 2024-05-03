@@ -27,7 +27,7 @@ def visualize(g, name="example.png"):
     (graph,) = pydot.graph_from_dot_data(stream.getvalue())
     graph.write_png(os.path.join(dirname(dirname(abspath(__file__))), name))
 
-    
+
 def add_kpa(graph, currentTarget, kpa_name, kpa_value):
     global kpa_count
     kpa_count += 1
@@ -42,7 +42,6 @@ def add_kpa(graph, currentTarget, kpa_name, kpa_value):
     graph.add((currentTarget, rdfs.subClassOf, kpa_bnode))
 
     return kpa_individual, kpa_bnode
-
 
 
 def add_individual(graph, currentTarget):

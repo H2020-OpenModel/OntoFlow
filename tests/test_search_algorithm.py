@@ -50,7 +50,6 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
     * generateRoutes
     """
 
-
     @classmethod
     def setUpClass(cls):
         pass
@@ -149,7 +148,6 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         root_node = Node(0, target_node, "")
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
-        
 
         print(visitor_flat_structure(root_node))
         print(expected_structure)
@@ -260,7 +258,6 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         root_node = Node(0, target_node, "")
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
-        
 
         print(visitor_flat_structure(root_node))
 
@@ -373,14 +370,14 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(generating_model_a),
             str(inputs_a[0]),
             str(subclass_a),
-            str(individual_node_a)
+            str(individual_node_a),
         ]
         route_b = [
             str(target_node),
             str(generating_model_b),
             str(inputs_b[0]),
             str(subclass_a),
-            str(individual_node_a)
+            str(individual_node_a),
         ]
 
         root_node = Node(0, target_node, "")
@@ -452,7 +449,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(generating_model_c),
             str(inputs_c[0]),
             str(subclass_a),
-            str(individual_node_a)
+            str(individual_node_a),
         ]
         route_b = [
             str(target_node),
@@ -461,7 +458,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(generating_model_c),
             str(inputs_c[0]),
             str(subclass_a),
-            str(individual_node_a)
+            str(individual_node_a),
         ]
 
         root_node = Node(0, target_node, "")
@@ -523,21 +520,9 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
             str(individual_node_a),
         ]
 
-        route_a = [
-            str(target_node),
-            str(subclass_node_a),
-            str(individual_node_a)
-        ]
-        route_b = [
-            str(target_node),
-            str(subclass_node_a),
-            str(individual_node_b)
-        ]
-        route_c = [
-            str(target_node),
-            str(subclass_node_b),
-            str(individual_node_c)
-        ]
+        route_a = [str(target_node), str(subclass_node_a), str(individual_node_a)]
+        route_b = [str(target_node), str(subclass_node_a), str(individual_node_b)]
+        route_c = [str(target_node), str(subclass_node_b), str(individual_node_c)]
 
         root_node = Node(0, target_node, "")
         self.__ontoflow_engine._exploreNode(root_node)
