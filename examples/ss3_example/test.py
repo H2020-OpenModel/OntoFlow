@@ -8,7 +8,7 @@ from tripper import Triplestore
 # podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
 # Initialize the knowledge base
-ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, r"C:\Users\alexc\Desktop\Universita\Ricerca\OpenModel\ontologies\ss3.ttl")
+ONTOLOGY_PATH = os.path.join(Path(os.path.abspath(__file__)).parent, "ss3.ttl")
 
 ROOT = "http://open-model.eu/ontologies/ss3#FenicsOutput"
 MCO = "mods"
@@ -31,8 +31,9 @@ ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 engine = OntoFlowEngine(triplestore=ts)
 
 kpis = [
-    {"name": "Accuracy", "weight": 3, "maximise": True},
-    {"name": "SimulationTime", "weight": 1, "maximise": False},
+    {"name": "Accuracy", "weight": 5, "maximise": True},
+    {"name": "SimulationTime", "weight": 2, "maximise": False},
+    {"name": "OpenSource", "weight": 1, "maximise": True},
 ]
 
 # Get the best route
