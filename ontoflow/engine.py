@@ -125,7 +125,7 @@ class OntoFlowEngine:
 
         if self._individual(node):
             logger.info(f"Node {node.iri} has an individual")
-            return
+            # return
 
         self._model(node)
 
