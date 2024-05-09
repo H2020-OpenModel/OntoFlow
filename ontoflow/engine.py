@@ -115,7 +115,7 @@ class OntoFlowEngine:
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
-        Step 1: Check if the node is an individual and, if it is, return.
+        Step 1: Check if the node is an individual.
         Step 2: Check if the node is a model and explore the inputs.
         Step 3: Check if the node is a subclass and explore it.
 
@@ -123,9 +123,7 @@ class OntoFlowEngine:
             node (Node): The node to explore.
         """
 
-        if self._individual(node):
-            logger.info(f"Node {node.iri} has an individual")
-            # return
+        self._individual(node)
 
         self._model(node)
 
