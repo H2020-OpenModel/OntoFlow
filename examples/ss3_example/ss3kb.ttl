@@ -7,81 +7,94 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix ss3: <http://open-model.eu/ontologies/ss3#> .
 
+
+
 ### Added by hand for now
-:fenics_finite_element_mesh a oteio:DataSink, ss3:FenicsFiniteElementMesh .
-:fenics_materials a oteio:DataSink, ss3:FenicsMaterials .
-:fenics_simulation_config a oteio:DataSink, ss3:FenicsSimulationConfig .
-:abaqus_finite_element_mesh a oteio:DataSink, ss3:AbaqusFiniteElementMesh .
-:abaqus_simple_material_card_template a oteio:DataSink, ss3:AbaqusSimpleMaterialCardTemplate .
+
+# Input to FenicsSimulation
+:fenics_finite_element_mesh a oteio:DataSource, ss3:FenicsFiniteElementMesh .
+:fenics_materials a oteio:DataSource, ss3:FenicsMaterials .
+:fenics_simulation_config a oteio:DataSource, ss3:FenicsSimulationConfig .
+
+# Input to AbaqusSimulation
+:abaqus_finite_element_mesh a oteio:DataSource, ss3:AbaqusFiniteElementMesh .
+
+# Input to MaterialCardGenerator
+:abaqus_simple_material_card_template a oteio:DataSource, ss3:AbaqusSimpleMaterialCardTemplate .
+
+# Input to NaMoSimulation / PremodSimulation+PremodStrengthModel
+:heat_treatment a oteio:DataSource, ss3:HeatTreatment .
+:nominal_alloy_composition a oteio:DataSource, ss3:NominalAlloyComposition .
+
 
 
 ### Generated
-<http://openmodel.eu/ss3/aluminium_material_card> a oteio:DataSink,
-        ss3:AbaqusSimpleMaterialCardTemplate ,  # to be added in yaml input
-        rdf:List ;
-    rdf:first [ a oteio:Dictionary ;
-            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                            emmo:hasStringValue "dataresource"@en ] ;
-                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                            emmo:hasValue [ a oteio:Dictionary ;
-                                    oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                    emmo:hasStringValue "configuration"@en ] ;
-                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                    emmo:hasValue [ a oteio:Dictionary ;
-                                                            rdfs:label "materialcard_al"^^xsd:string ;
-                                                            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                                            emmo:hasStringValue "driver"@en ] ;
-                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                                            emmo:hasValue "json"^^xsd:string ] ],
-                                                                [ a oteio:KeyValuePair ;
-                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                                            emmo:hasStringValue "metadata"@en ] ;
-                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                                            emmo:hasValue "http://www.sintef.no/calm/0.1/AbaqusSimpleMaterialCard"^^xsd:string ] ] ] ] ] ;
-                                    dcat:downloadUrl "file://tests/tests_dlite_plugins/testfiles/input/material_card_al.json"^^xsd:string ;
-                                    dcat:mediaType "application/vnd.dlite-parse"^^xsd:string ] ] ] ] ;
-    rdf:rest () .
+#<http://openmodel.eu/ss3/aluminium_material_card> a oteio:DataSink,
+#        rdf:List ;
+#    rdf:first [ a oteio:Dictionary ;
+#            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                            emmo:hasStringValue "dataresource"@en ] ;
+#                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                            emmo:hasValue [ a oteio:Dictionary ;
+#                                    oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                    emmo:hasStringValue "configuration"@en ] ;
+#                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                    emmo:hasValue [ a oteio:Dictionary ;
+#                                                            rdfs:label "materialcard_al"^^xsd:string ;
+#                                                            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                                            emmo:hasStringValue "driver"@en ] ;
+#                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                                            emmo:hasValue "json"^^xsd:string ] ],
+#                                                                [ a oteio:KeyValuePair ;
+#                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                                            emmo:hasStringValue "metadata"@en ] ;
+#                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                                            emmo:hasValue "http://www.sintef.no/calm/0.1/AbaqusSimpleMaterialCard"^^xsd:string ] ] ] ] ] ;
+#                                    dcat:downloadUrl "file://tests/tests_dlite_plugins/testfiles/input/material_card_al.json"^^xsd:string ;
+#                                    dcat:mediaType "application/vnd.dlite-parse"^^xsd:string ] ] ] ] ;
+#    rdf:rest () .
 
-<http://openmodel.eu/ss3/append_abaqus_input_material_card> a oteio:DataSink,
-        rdf:List ;
-    rdf:first [ a oteio:Dictionary ;
-            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                            emmo:hasStringValue "function"@en ] ;
-                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                            emmo:hasValue [ a oteio:Dictionary ;
-                                    oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                    emmo:hasStringValue "functionType"@en ] ;
-                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                    emmo:hasValue "application/vnd.dlite-generate"^^xsd:string ] ],
-                                        [ a oteio:KeyValuePair ;
-                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                    emmo:hasStringValue "configuration"@en ] ;
-                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                    emmo:hasValue [ a oteio:Dictionary ;
-                                                            rdfs:label "materialcard_concrete"^^xsd:string ;
-                                                            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
-                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                                            emmo:hasStringValue "location"@en ] ;
-                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                                            emmo:hasValue "Section_materials.inp"^^xsd:string ] ],
-                                                                [ a oteio:KeyValuePair ;
-                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                                            emmo:hasStringValue "options"@en ] ;
-                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                                            emmo:hasValue "mode=a"^^xsd:string ] ],
-                                                                [ a oteio:KeyValuePair ;
-                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
-                                                                            emmo:hasStringValue "driver"@en ] ;
-                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
-                                                                            emmo:hasValue "plugin_abaqus_material"^^xsd:string ] ] ] ] ] ] ] ] ] ;
-    rdf:rest () .
+#<http://openmodel.eu/ss3/append_abaqus_input_material_card> a oteio:DataSink,
+#        rdf:List ;
+#    rdf:first [ a oteio:Dictionary ;
+#            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                            emmo:hasStringValue "function"@en ] ;
+#                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                            emmo:hasValue [ a oteio:Dictionary ;
+#                                    oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                    emmo:hasStringValue "functionType"@en ] ;
+#                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                    emmo:hasValue "application/vnd.dlite-generate"^^xsd:string ] ],
+#                                        [ a oteio:KeyValuePair ;
+#                                            oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                    emmo:hasStringValue "configuration"@en ] ;
+#                                            oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                    emmo:hasValue [ a oteio:Dictionary ;
+#                                                            rdfs:label "materialcard_concrete"^^xsd:string ;
+#                                                            oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
+#                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                                            emmo:hasStringValue "location"@en ] ;
+#                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                                            emmo:hasValue "Section_materials.inp"^^xsd:string ] ],
+#                                                                [ a oteio:KeyValuePair ;
+#                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                                            emmo:hasStringValue "options"@en ] ;
+#                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                                            emmo:hasValue "mode=a"^^xsd:string ] ],
+#                                                                [ a oteio:KeyValuePair ;
+#                                                                    oteio:hasDictionaryKey [ a oteio:DictionaryKey ;
+#                                                                            emmo:hasStringValue "driver"@en ] ;
+#                                                                    oteio:hasDictionaryValue [ a oteio:DictionaryValue ;
+#                                                                            emmo:hasValue "plugin_abaqus_material"^^xsd:string ] ] ] ] ] ] ] ] ] ;
+#    rdf:rest () .
 
 <http://openmodel.eu/ss3/concrete_material_card> a oteio:DataSink,
+        ss3:ConcreteMaterialCard ,  # to be added in yaml input
         rdf:List ;
     rdf:first [ a oteio:Dictionary ;
             oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
@@ -110,6 +123,7 @@
     rdf:rest () .
 
 <http://openmodel.eu/ss3/create_abaqus_input_material_card> a oteio:DataSink,
+        ss3:AbaqusSimpleMaterialCard , # to be added in yaml input
         rdf:List ;
     rdf:first [ a oteio:Dictionary ;
             oteio:hasKeyValuePair [ a oteio:KeyValuePair ;
