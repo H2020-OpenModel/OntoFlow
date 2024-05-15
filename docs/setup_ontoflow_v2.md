@@ -1,0 +1,83 @@
+# Setup OntoFlow v2.0.0
+
+### Install software required for running OntoFlow
+The OS needs the following softwares:
+- Python 3 - https://www.python.org/
+- Docker - https://www.docker.com/products/docker-desktop/
+- Graphviz (for dot) - https://graphviz.org/
+- 7zip (for extracting compressed files, not always needed) - https://www.7-zip.org/
+
+#### Commands for Fedora/Red Hat Linux
+For other Linux distros should be similar
+- Docker
+```
+sudo dnf install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io
+sudo systemctl start docker
+```
+- Python 3 (should be already installed)
+```
+sudo dnf install python3
+```
+- Graphviz
+```
+sudo dnf install graphviz
+```
+- 7zip
+```
+sudo dnf install p7zip
+```
+
+### Setup the Jena Fuseki container
+- Download [Jena Fuseki for Docker](https://repo1.maven.org/maven2/org/apache/jena/jena-fuseki-docker/5.0.0/jena-fuseki-docker-5.0.0.zip)
+- Unpack and open it
+- Build the Fuseki image: `docker-compose build --build-arg JENA_VERSION=5.0.0`
+- Create a folder for the databases, inside of it create one for the specific dataset (e.g. databases/ds)
+- Make sure the dataset folder is writable by everyone
+- Run the container: `podman run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel`
+
+#### Commands for Fedora/Red Hat Linux
+```
+curl https://repo1.maven.org/maven2/org/apache/jena/jena-fuseki-docker/5.0.0/jena-fuseki-docker-5.0.0.zip -o jena-fuseki-docker-5.0.0.zip
+7z x jena-fuseki-docker-5.0.0.zip
+cd jena-fuseki-docker-5.0.0
+mkdir -p databases/ds
+chmod 757 databases/ds
+podman run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel
+```
+
+### Setup of the Python Environment
+- Create and use a Python Virtual Environment: `python -m venv path/to/venv`
+- Use the newly created VE: `.\venv\Scripts\activate`
+- Download [OntoFlow v2.0.0](https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.zip) and extract it. It could be installed as a Python package, but it is difficult to retrieve the examples: `pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.tar.gz`
+- Enter the OntoFlow directory
+- Install the package using pip: `pip install .`
+- Download the (ontology)[https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml] used by the MoDS MCO
+- Install it using pico: `pico install ontology.mods.yml`
+
+#### Commands for Fedora/Red Hat Linux
+```
+python -m venv venv
+source venv/bin/activate
+curl https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.tar.gz -o OntoFlow-2.0.0.tar.gz
+tar xzf OntoFlow-2.0.0.tar.gz
+# pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.tar.gz
+cd OntoFlow-2.0.0
+pip install .
+curl https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml -o ontology.mods.yml
+pico install ontology.mods.yml
+```
+
+### Run the example *openmodel_example*
+- Open the directory *openmodel_example* inside of *examples*
+- Check that the Fuseki container is up and running and the Python environment with OntoFLow installed is currently selected
+- Run the example: `python test.py`
+
+#### Commands for Fedora/Red Hat Linux
+```
+cd examples/openmodel_example
+python test.py
+```
+
+### N.B. At the moment only the openmodel_example works properly, a new version of OntoFlow will be releasesd when the SS3 example is ready
