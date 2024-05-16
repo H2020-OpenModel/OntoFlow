@@ -81,3 +81,53 @@ python test.py
 ```
 
 ### N.B. At the moment only the openmodel_example works properly, a new version of OntoFlow will be releasesd when the SS3 example is ready
+
+
+## OntoFlow in Action
+This section will how to set up a script to use OntoFlow properly. Similar example can be found in the examples folder.
+
+```python
+# Import all the necessary dependencies
+import os
+from ontoflow.engine import OntoFlowEngine
+from tripper import Triplestore
+
+# Create an istance of Triplestore which will connect to your local Fuseki instance
+__triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
+ts = Triplestore(
+    backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
+)
+
+# Clean the triplestore
+ts.remove_database(
+    backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
+)
+
+# Add your ontology to the triplestore
+ONTOLOGY_PATH = "path/to/your/ontology.ttl"
+ts.parse(ONTOLOGY_PATH, "turtle")
+
+# Bind optional namespaces to the triplestore
+ts.bind("webp", "http://webprotege.stanford.edu/")
+
+# Initialize the engine
+engine = OntoFlowEngine(triplestore=ts)
+
+# Define the KPAs
+kpis = [
+    {"name": "Accuracy", "weight": 3, "maximise": True},
+    {"name": "SimulationTime", "weight": 1, "maximise": False},
+    {"name": "OpenSource", "weight": 5, "maximise": False},
+]
+
+# Execute the search
+bestRoute = engine.getBestRoute(
+    ROOT, kpis, MCO, str(Path(os.path.abspath(__file__)).parent)
+)
+
+# Export the results
+bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+```
+
+This script executes the engine on a custom ontology and save the results as **yaml** and **png** files.
