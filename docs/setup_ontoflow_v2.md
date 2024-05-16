@@ -3,7 +3,7 @@
 ### Install software required for running OntoFlow
 The OS needs the following softwares:
 - Python 3 - https://www.python.org/
-- Git - https://git-scm.com/downloads
+- Git - https://git-scm.com/
 - Docker - https://www.docker.com/products/docker-desktop/
 - Graphviz (for dot) - https://graphviz.org/
 - 7zip (for extracting compressed files, not always needed) - https://www.7-zip.org/
