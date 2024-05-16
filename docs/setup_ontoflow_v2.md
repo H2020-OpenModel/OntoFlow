@@ -86,7 +86,7 @@ cd examples/openmodel_example
 python test.py
 ```
 
-### N.B. At the moment only the openmodel_example works properly, a new version of OntoFlow will be releasesd when the SS3 example is ready. Meanwhile, for testing purposes only, the branch
+### N.B. At the moment only the openmodel_example works properly, a new version of OntoFlow will be releasesd when the SS3 example is ready. Meanwhile, for testing purposes only, the most updated branch is *test/ss3-run `git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch test/ss3-run`
 
 
 ## OntoFlow in Action
