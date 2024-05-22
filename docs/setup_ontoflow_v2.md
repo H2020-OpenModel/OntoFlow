@@ -40,8 +40,8 @@ sudo dnf install p7zip
 - Build the Fuseki image: `docker compose build --build-arg JENA_VERSION=5.0.0`
 - Create a folder for the databases, inside of it create one for the specific dataset (e.g. databases/ds)
 - Make sure the dataset folder is writable by everyone
-- Run the container: `docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel`
-
+- Run the container passing the dataset as a volume: `docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel`
+- In alternative, mostly for test purposes, run the container saving data temporarily in memory: `docker run -i --rm -p 3030:3030 -t fuseki --update --mem /openmodel`
 #### Commands for Fedora/Red Hat Linux
 ```
 curl https://repo1.maven.org/maven2/org/apache/jena/jena-fuseki-docker/5.0.0/jena-fuseki-docker-5.0.0.zip -o jena-fuseki-docker-5.0.0.zip
@@ -49,7 +49,8 @@ curl https://repo1.maven.org/maven2/org/apache/jena/jena-fuseki-docker/5.0.0/jen
 cd jena-fuseki-docker-5.0.0
 mkdir -p databases/ds
 chmod 757 databases/ds
-podman run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel
+docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --update --loc databases/ds /openmodel
+# docker run -i --rm -p 3030:3030 -t fuseki --update --mem /openmodel
 ```
 
 ### Setup of the Python Environment
