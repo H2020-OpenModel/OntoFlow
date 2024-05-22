@@ -100,7 +100,7 @@ class Node:
             str: the string representation of the graph.
         """
 
-        nodeString = "digraph G {\n" + self._visualize() + "\n}"
+        nodeString = "digraph G {\n" + "\n".join(self._visualize()) + "\n}"
 
         if output is not None:
             subprocess.run(
@@ -234,25 +234,30 @@ class Node:
             str: the string representation of the graph.
         """
 
-        nodeString = []
-        nodeString.append(
-            '"{}" [shape=box] [xlabel="r: {}\nl: {}"]'.format(
-                self.iri, self.routeChoices, self.localChoices
+        colormap = {
+            "hasOutput": "orange",
+            "individual": "lightblue",
+        }
+
+        nodeString = set()
+        nodeString.add(
+            '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
+                self.iri, self.routeChoices, self.localChoices, colormap.get(self.predicate, "white")
             )
         )
 
         for child in self.children:
-            nodeString.append("{}".format(child._visualize()))
+            nodeString.update(child._visualize())
             dirBack = (
                 "back" if child.predicate in ["hasOutput", "subClassOf"] else "forward"
             )
-            nodeString.append(
+            nodeString.add(
                 '"{}" -> "{}" [label="{}", dir="{}", color="{}"]'.format(
                     self.iri, child.iri, child.predicate, dirBack, "black"
                 )
             )
 
-        return "\n".join(nodeString)
+        return nodeString
 
     def __str__(self) -> str:
         """String representation of the node structure.
