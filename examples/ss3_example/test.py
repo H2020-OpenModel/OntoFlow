@@ -27,7 +27,6 @@ ts.remove_database(
 for ontology in ONTOLOGIES:
     ts.parse(os.path.join(Path(os.path.abspath(__file__)).parent, ontology), "turtle")
 
-
 ts.bind("emmo", "https://w3id.org/emmo#")
 ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 
