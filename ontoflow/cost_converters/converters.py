@@ -31,7 +31,7 @@ def init_converter_triplestore(ts: Triplestore):
 
 ## Mirror converters for NumericalKPAs
 def mirror_converter(value):
-    return int(value)
+    return float(value)
 
 
 ## Accuracy Converters
