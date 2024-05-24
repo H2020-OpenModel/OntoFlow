@@ -132,7 +132,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         )
         # with open(os.path.join(Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"), "w") as f:
         #            f.write(self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.serialize(format="turtle"))
-        self.__ontoflow_engine.kpis.extend(["KPA_A", "KPA_B"])
+        self.__ontoflow_engine.kpas.extend(["KPA_A", "KPA_B"])
 
     @classmethod
     def tearDownClass(cls):
@@ -160,14 +160,14 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         root_node = Node(
-            0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node))
+            0, target_node, "", kpas=self.__ontoflow_engine._getKpas(str(target_node))
         )
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()
 
         self.assertEqual(len(root_node.routes), 1)
-        self.assertEqual(root_node.kpis["KPA_A"], 10)
-        self.assertEqual(root_node.kpis["KPA_B"], 20 * 2)
+        self.assertEqual(root_node.kpas["KPA_A"], 10)
+        self.assertEqual(root_node.kpas["KPA_B"], 20 * 2)
 
     def test_T9(self):
         target_node = URIRef(example_ns.Target)
@@ -197,7 +197,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
         root_node = Node(
-            0, target_node, "", kpis=self.__ontoflow_engine._getKpis(str(target_node))
+            0, target_node, "", kpas=self.__ontoflow_engine._getKpas(str(target_node))
         )
         self.__ontoflow_engine._exploreNode(root_node)
         root_node.generateRoutes()

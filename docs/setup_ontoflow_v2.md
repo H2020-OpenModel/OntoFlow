@@ -121,7 +121,7 @@ ts.bind("webp", "http://webprotege.stanford.edu/")
 engine = OntoFlowEngine(triplestore=ts)
 
 # Define the KPAs
-kpis = [
+kpas = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 1, "maximise": False},
     {"name": "OpenSource", "weight": 5, "maximise": False},
@@ -129,7 +129,7 @@ kpis = [
 
 # Execute the search
 bestRoute = engine.getBestRoute(
-    ROOT, kpis, MCO, str(Path(os.path.abspath(__file__)).parent)
+    ROOT, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
 )
 
 # Export the results

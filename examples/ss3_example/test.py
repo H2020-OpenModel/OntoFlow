@@ -34,7 +34,7 @@ ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 # Initialize the engine
 engine = OntoFlowEngine(triplestore=ts)
 
-kpis = [
+kpas = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 2, "maximise": False},
     {"name": "OpenSource", "weight": 1, "maximise": True},
@@ -42,7 +42,7 @@ kpis = [
 
 # Get the best route
 bestRoute = engine.getBestRoute(
-    ROOT, kpis, MCO, str(Path(os.path.abspath(__file__)).parent)
+    ROOT, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
 )
 bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
 bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))

@@ -12,7 +12,7 @@ class Node:
         depth: int,
         iri: str,
         predicate: str,
-        kpis: dict[str, float] = {},
+        kpas: dict[str, float] = {},
         routeChoices: int = 1,
         localChoices: int = 0,
     ):
@@ -22,7 +22,7 @@ class Node:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
-            kpis (dict[str, float]): the KPIs of the node. Defaults to [].
+            kpas (dict[str, float]): the KPAs of the node. Defaults to [].
             routeChoices (int): the number of routes underlying the node. Defaults to 1.
             localChoices (int): the number of possible elements you can select from the node. Defaults to 0.
         """
@@ -30,10 +30,10 @@ class Node:
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
-        self.kpis: dict[str, float] = kpis
+        self.kpas: dict[str, float] = kpas
         self.routeChoices: int = routeChoices
         self.localChoices: int = localChoices
-        self.costs: dict[str, float] = deepcopy(kpis)
+        self.costs: dict[str, float] = deepcopy(kpas)
         self.children: list["Node"] = []
         self.routes: list["Node"] = []
 
@@ -41,20 +41,20 @@ class Node:
         self,
         iri: str,
         predicate: str,
-        kpis: dict[str, float],
+        kpas: dict[str, float],
     ) -> "Node":
-        """Creates a node instance using IRI, predicate, and KPIs, and adds it to the node as a child.
+        """Creates a node instance using IRI, predicate, and KPAs, and adds it to the node as a child.
 
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
-            kpis (dict[str, float]): the KPIs of the child node.
+            kpas (dict[str, float]): the KPAs of the child node.
 
         Returns:
             Node: the child node.
         """
 
-        node = Node(self.depth + 1, iri, predicate, kpis)
+        node = Node(self.depth + 1, iri, predicate, kpas)
         self.children.append(node)
 
         return node
@@ -77,7 +77,7 @@ class Node:
             self._updateChildrenDepth(node)
 
     def generateRoutes(self) -> None:
-        """Generate all the possible routes and their KPIs, and save the structure in the Node as routes."""
+        """Generate all the possible routes and their KPAs, and save the structure in the Node as routes."""
 
         routes = []
         paths = self._getPaths()
@@ -216,8 +216,8 @@ class Node:
         ser["routeChoices"] = self.routeChoices
         ser["localChoices"] = self.localChoices
 
-        if self.kpis:
-            ser["kpis"] = self.kpis
+        if self.kpas:
+            ser["kpas"] = self.kpas
 
         if self.predicate:
             ser["predicate"] = self.predicate
