@@ -87,8 +87,6 @@ class OntoFlowEngine:
         # Build the tree and get the routes
         root = Node(0, target, "", kpas=self._getKpas(target))
         self._exploreNode(root)
-        root.export(os.path.join(foldername, "root"))
-        root.visualize(os.path.join(foldername, "root"))
         root.generateRoutes()
         self.kpas.append("Id")
 

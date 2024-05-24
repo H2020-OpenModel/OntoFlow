@@ -2,13 +2,11 @@ import sys
 import os
 from pathlib import Path
 
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent, "ontoflow"))
-
 from io import StringIO
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
-from tests.utils.ontology_generator import (
+from utils.ontology_generator import (
     add_individual,
     add_subclass,
     add_generating_model,
