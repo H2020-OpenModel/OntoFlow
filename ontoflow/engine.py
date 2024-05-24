@@ -100,6 +100,7 @@ class OntoFlowEngine:
 
             for i, route in enumerate(root.routes):
                 route.visualize(os.path.join(foldername, f"route_{i}"))
+                route.export(os.path.join(foldername, f"route_{i}"))
 
             with open(os.path.join(foldername, f"result.json"), "w") as file:
                 json.dump(

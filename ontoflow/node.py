@@ -227,7 +227,7 @@ class Node:
 
         return ser
 
-    def _visualize(self) -> str:
+    def _visualize(self) -> set[str]:
         """Generate the elements of the graph to be exported from the Node.
 
         Returns:
