@@ -1,6 +1,8 @@
 import json
 import yaml
 import subprocess
+import itertools
+import random
 
 from copy import deepcopy
 from typing import Optional
@@ -81,6 +83,7 @@ class Node:
 
         routes = []
         paths = self._getPaths()
+        print(f"Paths: {paths}")
 
         for i, path in enumerate(paths):
             route = self._getRoute(path)
@@ -135,7 +138,7 @@ class Node:
 
         return visitor(self)
 
-    def _getPaths(self) -> list[list[int]]:
+    def _getPaths(self) -> list[dict[str, str]]:
         """Get all the possible paths from a node.
 
         Returns:
@@ -147,7 +150,7 @@ class Node:
         if self.routeChoices > 1:
             if self.localChoices >= self.routeChoices:
                 # Last choice point
-                paths = [[i] for i in range(len(self.children))]
+                paths = [{self.iri: el.iri} for idx, el in enumerate(self.children)]
 
             else:
                 if self.localChoices > 1:
@@ -155,21 +158,32 @@ class Node:
                     for i, child in enumerate(self.children):
                         tmp = child._getPaths()
                         for el in tmp:
-                            el.insert(0, i)
+                            el.update({self.iri: child.iri})
                             paths.append(el)
                 else:
-                    # Not a choice point, and there are other routes to find
+                    # Not a choice point, and there are other choices to be made
+                    # for i, child in enumerate(self.children):
+                    #     tmp = child._getPaths()
+                    #     paths += tmp
+                    children_choices = []
                     for i, child in enumerate(self.children):
                         tmp = child._getPaths()
-                        paths += tmp
+                        children_choices.append(tmp)
+                    combinations = list(itertools.product(*children_choices))
+                    for comb in combinations:
+                        comb_choice = {}
+                        for choice in comb:
+                            comb_choice.update(choice)
 
-            paths = list(filter(lambda x: len(x) > 0, paths))
+                        paths.append(comb_choice)
+
+            paths = list(filter(lambda x: len(x.keys()) > 0, paths))
         else:
-            paths = [[]]
+            paths = [{}]
 
         return paths
 
-    def _getRoute(self, path: list[int]) -> "Node":
+    def _getRoute(self, path: dict[str, str]) -> "Node":
         """Get a route from the node following the path.
 
         Args:
@@ -183,7 +197,11 @@ class Node:
         cpy.children = []
 
         if self.localChoices > 1:
-            cpy.children.append(self.children[path[0]]._getRoute(path[1:]))
+            children_to_be_selected = path.get(self.iri)
+            for child in self.children:
+                if child.iri == children_to_be_selected:
+                    cpy.children.append(child._getRoute(path))
+            # cpy.children.append(self.children[path[0]]._getRoute(path[1:]))
         else:
             for child in self.children:
                 cpy.children.append(child._getRoute(path))
@@ -239,16 +257,19 @@ class Node:
             "hasOutput": "orange",
             "individual": "lightblue",
         }
+        nodeChoicePointColor = "red"
 
         nodeString = set()
-        nodeString.add(
-            '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
+        main_string = '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
                 self.iri,
                 self.routeChoices,
                 self.localChoices,
-                colormap.get(self.predicate, "white"),
+                colormap.get(self.predicate, "white")
             )
-        )
+        if self.localChoices > 1:
+            main_string = 'subgraph cluster_{} {{ {} color={}}}'.format(random.randint(0, 100), main_string, nodeChoicePointColor)
+
+        nodeString.add(main_string)
 
         for child in self.children:
             nodeString.update(child._visualize())

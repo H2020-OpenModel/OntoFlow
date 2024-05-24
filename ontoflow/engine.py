@@ -87,6 +87,8 @@ class OntoFlowEngine:
         # Build the tree and get the routes
         root = Node(0, target, "", kpas=self._getKpas(target))
         self._exploreNode(root)
+        root.export(os.path.join(foldername, "root"))
+        root.visualize(os.path.join(foldername, "root"))
         root.generateRoutes()
         self.kpas.append("Id")
 
@@ -156,7 +158,7 @@ class OntoFlowEngine:
 
         if len(individuals) > 0:
             node.routeChoices = sum([child.routeChoices for child in node.children])
-            node.localChoices = len(individuals)
+            node.localChoices += len(individuals)
 
         return len(individuals) > 0
 
@@ -223,7 +225,7 @@ class OntoFlowEngine:
 
         if len(outputs) > 0:
             node.routeChoices = sum([child.routeChoices for child in node.children])
-            node.localChoices = len(outputs)
+            node.localChoices += len(outputs)
 
     def _subClass(self, node: Node) -> None:
         """Check if the node is a subclass. If it is explore the subclass and add it to the mapping.
@@ -256,7 +258,7 @@ class OntoFlowEngine:
 
         if len(subclasses) > 0:
             node.routeChoices = sum([child.routeChoices for child in node.children])
-            node.localChoices = len(subclasses)
+            node.localChoices += len(subclasses)
 
     def _getKpas(self, iri: str) -> dict:
         """Get the KPAs of the node.
