@@ -112,18 +112,19 @@ class Node:
 
         return nodeString
 
-    def export(self, fileName: str) -> None:
-        """Serialize a node as JSON and YAML and saves them in a file.
+    def export(self, fileName: str, format: str = "yaml") -> None:
+        """Serialize a node as YAML or JSON and saves them in a file.
 
         Args:
-            fileName (str): The name of the file to export the JSON data.
+            fileName (str): The name of the file to export the data.
+            format (str): The format of the file to export. Defaults to "yaml".
         """
-
-        with open(f"{fileName}.json", "w") as file:
-            json.dump(self._serialize(), file, indent=4)
-
-        with open(f"{fileName}.yaml", "w") as file:
-            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
+        if format == "json":
+            with open(f"{fileName}.json", "w") as file:
+                json.dump(self._serialize(), file, indent=4)
+        if format == "yaml":
+            with open(f"{fileName}.yaml", "w") as file:
+                yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
     def accept(self, visitor) -> None:
         """Accept a visitor and visit the node.
