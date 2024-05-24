@@ -242,7 +242,10 @@ class Node:
         nodeString = set()
         nodeString.add(
             '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
-                self.iri, self.routeChoices, self.localChoices, colormap.get(self.predicate, "white")
+                self.iri,
+                self.routeChoices,
+                self.localChoices,
+                colormap.get(self.predicate, "white"),
             )
         )
 
