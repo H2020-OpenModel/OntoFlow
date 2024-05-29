@@ -1,14 +1,8 @@
 import os
 from pathlib import Path
 
-import sys
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
-
 from ontoflow.engine import OntoFlowEngine
-
 from tripper import Triplestore
-
-# podman run -i --rm -p 3030:3030 -v databases:/fuseki/databases -t fuseki --update --loc databases/openmodel /openmodel
 
 # Initialize the knowledge base
 ONTOLOGY_PATH = os.path.join(
@@ -34,17 +28,16 @@ ts.bind("base", "http://webprotege.stanford.edu/")
 # Initialize the engine
 engine = OntoFlowEngine(triplestore=ts)
 
-kpas = [
+KPAS = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 1, "maximise": False},
     {"name": "OpenSource", "weight": 5, "maximise": False},
 ]
 
+FOLDER = str(Path(os.path.abspath(__file__)).parent)
+
 # Get the best route
-bestRoute = engine.getBestRoute(
-    TARGET, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
-)
+bestRoute = engine.getBestRoute(TARGET, KPAS, MCO, FOLDER)
 
 bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
 bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
-
