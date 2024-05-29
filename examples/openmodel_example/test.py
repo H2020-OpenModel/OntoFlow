@@ -15,7 +15,7 @@ ONTOLOGY_PATH = os.path.join(
     Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"
 )
 
-ROOT = "http://webprotege.stanford.edu/Density"
+TARGET = "http://webprotege.stanford.edu/Density"
 MCO = "mods"
 
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
@@ -42,8 +42,9 @@ kpas = [
 
 # Get the best route
 bestRoute = engine.getBestRoute(
-    ROOT, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
+    TARGET, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
 )
 
 bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
 bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+
