@@ -1,6 +1,11 @@
 import os
 from pathlib import Path
 
+import sys
+sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
+
+from ontoflow.engine import OntoFlowEngine
+
 from ontoflow.engine import OntoFlowEngine
 from tripper import Triplestore
 
@@ -30,8 +35,8 @@ engine = OntoFlowEngine(triplestore=ts)
 
 KPAS = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
-    {"name": "SimulationTime", "weight": 1, "maximise": False},
-    {"name": "OpenSource", "weight": 5, "maximise": False},
+    {"name": "SimulationTime", "weight": 5, "maximise": False},
+    {"name": "OpenSource", "weight": 4, "maximise": True},
 ]
 
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
