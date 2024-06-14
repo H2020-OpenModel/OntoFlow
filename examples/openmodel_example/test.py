@@ -39,5 +39,5 @@ KPAS = [
 
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
-# Get the routes ordered by the best to the worst
+# Get the routes ordered according to the MCO ranking
 routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)
