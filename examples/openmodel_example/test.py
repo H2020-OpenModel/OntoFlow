@@ -39,8 +39,5 @@ KPAS = [
 
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
-# Get the best route
-bestRoute = engine.getBestRoute(TARGET, KPAS, MCO, FOLDER)
-
-bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
-bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+# Get the routes ordered by the best to the worst
+routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)

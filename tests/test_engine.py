@@ -190,7 +190,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpas)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
@@ -202,7 +202,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpas)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
