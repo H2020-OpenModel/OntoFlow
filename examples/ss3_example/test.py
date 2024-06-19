@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent.parent.parent))
 
 from ontoflow.engine import OntoFlowEngine
+from ontoflow.node import Node
 
 from tripper import Triplestore
 
@@ -44,3 +45,8 @@ FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
 # Get the routes ordered according to the MCO ranking
 routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)
+
+filtered: list["Node"] = Node.filterIndividualsLeaves(routes)
+
+for i, route in enumerate(filtered):
+    route.visualize(f"filtered_{i}", "png")

@@ -150,23 +150,20 @@ class Node:
         if self.routeChoices > 1:
             if self.localChoices >= self.routeChoices:
                 # Last choice point
-                paths = [{self.iri: el.iri} for idx, el in enumerate(self.children)]
+                paths = [{self.iri: child.iri} for child in self.children]
 
             else:
                 if self.localChoices > 1:
                     # Choice point, and there are other routes to find
-                    for i, child in enumerate(self.children):
+                    for child in self.children:
                         tmp = child._getPaths()
                         for el in tmp:
                             el.update({self.iri: child.iri})
                             paths.append(el)
                 else:
                     # Not a choice point, and there are other choices to be made
-                    # for i, child in enumerate(self.children):
-                    #     tmp = child._getPaths()
-                    #     paths += tmp
                     children_choices = []
-                    for i, child in enumerate(self.children):
+                    for child in self.children:
                         tmp = child._getPaths()
                         children_choices.append(tmp)
                     combinations = list(itertools.product(*children_choices))
@@ -201,7 +198,6 @@ class Node:
             for child in self.children:
                 if child.iri == children_to_be_selected:
                     cpy.children.append(child._getRoute(path))
-            # cpy.children.append(self.children[path[0]]._getRoute(path[1:]))
         else:
             for child in self.children:
                 cpy.children.append(child._getRoute(path))
@@ -250,7 +246,7 @@ class Node:
         """Generate the elements of the graph to be exported from the Node.
 
         Returns:
-            str: the string representation of the graph.
+            set[str]: the string representation for the visualization of the graph.
         """
 
         colormap = {
@@ -261,13 +257,15 @@ class Node:
 
         nodeString = set()
         main_string = '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
-                self.iri,
-                self.routeChoices,
-                self.localChoices,
-                colormap.get(self.predicate, "white")
-            )
+            self.iri,
+            self.routeChoices,
+            self.localChoices,
+            colormap.get(self.predicate, "white"),
+        )
         if self.localChoices > 1:
-            main_string = 'subgraph cluster_{} {{ {} color={}}}'.format(random.randint(0, 100), main_string, nodeChoicePointColor)
+            main_string = "subgraph cluster_{} {{ {} color={}}}".format(
+                random.randint(0, 100), main_string, nodeChoicePointColor
+            )
 
         nodeString.add(main_string)
 
@@ -283,6 +281,33 @@ class Node:
             )
 
         return nodeString
+
+    def filterIndividualsLeaves(routes: list["Node"]) -> list["Node"]:
+        """Filter the routes to only keep those with individuals as leaves.
+
+        Args:
+            routes (list[Node]): the list of routes to be filtered.
+
+        Returns:
+            list[Node]: the list of routes with only the individuals as leaves.
+        """
+
+        def _checkIndividualsLeaves(node: "Node") -> bool:
+            """Check if the node has only individuals as leaves.
+
+            Args:
+                node (Node): the node to be checked.
+
+            Returns:
+                bool: True if the node has only individuals as leaves, False otherwise.
+            """
+
+            if len(node.children) == 0:
+                return node.predicate == "individual"
+            else:
+                return all([_checkIndividualsLeaves(child) for child in node.children])
+
+        return list(filter(lambda node: _checkIndividualsLeaves(node), routes))
 
     def __str__(self) -> str:
         """String representation of the node structure.
