@@ -102,7 +102,9 @@ class OntoFlowEngine:
             root.visualize(os.path.join(foldername, "root"))
 
             for i in range(limit):
-                root.routes[ranking[i]].visualize(os.path.join(foldername, f"route_{i}"))
+                root.routes[ranking[i]].visualize(
+                    os.path.join(foldername, f"route_{i}")
+                )
                 root.routes[ranking[i]].export(os.path.join(foldername, f"route_{i}"))
 
             with open(os.path.join(foldername, f"result.json"), "w") as file:
