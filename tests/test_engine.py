@@ -2,13 +2,11 @@ import sys
 import os
 from pathlib import Path
 
-sys.path.append(os.path.join(Path(os.path.abspath(__file__)).parent, "ontoflow"))
-
 from io import StringIO
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
-from tests.utils.ontology_generator import (
+from utils.ontology_generator import (
     add_individual,
     add_subclass,
     add_generating_model,
@@ -132,7 +130,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         )
         # with open(os.path.join(Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"), "w") as f:
         #            f.write(self.__ontoflow_engine._OntoFlowEngine__kpaTriplestore.serialize(format="turtle"))
-        self.__ontoflow_engine.kpis.extend(["KPA_A", "KPA_B"])
+        self.__ontoflow_engine.kpas.extend(["KPA_A", "KPA_B"])
 
     @classmethod
     def tearDownClass(cls):
@@ -186,25 +184,25 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         ontology_stream = StringIO(self.__graph.serialize(format="turtle"))
         self.__triplestore.parse(source=ontology_stream, format="turtle")
 
-        kpis = [
+        kpas = [
             {"name": "KPA_A", "weight": 3, "maximise": True},
             {"name": "KPA_B", "weight": 1, "maximise": False},
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpis)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
         self.assertEqual(visitor_flat_structure(bestRoute), route_b)
 
-        kpis = [
+        kpas = [
             {"name": "KPA_A", "weight": 1, "maximise": True},
             {"name": "KPA_B", "weight": 3, "maximise": False},
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getBestRoute(str(target_node), kpis)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
