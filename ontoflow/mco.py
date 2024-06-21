@@ -13,12 +13,12 @@ class Mco:
         return []
 
 
-def mco_ranking(engine: str, kpis: list[dict], node: Node) -> list[int]:
+def mco_ranking(engine: str, kpas: list[dict], node: Node) -> list[int]:
     """Factory method for creating an MCO and getting the ranking of the routes.
 
     Args:
         engine (str): The engine to use for the MCO.
-        kpis (list[dict]): The KPIs to be used for the MCO.
+        kpas (list[dict]): The KPAs to be used for the MCO.
         node (Node): The node to be used for the MCO.
 
     Returns:
@@ -37,6 +37,6 @@ def mco_ranking(engine: str, kpis: list[dict], node: Node) -> list[int]:
     mco_engine = mco_modules.get(engine)
 
     if mco_engine is not None:
-        return getattr(mco_engine, engine.capitalize())(kpis, node).mco_calc()
+        return getattr(mco_engine, engine.capitalize())(kpas, node).mco_calc()
     else:
         raise ValueError(f"Unknown MCO engine: {engine}")

@@ -1,6 +1,8 @@
 import json
 import yaml
 import subprocess
+import itertools
+import random
 
 from copy import deepcopy
 from typing import Optional
@@ -12,7 +14,7 @@ class Node:
         depth: int,
         iri: str,
         predicate: str,
-        kpis: dict[str, float] = {},
+        kpas: dict[str, float] = {},
         routeChoices: int = 1,
         localChoices: int = 0,
     ):
@@ -22,7 +24,7 @@ class Node:
             depth (int): the depth of the node in the tree.
             iri (str): the IRI of the node.
             predicate (str): the relation the parent node.
-            kpis (dict[str, float]): the KPIs of the node. Defaults to [].
+            kpas (dict[str, float]): the KPAs of the node. Defaults to [].
             routeChoices (int): the number of routes underlying the node. Defaults to 1.
             localChoices (int): the number of possible elements you can select from the node. Defaults to 0.
         """
@@ -30,10 +32,10 @@ class Node:
         self.depth: int = depth
         self.iri: str = iri
         self.predicate: str = predicate
-        self.kpis: dict[str, float] = kpis
+        self.kpas: dict[str, float] = kpas
         self.routeChoices: int = routeChoices
         self.localChoices: int = localChoices
-        self.costs: dict[str, float] = deepcopy(kpis)
+        self.costs: dict[str, float] = deepcopy(kpas)
         self.children: list["Node"] = []
         self.routes: list["Node"] = []
 
@@ -41,20 +43,20 @@ class Node:
         self,
         iri: str,
         predicate: str,
-        kpis: dict[str, float],
+        kpas: dict[str, float],
     ) -> "Node":
-        """Creates a node instance using IRI, predicate, and KPIs, and adds it to the node as a child.
+        """Creates a node instance using IRI, predicate, and KPAs, and adds it to the node as a child.
 
         Args:
             iri (str): the IRI of the child node.
             predicate (str): the relation to the child node.
-            kpis (dict[str, float]): the KPIs of the child node.
+            kpas (dict[str, float]): the KPAs of the child node.
 
         Returns:
             Node: the child node.
         """
 
-        node = Node(self.depth + 1, iri, predicate, kpis)
+        node = Node(self.depth + 1, iri, predicate, kpas)
         self.children.append(node)
 
         return node
@@ -77,10 +79,11 @@ class Node:
             self._updateChildrenDepth(node)
 
     def generateRoutes(self) -> None:
-        """Generate all the possible routes and their KPIs, and save the structure in the Node as routes."""
+        """Generate all the possible routes and their KPAs, and save the structure in the Node as routes."""
 
         routes = []
         paths = self._getPaths()
+        print(f"Paths: {paths}")
 
         for i, path in enumerate(paths):
             route = self._getRoute(path)
@@ -100,7 +103,7 @@ class Node:
             str: the string representation of the graph.
         """
 
-        nodeString = "digraph G {\n" + self._visualize() + "\n}"
+        nodeString = "digraph G {\n" + "\n".join(self._visualize()) + "\n}"
 
         if output is not None:
             subprocess.run(
@@ -112,18 +115,19 @@ class Node:
 
         return nodeString
 
-    def export(self, fileName: str) -> None:
-        """Serialize a node as JSON and YAML and saves them in a file.
+    def export(self, fileName: str, format: str = "yaml") -> None:
+        """Serialize a node as YAML or JSON and saves them in a file.
 
         Args:
-            fileName (str): The name of the file to export the JSON data.
+            fileName (str): The name of the file to export the data.
+            format (str): The format of the file to export. Defaults to "yaml".
         """
-
-        with open(f"{fileName}.json", "w") as file:
-            json.dump(self._serialize(), file, indent=4)
-
-        with open(f"{fileName}.yaml", "w") as file:
-            yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
+        if format == "json":
+            with open(f"{fileName}.json", "w") as file:
+                json.dump(self._serialize(), file, indent=4)
+        if format == "yaml":
+            with open(f"{fileName}.yaml", "w") as file:
+                yaml.dump(self._serialize(), file, indent=4, sort_keys=False)
 
     def accept(self, visitor) -> None:
         """Accept a visitor and visit the node.
@@ -134,7 +138,7 @@ class Node:
 
         return visitor(self)
 
-    def _getPaths(self) -> list[list[int]]:
+    def _getPaths(self) -> list[dict[str, str]]:
         """Get all the possible paths from a node.
 
         Returns:
@@ -146,29 +150,37 @@ class Node:
         if self.routeChoices > 1:
             if self.localChoices >= self.routeChoices:
                 # Last choice point
-                paths = [[i] for i in range(len(self.children))]
+                paths = [{self.iri: child.iri} for child in self.children]
 
             else:
                 if self.localChoices > 1:
                     # Choice point, and there are other routes to find
-                    for i, child in enumerate(self.children):
+                    for child in self.children:
                         tmp = child._getPaths()
                         for el in tmp:
-                            el.insert(0, i)
+                            el.update({self.iri: child.iri})
                             paths.append(el)
                 else:
-                    # Not a choice point, and there are other routes to find
-                    for i, child in enumerate(self.children):
+                    # Not a choice point, and there are other choices to be made
+                    children_choices = []
+                    for child in self.children:
                         tmp = child._getPaths()
-                        paths += tmp
+                        children_choices.append(tmp)
+                    combinations = list(itertools.product(*children_choices))
+                    for comb in combinations:
+                        comb_choice = {}
+                        for choice in comb:
+                            comb_choice.update(choice)
 
-            paths = list(filter(lambda x: len(x) > 0, paths))
+                        paths.append(comb_choice)
+
+            paths = list(filter(lambda x: len(x.keys()) > 0, paths))
         else:
-            paths = [[]]
+            paths = [{}]
 
         return paths
 
-    def _getRoute(self, path: list[int]) -> "Node":
+    def _getRoute(self, path: dict[str, str]) -> "Node":
         """Get a route from the node following the path.
 
         Args:
@@ -182,7 +194,10 @@ class Node:
         cpy.children = []
 
         if self.localChoices > 1:
-            cpy.children.append(self.children[path[0]]._getRoute(path[1:]))
+            children_to_be_selected = path.get(self.iri)
+            for child in self.children:
+                if child.iri == children_to_be_selected:
+                    cpy.children.append(child._getRoute(path))
         else:
             for child in self.children:
                 cpy.children.append(child._getRoute(path))
@@ -216,8 +231,8 @@ class Node:
         ser["routeChoices"] = self.routeChoices
         ser["localChoices"] = self.localChoices
 
-        if self.kpis:
-            ser["kpis"] = self.kpis
+        if self.kpas:
+            ser["kpas"] = self.kpas
 
         if self.predicate:
             ser["predicate"] = self.predicate
@@ -227,32 +242,72 @@ class Node:
 
         return ser
 
-    def _visualize(self) -> str:
+    def _visualize(self) -> set[str]:
         """Generate the elements of the graph to be exported from the Node.
 
         Returns:
-            str: the string representation of the graph.
+            set[str]: the string representation for the visualization of the graph.
         """
 
-        nodeString = []
-        nodeString.append(
-            '"{}" [shape=box] [xlabel="r: {}\nl: {}"]'.format(
-                self.iri, self.routeChoices, self.localChoices
-            )
+        colormap = {
+            "hasOutput": "orange",
+            "individual": "lightblue",
+        }
+        nodeChoicePointColor = "red"
+
+        nodeString = set()
+        main_string = '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
+            self.iri,
+            self.routeChoices,
+            self.localChoices,
+            colormap.get(self.predicate, "white"),
         )
+        if self.localChoices > 1:
+            main_string = "subgraph cluster_{} {{ {} color={}}}".format(
+                random.randint(0, 100), main_string, nodeChoicePointColor
+            )
+
+        nodeString.add(main_string)
 
         for child in self.children:
-            nodeString.append("{}".format(child._visualize()))
+            nodeString.update(child._visualize())
             dirBack = (
                 "back" if child.predicate in ["hasOutput", "subClassOf"] else "forward"
             )
-            nodeString.append(
+            nodeString.add(
                 '"{}" -> "{}" [label="{}", dir="{}", color="{}"]'.format(
                     self.iri, child.iri, child.predicate, dirBack, "black"
                 )
             )
 
-        return "\n".join(nodeString)
+        return nodeString
+
+    def filterIndividualsLeaves(routes: list["Node"]) -> list["Node"]:
+        """Filter the routes to only keep those with individuals as leaves.
+
+        Args:
+            routes (list[Node]): the list of routes to be filtered.
+
+        Returns:
+            list[Node]: the list of routes with only the individuals as leaves.
+        """
+
+        def _checkIndividualsLeaves(node: "Node") -> bool:
+            """Check if the node has only individuals as leaves.
+
+            Args:
+                node (Node): the node to be checked.
+
+            Returns:
+                bool: True if the node has only individuals as leaves, False otherwise.
+            """
+
+            if len(node.children) == 0:
+                return node.predicate == "individual"
+            else:
+                return all([_checkIndividualsLeaves(child) for child in node.children])
+
+        return list(filter(lambda node: _checkIndividualsLeaves(node), routes))
 
     def __str__(self) -> str:
         """String representation of the node structure.

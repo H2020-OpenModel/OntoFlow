@@ -10,11 +10,11 @@ from ontoflow.mco import Mco
 
 
 class Mods(Mco):
-    def __init__(self, kpis: list[dict], node: Node):
+    def __init__(self, kpas: list[dict], node: Node):
         """Initialise the MCO.
 
         Args:
-            kpis (list[dict]): The KPIs to be used for the MCO.
+            kpas (list[dict]): The KPAs to be used for the MCO.
             node (Node): The node to be used for the MCO.
         """
 
@@ -24,26 +24,26 @@ class Mods(Mco):
 
         mcdm_algorithm.add(mods.Variable(name="Id", type="input"))
 
-        for kpi in kpis:
+        for kpa in kpas:
             mcdm_algorithm.add(
                 mods.Variable(
-                    name=kpi["name"],
+                    name=kpa["name"],
                     type="output",
-                    objective="Maximise" if kpi["maximise"] else "Minimise",
-                    weight=kpi["weight"],
+                    objective="Maximise" if kpa["maximise"] else "Minimise",
+                    weight=kpa["weight"],
                 )
             )
 
         self.mcdm_simulation.add(mcdm_algorithm)
 
         # Setup data
-        kpis_list = [kpi["name"] for kpi in kpis]
-        kpis_list.append("Id")
+        kpas_list = [kpa["name"] for kpa in kpas]
+        kpas_list.append("Id")
 
-        self.data: list = [kpis_list]
+        self.data: list = [kpas_list]
 
         for r in node.routes:
-            self.data.append([r.costs[kpi] for kpi in kpis_list])
+            self.data.append([r.costs[kpa] for kpa in kpas_list])
 
     def mco_calc(self) -> list[int]:
         """Calculate the MCO.

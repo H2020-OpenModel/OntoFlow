@@ -38,6 +38,13 @@ dcterms:created rdf:type owl:AnnotationProperty .
 #    Classes
 #################################################################
 
+###  http://open-model.eu/ontologies/ss3#AbaqusDeformationHistory
+:AbaqusDeformationHistory rdf:type owl:Class ;
+                          rdfs:subClassOf :OpenModelSS3DataSet ;
+                          skos:prefLabel "AbaqusDeformationHistory"@en ;
+                          emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A dataset describing properties of cement calculated by ABAQUS."@en .
+
+
 ###  http://open-model.eu/ontologies/ss3#AbaqusFiniteElementMesh
 :AbaqusFiniteElementMesh rdf:type owl:Class ;
                          rdfs:subClassOf :FiniteElementMesh ;
@@ -47,14 +54,14 @@ dcterms:created rdf:type owl:AnnotationProperty .
 
 ###  http://open-model.eu/ontologies/ss3#AbaqusSimpleMaterialCard
 :AbaqusSimpleMaterialCard rdf:type owl:Class ;
-                          rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+                          rdfs:subClassOf :OpenModelSS3DataSet ;
                           skos:prefLabel "AbaqusSimpleMaterialCard"@en ;
                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Simple material card section for Abaqus."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#AbaqusSimpleMaterialCardTemplate
 :AbaqusSimpleMaterialCardTemplate rdf:type owl:Class ;
-                                  rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+                                  rdfs:subClassOf :OpenModelSS3DataSet ;
                                   skos:prefLabel "AbaqusSimpleMaterialCardTemplate"@en ;
                                   emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "An Abaqus material card that might have some placeholders that can be filled out py the Abaqus pre-processor/converter."@en .
 
@@ -75,7 +82,7 @@ dcterms:created rdf:type owl:AnnotationProperty .
                                     owl:hasValue :abaqussimulation_opensource
                                   ] ,
                                   [ rdf:type owl:Restriction ;
-                                    owl:onProperty kpa:hasKPA  ;
+                                    owl:onProperty kpa:hasKPA ;
                                     owl:hasValue :abaqussimulation_simulationtime
                                   ] ,
                                   [ rdf:type owl:Restriction ;
@@ -86,7 +93,7 @@ dcterms:created rdf:type owl:AnnotationProperty .
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                    owl:onClass :EMMO_71f190d2_8809_4c5e_9987_ecb97e898e79
+                                    owl:onClass :AbaqusDeformationHistory
                                   ] ;
                   skos:prefLabel "AbaqusSimulation"@en ;
                   emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A simulation performed by the Abaqus simulation software."@en .
@@ -94,101 +101,18 @@ dcterms:created rdf:type owl:AnnotationProperty .
 
 ###  http://open-model.eu/ontologies/ss3#ChemistrySizeDistribution
 :ChemistrySizeDistribution rdf:type owl:Class ;
-                           rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ,
+                           rdfs:subClassOf :OpenModelSS3DataSet ,
                                            <https://w3id.org/emmo/domain/microstructure#EMMO_f76d629e_3440_4acf_82ae_e7255c4492b4> ;
                            skos:prefLabel "ChemistrySizeDistribution"@en ;
                            emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Entity for alloy composition and particle size distribution.  Example: an alloy with two types of precipitate, one with a size distribution discretised into 200 size classes and the other discretised into 500 size classes will have 700 domains."@en ;
                            emmo:EMMO_c7b62dd7_063a_4c2a_8504_42f7264ba83f "Output from PREMOD."@en .
 
 
-###  http://open-model.eu/ontologies/ss3#EMMO_5cfce8fd_ba78_41e8_b753_11e7cab8cd3f
-:EMMO_5cfce8fd_ba78_41e8_b753_11e7cab8cd3f rdf:type owl:Class ;
-                                           rdfs:subClassOf :OpenModelSS3Simulation ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty kpa:hasKPA ;
-                                                             owl:hasValue :namosimulation_accuracy
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty kpa:hasKPA ;
-                                                             owl:hasValue :namosimulation_opensource
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty kpa:hasKPA ;
-                                                             owl:hasValue :namosimulation_simulationtime
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
-                                                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                             owl:onClass :EMMO_efb9b65f_a44c_4d39_809b_8d07fd8cef15
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
-                                                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                             owl:onClass :HeatTreatment
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
-                                                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                             owl:onClass :ChemistrySizeDistribution
-                                                           ] ,
-                                                           [ rdf:type owl:Restriction ;
-                                                             owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
-                                                             owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                                             owl:onClass <https://w3id.org/emmo/domain/microstructure#EMMO_17b4803f_6dc1_441c_ac84_0cf190de3a06>
-                                                           ] ;
-                                           skos:prefLabel "NaMoSimulation"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A simulation performed with the Hydro-owned NaMo simulation software for modelling precipitation during heat treatment and work hardening behaviour or the final component."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_71f190d2_8809_4c5e_9987_ecb97e898e79
-:EMMO_71f190d2_8809_4c5e_9987_ecb97e898e79 rdf:type owl:Class ;
-                                           rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
-                                           skos:prefLabel "AbaqusDeformationHistory"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A dataset describing properties of cement calculated by ABAQUS."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_71f268c7_ca4f_4d62_8916_734146d2c485
-:EMMO_71f268c7_ca4f_4d62_8916_734146d2c485 rdf:type owl:Class ;
-                                           rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
-                                           skos:prefLabel "ConcreteMaterialCard"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Material card for concrete. It describes the mechanical properties of a given concrete."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_76467ac1_1fd8_432b_a0bc_283d254f2e68
-:EMMO_76467ac1_1fd8_432b_a0bc_283d254f2e68 rdf:type owl:Class ;
-                                           rdfs:subClassOf emmo:EMMO_50d6236a_7667_4883_8ae1_9bb5d190423a ;
-                                           skos:prefLabel "OpenModelSS3Datum"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The class of datum of datasets used in OpenModel success story 3."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_7dfe9999_0fc1_4273_85f4_b9973e0aea2e
-:EMMO_7dfe9999_0fc1_4273_85f4_b9973e0aea2e rdf:type owl:Class ;
-                                           rdfs:subClassOf emmo:EMMO_b7bcff25_ffc3_474e_9ab5_01b1664bd4ba ;
-                                           skos:prefLabel "SoftwareConstraint"@en ;
-                                           emmo:EMMO_705f27ae_954c_4f13_98aa_18473fc52b25 "Constraints of how a software can be used. This is typically imposed by its license and special requirements for infrastructure, like HCP."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_b07e18c6_aa37_4851_8cfb_b3dbf4c40d8b
-:EMMO_b07e18c6_aa37_4851_8cfb_b3dbf4c40d8b rdf:type owl:Class ;
-                                           rdfs:subClassOf emmo:EMMO_b7bcff25_ffc3_474e_9ab5_01b1664bd4ba ;
-                                           skos:prefLabel "OpenModelPerformanceAttribute"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Performance attribute used by the OpenModel platform and success stories."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093
-:EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 rdf:type owl:Class ;
-                                           rdfs:subClassOf emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a ;
-                                           skos:prefLabel "OpenModelSS3DataSet"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Datasets used in OpenModel success story 3."@en .
-
-
-###  http://open-model.eu/ontologies/ss3#EMMO_efb9b65f_a44c_4d39_809b_8d07fd8cef15
-:EMMO_efb9b65f_a44c_4d39_809b_8d07fd8cef15 rdf:type owl:Class ;
-                                           rdfs:subClassOf :EMMO_76467ac1_1fd8_432b_a0bc_283d254f2e68 ,
-                                                           :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ,
-                                                           <https://w3id.org/emmo/domain/microstructure#EMMO_ac83bdd0-4390-517f-8d44-0c1abd7dca5a> ;
-                                           skos:prefLabel "NominalAlloyComposition"@en ;
-                                           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The nomical alloy composition."@en .
+###  http://open-model.eu/ontologies/ss3#ConcreteMaterialCard
+:ConcreteMaterialCard rdf:type owl:Class ;
+                      rdfs:subClassOf :AbaqusSimpleMaterialCardTemplate ;
+                      skos:prefLabel "ConcreteMaterialCard"@en ;
+                      emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Material card for concrete. It describes the mechanical properties of a given concrete."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#FenicsFiniteElementMesh
@@ -251,14 +175,14 @@ dcterms:created rdf:type owl:AnnotationProperty .
 
 ###  http://open-model.eu/ontologies/ss3#FenicsMaterials
 :FenicsMaterials rdf:type owl:Class ;
-                 rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+                 rdfs:subClassOf :OpenModelSS3DataSet ;
                  skos:prefLabel "FenicsMaterials"@en ;
                  emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Simple configuration for all materials properties for a Fenics simulation."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#FenicsOutput
 :FenicsOutput rdf:type owl:Class ;
-              rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+              rdfs:subClassOf :OpenModelSS3DataSet ;
               skos:prefLabel "FenicsOutput"@en ;
               emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Indicator for the damage of the protective layer."@en .
 
@@ -281,7 +205,7 @@ dcterms:created rdf:type owl:AnnotationProperty .
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                    owl:onClass :EMMO_71f190d2_8809_4c5e_9987_ecb97e898e79
+                                    owl:onClass :AbaqusDeformationHistory
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
@@ -309,21 +233,21 @@ dcterms:created rdf:type owl:AnnotationProperty .
 
 ###  http://open-model.eu/ontologies/ss3#FenicsSimulationConfig
 :FenicsSimulationConfig rdf:type owl:Class ;
-                        rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+                        rdfs:subClassOf :OpenModelSS3DataSet ;
                         skos:prefLabel "FenicsSimulationConfig"@en ;
                         emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Simple configuration for simulations with Fenics."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#FiniteElementMesh
 :FiniteElementMesh rdf:type owl:Class ;
-                   rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+                   rdfs:subClassOf :OpenModelSS3DataSet ;
                    skos:prefLabel "FiniteElementMesh"@en ;
                    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Mesh input to a FEM simulation."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#HeatTreatment
 :HeatTreatment rdf:type owl:Class ;
-               rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ;
+               rdfs:subClassOf :OpenModelSS3DataSet ;
                skos:prefLabel "HeatTreatment"@en ;
                emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The temperature profile during heat treatment of an alloy."@en .
 
@@ -352,6 +276,11 @@ dcterms:created rdf:type owl:AnnotationProperty .
                                          owl:hasValue :materialcardgenerator_simulationtime
                                        ] ,
                                        [ rdf:type owl:Restriction ;
+                                         owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                         owl:onClass :ConcreteMaterialCard
+                                       ] ,
+                                       [ rdf:type owl:Restriction ;
                                          owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
                                          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
                                          owl:onClass :AbaqusSimpleMaterialCard
@@ -360,6 +289,75 @@ dcterms:created rdf:type owl:AnnotationProperty .
                        emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 """A post-processing function that generates an Abaqus materials card from a the size distribution output from Premod.
 
 Additional input is needed."""@en .
+
+
+###  http://open-model.eu/ontologies/ss3#NaMoSimulation
+:NaMoSimulation rdf:type owl:Class ;
+                rdfs:subClassOf :OpenModelSS3Simulation ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty kpa:hasKPA ;
+                                  owl:hasValue :namosimulation_accuracy
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty kpa:hasKPA ;
+                                  owl:hasValue :namosimulation_opensource
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty kpa:hasKPA ;
+                                  owl:hasValue :namosimulation_simulationtime
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass :HeatTreatment
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass :NominalAlloyComposition
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass :ChemistrySizeDistribution
+                                ] ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
+                                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass <https://w3id.org/emmo/domain/microstructure#EMMO_17b4803f_6dc1_441c_ac84_0cf190de3a06>
+                                ] ;
+                skos:prefLabel "NaMoSimulation"@en ;
+                emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A simulation performed with the Hydro-owned NaMo simulation software for modelling precipitation during heat treatment and work hardening behaviour or the final component."@en .
+
+
+###  http://open-model.eu/ontologies/ss3#NominalAlloyComposition
+:NominalAlloyComposition rdf:type owl:Class ;
+                         rdfs:subClassOf :OpenModelSS3DataSet ,
+                                         :OpenModelSS3Datum ,
+                                         <https://w3id.org/emmo/domain/microstructure#EMMO_ac83bdd0-4390-517f-8d44-0c1abd7dca5a> ;
+                         skos:prefLabel "NominalAlloyComposition"@en ;
+                         emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The nomical alloy composition."@en .
+
+
+###  http://open-model.eu/ontologies/ss3#OpenModelPerformanceAttribute
+:OpenModelPerformanceAttribute rdf:type owl:Class ;
+                               rdfs:subClassOf emmo:EMMO_b7bcff25_ffc3_474e_9ab5_01b1664bd4ba ;
+                               skos:prefLabel "OpenModelPerformanceAttribute"@en ;
+                               emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Performance attribute used by the OpenModel platform and success stories."@en .
+
+
+###  http://open-model.eu/ontologies/ss3#OpenModelSS3DataSet
+:OpenModelSS3DataSet rdf:type owl:Class ;
+                     rdfs:subClassOf emmo:EMMO_194e367c_9783_4bf5_96d0_9ad597d48d9a ;
+                     skos:prefLabel "OpenModelSS3DataSet"@en ;
+                     emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Datasets used in OpenModel success story 3."@en .
+
+
+###  http://open-model.eu/ontologies/ss3#OpenModelSS3Datum
+:OpenModelSS3Datum rdf:type owl:Class ;
+                   rdfs:subClassOf emmo:EMMO_50d6236a_7667_4883_8ae1_9bb5d190423a ;
+                   skos:prefLabel "OpenModelSS3Datum"@en ;
+                   emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The class of datum of datasets used in OpenModel success story 3."@en .
 
 
 ###  http://open-model.eu/ontologies/ss3#OpenModelSS3Simulation
@@ -371,11 +369,11 @@ Additional input is needed."""@en .
 
 ###  http://open-model.eu/ontologies/ss3#PremodSimple
 :PremodSimple rdf:type owl:Class ;
-              rdfs:subClassOf :EMMO_ef51a2f2_cbf6_406f_94a6_4943176f5093 ,
+              rdfs:subClassOf :OpenModelSS3DataSet ,
                               [ rdf:type owl:Restriction ;
                                 owl:onProperty emmo:EMMO_17e27c22_37e1_468c_9dd7_95e137f73e7f ;
                                 owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                owl:onClass :EMMO_efb9b65f_a44c_4d39_809b_8d07fd8cef15
+                                owl:onClass :NominalAlloyComposition
                               ] ;
               skos:prefLabel "PremodSimple"@en ;
               emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Input to the PREMOD model."@en .
@@ -399,12 +397,12 @@ Additional input is needed."""@en .
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                    owl:onClass :EMMO_efb9b65f_a44c_4d39_809b_8d07fd8cef15
+                                    owl:onClass :HeatTreatment
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
-                                    owl:onClass :HeatTreatment
+                                    owl:onClass :NominalAlloyComposition
                                   ] ,
                                   [ rdf:type owl:Restriction ;
                                     owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
@@ -449,116 +447,123 @@ Additional input is needed."""@en .
                      emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A strength model that calculates the Yield strength from the size distribution calcuated by Premod."@en .
 
 
+###  http://open-model.eu/ontologies/ss3#SoftwareConstraint
+:SoftwareConstraint rdf:type owl:Class ;
+                    rdfs:subClassOf emmo:EMMO_b7bcff25_ffc3_474e_9ab5_01b1664bd4ba ;
+                    skos:prefLabel "SoftwareConstraint"@en ;
+                    emmo:EMMO_705f27ae_954c_4f13_98aa_18473fc52b25 "Constraints of how a software can be used. This is typically imposed by its license and special requirements for infrastructure, like HCP."@en .
+
+
 #################################################################
 #    Individuals
 #################################################################
 
 ###  http://open-model.eu/ontologies/ss3#abaqussimulation_accuracy
 :abaqussimulation_accuracy rdf:type owl:NamedIndividual ,
-                                    <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                           <http://open-model.eu/ontoflow/kpa#KPAValue> "high" .
+                                    kpa:OrdinalAccuracy ;
+                           kpa:KPAValue "high" .
 
 
 ###  http://open-model.eu/ontologies/ss3#abaqussimulation_opensource
 :abaqussimulation_opensource rdf:type owl:NamedIndividual ,
-                                      <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                             <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:boolean .
+                                      kpa:BoolOpenSource ;
+                             kpa:KPAValue "false"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#abaqussimulation_simulationtime
 :abaqussimulation_simulationtime rdf:type owl:NamedIndividual ,
-                                          <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                                 <http://open-model.eu/ontoflow/kpa#KPAValue> "5000.0"^^xsd:double .
+                                          kpa:NumericalSimulationTime ;
+                                 kpa:KPAValue "5000.0"^^xsd:double .
 
 
 ###  http://open-model.eu/ontologies/ss3#fenicssimulation_accuracy
 :fenicssimulation_accuracy rdf:type owl:NamedIndividual ,
-                                    <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                           <http://open-model.eu/ontoflow/kpa#KPAValue> "medium" .
+                                    kpa:OrdinalAccuracy ;
+                           kpa:KPAValue "medium" .
 
 
 ###  http://open-model.eu/ontologies/ss3#fenicssimulation_opensource
 :fenicssimulation_opensource rdf:type owl:NamedIndividual ,
-                                      <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                             <http://open-model.eu/ontoflow/kpa#KPAValue> "true"^^xsd:boolean .
+                                      kpa:BoolOpenSource ;
+                             kpa:KPAValue "true"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#fenicssimulation_simulationtime
 :fenicssimulation_simulationtime rdf:type owl:NamedIndividual ,
-                                          <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                                 <http://open-model.eu/ontoflow/kpa#KPAValue> "3600.0"^^xsd:double .
+                                          kpa:NumericalSimulationTime ;
+                                 kpa:KPAValue "3600.0"^^xsd:double .
 
 
 ###  http://open-model.eu/ontologies/ss3#materialcardgenerator_accuracy
 :materialcardgenerator_accuracy rdf:type owl:NamedIndividual ,
-                                         <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                                <http://open-model.eu/ontoflow/kpa#KPAValue> "high" .
+                                         kpa:OrdinalAccuracy ;
+                                kpa:KPAValue "high" .
 
 
 ###  http://open-model.eu/ontologies/ss3#materialcardgenerator_opensource
 :materialcardgenerator_opensource rdf:type owl:NamedIndividual ,
-                                           <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                                  <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:boolean .
+                                           kpa:BoolOpenSource ;
+                                  kpa:KPAValue "false"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#materialcardgenerator_simulationtime
 :materialcardgenerator_simulationtime rdf:type owl:NamedIndividual ,
-                                               <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                                      <http://open-model.eu/ontoflow/kpa#KPAValue> "0.1"^^xsd:double .
+                                               kpa:NumericalSimulationTime ;
+                                      kpa:KPAValue "0.1"^^xsd:double .
 
 
 ###  http://open-model.eu/ontologies/ss3#namosimulation_accuracy
 :namosimulation_accuracy rdf:type owl:NamedIndividual ,
-                                  <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                         <http://open-model.eu/ontoflow/kpa#KPAValue> "medium" .
+                                  kpa:OrdinalAccuracy ;
+                         kpa:KPAValue "medium" .
 
 
 ###  http://open-model.eu/ontologies/ss3#namosimulation_opensource
 :namosimulation_opensource rdf:type owl:NamedIndividual ,
-                                    <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                           <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:boolean .
+                                    kpa:BoolOpenSource ;
+                           kpa:KPAValue "false"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#namosimulation_simulationtime
 :namosimulation_simulationtime rdf:type owl:NamedIndividual ,
-                                        <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                               <http://open-model.eu/ontoflow/kpa#KPAValue> "120.0"^^xsd:double .
+                                        kpa:NumericalSimulationTime ;
+                               kpa:KPAValue "120.0"^^xsd:double .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodsimulation_accuracy
 :premodsimulation_accuracy rdf:type owl:NamedIndividual ,
-                                    <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                           <http://open-model.eu/ontoflow/kpa#KPAValue> "low" .
+                                    kpa:OrdinalAccuracy ;
+                           kpa:KPAValue "low" .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodsimulation_opensource
 :premodsimulation_opensource rdf:type owl:NamedIndividual ,
-                                      <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                             <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:boolean .
+                                      kpa:BoolOpenSource ;
+                             kpa:KPAValue "false"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodsimulation_simulationtime
 :premodsimulation_simulationtime rdf:type owl:NamedIndividual ,
-                                          <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                                 <http://open-model.eu/ontoflow/kpa#KPAValue> "60.0"^^xsd:double .
+                                          kpa:NumericalSimulationTime ;
+                                 kpa:KPAValue "60.0"^^xsd:double .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodstrengthsimulation_accuracy
 :premodstrengthsimulation_accuracy rdf:type owl:NamedIndividual ,
-                                            <http://open-model.eu/ontoflow/kpa#OrdinalAccuracy> ;
-                                   <http://open-model.eu/ontoflow/kpa#KPAValue> "medium" .
+                                            kpa:OrdinalAccuracy ;
+                                   kpa:KPAValue "medium" .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodstrengthsimulation_opensource
 :premodstrengthsimulation_opensource rdf:type owl:NamedIndividual ,
-                                              <http://open-model.eu/ontoflow/kpa#BoolOpenSource> ;
-                                     <http://open-model.eu/ontoflow/kpa#KPAValue> "false"^^xsd:boolean .
+                                              kpa:BoolOpenSource ;
+                                     kpa:KPAValue "false"^^xsd:boolean .
 
 
 ###  http://open-model.eu/ontologies/ss3#premodstrengthsimulation_simulationtime
 :premodstrengthsimulation_simulationtime rdf:type owl:NamedIndividual ,
-                                                  <http://open-model.eu/ontoflow/kpa#NumericalSimulationTime> ;
-                                         <http://open-model.eu/ontoflow/kpa#KPAValue> "1.0"^^xsd:double .
+                                                  kpa:NumericalSimulationTime ;
+                                         kpa:KPAValue "1.0"^^xsd:double .
 
 
 [ owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger
