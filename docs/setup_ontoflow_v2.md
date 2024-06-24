@@ -1,4 +1,4 @@
-# Setup OntoFlow v2.0.0
+# Setup OntoFlow v2.1.0
 
 ### Install software required for running OntoFlow
 The OS needs the following softwares:
@@ -87,54 +87,60 @@ cd examples/openmodel_example
 python test.py
 ```
 
-### N.B. At the moment only the openmodel_example works properly, a new version of OntoFlow will be releasesd when the SS3 example is ready. Meanwhile, for testing purposes only, the most updated branch is *test/ss3-run `git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch test/ss3-run`
-
-
 ## OntoFlow in Action
 This section will how to set up a script to use OntoFlow properly. Similar example can be found in the examples folder.
 
 ```python
 # Import all the necessary dependencies
 import os
+from pathlib import Path
+
+import sys
+
 from ontoflow.engine import OntoFlowEngine
+from ontoflow.node import Node
+
 from tripper import Triplestore
 
-# Create an istance of Triplestore which will connect to your local Fuseki instance
+# Initialize the knowledge base
+ONTOLOGIES = ["paths/to/ontologies.ttl"]
+TARGET = "target_iri"
+MCO = "mods"
+
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
     backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
 )
 
-# Clean the triplestore
 ts.remove_database(
     backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
 )
 
-# Add your ontology to the triplestore
-ONTOLOGY_PATH = "path/to/your/ontology.ttl"
-ts.parse(ONTOLOGY_PATH, "turtle")
+for ontology in ONTOLOGIES:
+    ts.parse(os.path.join(Path(os.path.abspath(__file__)).parent, ontology), "turtle")
 
-# Bind optional namespaces to the triplestore
-ts.bind("webp", "http://webprotege.stanford.edu/")
+
+ts.bind("emmo", "https://w3id.org/emmo#")
+ts.bind("ss3", "http://open-model.eu/ontologies/ss3#")
 
 # Initialize the engine
 engine = OntoFlowEngine(triplestore=ts)
 
-# Define the KPAs
-kpas = [
+KPAS = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
-    {"name": "SimulationTime", "weight": 1, "maximise": False},
-    {"name": "OpenSource", "weight": 5, "maximise": False},
+    {"name": "SimulationTime", "weight": 2, "maximise": False},
+    {"name": "OpenSource", "weight": 1, "maximise": True},
 ]
 
-# Execute the search
-bestRoute = engine.getBestRoute(
-    ROOT, kpas, MCO, str(Path(os.path.abspath(__file__)).parent)
-)
+FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
-# Export the results
-bestRoute.export(os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
-bestRoute.visualize(output=os.path.join(Path(os.path.abspath(__file__)).parent, "best"))
+# Get the routes ordered according to the MCO ranking
+routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)
+
+filtered: list["Node"] = Node.filterIndividualsLeaves(routes)
+
+for i, route in enumerate(filtered):
+    route.visualize(f"filtered_{i}", "png")
 ```
 
 This script executes the engine on a custom ontology and save the results as **json**, **yaml**, and **png** files.
