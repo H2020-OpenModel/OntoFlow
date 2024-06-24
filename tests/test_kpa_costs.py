@@ -1,18 +1,13 @@
-import sys
 import os
-from pathlib import Path
-
 
 from io import StringIO
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
-from utils.ontology_generator import (
+from .utils.ontology_generator import (
     add_individual,
-    add_subclass,
     add_generating_model,
     add_kpa,
-    visualize,
 )
 from ontoflow.engine import OntoFlowEngine
 from ontoflow.node import Node
