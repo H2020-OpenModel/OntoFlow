@@ -1,17 +1,13 @@
-import sys
 import os
-from pathlib import Path
 
 from io import StringIO
 import unittest
 from tripper import Triplestore
 from rdflib import Graph, Namespace, URIRef
-from utils.ontology_generator import (
+from .utils.ontology_generator import (
     add_individual,
-    add_subclass,
     add_generating_model,
     add_kpa,
-    visualize,
 )
 from ontoflow.engine import OntoFlowEngine
 from ontoflow.node import Node
@@ -190,7 +186,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)[0]
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
@@ -202,7 +198,7 @@ class SearchAlgorithm_TestCase(unittest.TestCase):
         ]
 
         # Get the best route
-        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)
+        bestRoute = self.__ontoflow_engine.getRoutes(str(target_node), kpas)[0]
         t = visitor_flat_structure(bestRoute)
 
         self.assertEqual(bestRoute.routeChoices, 2)
