@@ -56,9 +56,9 @@ docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --upd
 ### Setup of the Python Environment
 - Create and use a Python Virtual Environment: `python -m venv path/to/venv`
 - Activate the newly created VE: `.\venv\Scripts\activate`
-- Download [OntoFlow v2.0.0](https://github.com/H2020-OpenModel/OntoFlow/tree/v2.0.0) and extract it. 
+- Download [OntoFlow v2.1.0](https://github.com/H2020-OpenModel/OntoFlow/tree/v2.1.0) and extract it. 
 
-  This can be done manually, using Git (`git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.0.0`), or it could be installed as a Python package, but it is difficult to retrieve the examples: `pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.tar.gz`.
+  This can be done manually, using Git (`git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.1.0`), or it could be installed as a Python package, but it is difficult to retrieve the examples: `pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.1.0.tar.gz`.
 - Enter the OntoFlow directory
 - Install the package using pip: `pip install .`
 - Download the (ontology)[https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml] used by the MoDS MCO
@@ -68,9 +68,9 @@ docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --upd
 ```
 python -m venv venv
 source venv/bin/activate
-git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.0.0
-# pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.0.0.tar.gz
-cd OntoFlow-2.0.0
+git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.1.0
+# pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.1.0.tar.gz
+cd OntoFlow-2.1.0
 pip install .
 curl https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml -o ontology.mods.yml
 pico install ontology.mods.yml
