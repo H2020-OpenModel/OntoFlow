@@ -94,6 +94,11 @@ class OntoFlowEngine:
 
         # Get the MCO ranking
         ranking = mco_ranking(mco, kpas, root)
+        if len(ranking) < len(root.routes):
+            ranking.extend(
+                list(filter(lambda x: x not in ranking, range(len(root.routes))))
+            )
+
         limit = min(limit, len(ranking))
 
         if foldername is not None:
