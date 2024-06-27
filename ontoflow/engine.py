@@ -93,18 +93,19 @@ class OntoFlowEngine:
         self.kpas.append("Id")
 
         # Get the MCO ranking
-        ranking = mco_ranking(mco, kpas, root)[:limit]
+        ranking = mco_ranking(mco, kpas, root)
+        limit = min(limit, len(ranking))
 
         if foldername is not None:
             logger.info("Printing the results")
             root.export(os.path.join(foldername, "root"))
             root.visualize(os.path.join(foldername, "root"))
 
-            for i in ranking:
-                root.routes[i].visualize(
+            for i in range(limit):
+                root.routes[ranking[i]].visualize(
                     os.path.join(foldername, f"route_{i}")
                 )
-                root.routes[i].export(os.path.join(foldername, f"route_{i}"))
+                root.routes[ranking[i]].export(os.path.join(foldername, f"route_{i}"))
 
             with open(os.path.join(foldername, f"result.json"), "w") as file:
                 json.dump(
@@ -117,7 +118,7 @@ class OntoFlowEngine:
                     indent=4,
                 )
 
-        return [root.routes[i] for i in ranking]
+        return [root.routes[ranking[i]] for i in range(limit)]
 
     def _exploreNode(self, node: Node) -> None:
         """Explore a node in the ontology and generate the tree.
