@@ -61,7 +61,7 @@ docker run -i --rm -p 3030:3030 -v ./databases:/fuseki/databases -t fuseki --upd
   This can be done manually, using Git (`git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.1.0`), or it could be installed as a Python package, but it is difficult to retrieve the examples: `pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.1.0.tar.gz`.
 - Enter the OntoFlow directory
 - Install the package using pip: `pip install .`
-- Download the (ontology)[https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml] used by the MoDS MCO
+- Download the (ontology)[https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/main/ontology.mods.yml] used by the MoDS MCO
 - Install it using pico: `pico install ontology.mods.yml`
 
 #### Commands for Fedora/Red Hat Linux
@@ -72,7 +72,7 @@ git clone git@github.com:H2020-OpenModel/OntoFlow.git --branch v2.1.0
 # pip install https://github.com/H2020-OpenModel/OntoFlow/archive/refs/tags/v2.1.0.tar.gz
 cd OntoFlow-2.1.0
 pip install .
-curl https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/dev-add-mcdm-algorithm-type/ontology.mods.yml -o ontology.mods.yml
+curl https://raw.githubusercontent.com/EMMC-ASBL/MoDSInterface/main/ontology.mods.yml -o ontology.mods.yml
 pico install ontology.mods.yml
 ```
 
