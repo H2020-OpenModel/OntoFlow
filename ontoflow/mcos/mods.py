@@ -46,7 +46,7 @@ class Mods(Mco):
             self.data.append([r.costs[kpa] for kpa in kpas_list])
 
     def mco_calc(self) -> list[int]:
-        """Calculate the MCO.
+        """Calculate the MCO ranking.
 
         Returns:
             list[int]: The ranking of the routes.

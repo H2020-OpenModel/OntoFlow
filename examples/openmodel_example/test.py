@@ -13,7 +13,7 @@ ONTOLOGY_PATH = os.path.join(
 )
 
 TARGET = "http://webprotege.stanford.edu/Density"
-MCO = "mods"
+MCO = "basic"
 
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
@@ -34,7 +34,7 @@ engine = OntoFlowEngine(triplestore=ts)
 KPAS = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 5, "maximise": False},
-    {"name": "OpenSource", "weight": 4, "maximise": True},
+    {"name": "OpenSource", "weight": 1, "maximise": True},
 ]
 
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
