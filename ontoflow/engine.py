@@ -75,7 +75,7 @@ class OntoFlowEngine:
         Args:
             target (str): The target data to be found.
             kpas (list[dict]): The KPas to be used for the MCO.
-            mco (str): The MCO to be used. Defaults to "mods".
+            mco (str): The MCO to be used, if "none" no MCO is used. Defaults to "mods".
             foldername (str): The folder where to save the results. Defaults to None.
             limit (int): The number of routes to return. Defaults to 10.
 
@@ -93,7 +93,10 @@ class OntoFlowEngine:
         self.kpas.append("Id")
 
         # Get the MCO ranking
-        ranking = mco_ranking(mco, kpas, root)
+        if mco == "none":
+            ranking = list(range(len(root.routes)))
+        else:
+            ranking = mco_ranking(mco, kpas, root)
         limit = min(limit, len(ranking))
 
         if foldername is not None:
