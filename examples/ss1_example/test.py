@@ -49,4 +49,4 @@ routes: Node = engine.getRoutes(TARGET, KPAS, MCO, FILTER, foldername=FOLDER, li
 filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
 
 for i, route in enumerate(filtered):
-    route.visualize(f"ss1_lite_filtered_{i}", "png")
+    route.visualize(f"ss1_filtered_{i}", "png")
