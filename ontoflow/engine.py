@@ -233,48 +233,14 @@ class OntoFlowEngine:
                 BIND(emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 AS ?rel) .
                 BIND({iri} AS ?obj) .
 
-                BIND({filter} as ?filter) .
-                BIND(simsoft:InputControlData as ?nofilter) .
-
                 ?obj rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
                             owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                             ?p ?sub .
                 FILTER (?p IN (owl:onClass, owl:someValuesFrom))
-
-                {filterQuery}
             }}""",
         ]
-
-        filterQuery = """
-            {
-                ?sub rdfs:subClassOf ?nofilter
-            }
-            UNION
-            {
-                ?filter rdf:type ?sub.
-            }
-            UNION
-            {
-                {
-                    ?objf rdf:type ?sub.
-                    ?objf rdf:type ?filter.
-                }
-                UNION
-                {
-                    ?objf rdf:type ?sub .
-                    ?objf ?relf ?filter .
-                }
-                UNION
-                {
-                    ?objf rdf:type ?sub .
-                    ?objf ?relf ?objf1 .
-                    ?objf1 rdf:type ?filter .
-                }
-                FILTER (?relf IN (emmo:EMMO_9380ab64_0363_4804_b13f_3a8a94119a76, emmo:EMMO_6b78c119_f86c_4b5e_ba6c_b42d25a64122, emmo:EMMO_c4ca55f0_2795_4bff_b8a9_445ed6e29d6c, emmo:EMMO_7159549c_16a3_4dd3_b37d_e992ad0b0879, simsoft:EMMO_367a1570_8b0a_4a0a_9192_2e290e259f65)) .
-            }
-        """
 
         outputs = self._query(patternsOutput, node.iri)
 
@@ -287,7 +253,7 @@ class OntoFlowEngine:
             else:
                 ochild = node.addChild(oiri, "hasOutput", self._getKpas(oiri))
                 self.explored[oiri] = ochild
-                inputs = self._query(patternsInput, oiri, filterQuery)
+                inputs = self._query(patternsInput, oiri)
                 for input in inputs:
                     iiri = input[0]
                     if iiri in self.explored:
