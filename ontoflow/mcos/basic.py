@@ -1,3 +1,4 @@
+from numpy import diff
 from ontoflow.log.logger import logger
 from ontoflow.node import Node
 from ontoflow.mco import Mco
@@ -28,13 +29,17 @@ class Basic(Mco):
         for kpa in self.kpas:
             values = [item[kpa["name"]] for item in self.data]
             minVal, maxVal = min(values), max(values)
+            diffVal = maxVal - minVal
             for item in self.data:
-                if kpa["maximise"]:
-                    normalisedValue = (item[kpa["name"]] - minVal) / (maxVal - minVal)
+                if diffVal != 0:
+                    if kpa["maximise"]:
+                        normalisedValue = (item[kpa["name"]] - minVal) / diffVal
+                    else:
+                        normalisedValue = 1 - (
+                            (item[kpa["name"]] - minVal) / diffVal
+                        )
                 else:
-                    normalisedValue = 1 - (
-                        (item[kpa["name"]] - minVal) / (maxVal - minVal)
-                    )
+                    normalisedValue = 0
                 item[f"Normalised{kpa['name']}"] = normalisedValue * kpa["weight"]
 
         # Calculate the weighted sum

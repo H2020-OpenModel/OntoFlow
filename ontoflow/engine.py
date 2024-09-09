@@ -25,6 +25,8 @@ class OntoFlowEngine:
         self.explored: dict = {}
         self.kpas: list[str] = []
 
+        self.filter = None
+
         # Bind the namespace used for the KPA definition
         ontoflowKpaNs = Namespace("http://open-model.eu/ontoflow/kpa#")
         self.triplestore.bind("kpa", ontoflowKpaNs)
@@ -64,18 +66,20 @@ class OntoFlowEngine:
         target: str,
         kpas: list[dict],
         mco: str = "mods",
+        filter: Optional[str] = None,
         foldername: Optional[str] = None,
         limit: Optional[int] = 10,
     ) -> list[Node]:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.
         Step 2: Extract the routes and their KPAs.
-        Step 3: Pass the routes to the MCO to get the ranking.
+        Step 3: Get the MCO ranking using the extracted routes and their KPAs.
 
         Args:
             target (str): The target data to be found.
             kpas (list[dict]): The KPas to be used for the MCO.
             mco (str): The MCO to be used, if "none" no MCO is used. Defaults to "mods".
+            filter (str): The filter to be used in the query. Defaults to None.
             foldername (str): The folder where to save the results. Defaults to None.
             limit (int): The number of routes to return. Defaults to 10.
 
@@ -85,6 +89,10 @@ class OntoFlowEngine:
 
         logger.info(f"Getting mapping route for {target}")
         self.kpas.extend([kpa["name"] for kpa in kpas])
+
+        # Set the filter
+        if filter:
+            self.filter = f"<{filter}>" if filter[0] != "<" else filter
 
         # Build the tree and get the routes
         root = Node(0, target, "", kpas=self._getKpas(target))
@@ -151,13 +159,43 @@ class OntoFlowEngine:
 
         patterns = [
             """SELECT ?sub ?rel ?obj WHERE {{
-                ?sub rdf:type {iri} .
                 BIND(rdf:type AS ?rel) .
                 BIND({iri} AS ?obj) .
+
+                BIND({filter} as ?filter) .
+                BIND(simsoft:InputControlData as ?nofilter) .
+
+                ?sub rdf:type ?obj .
+
+                {filterQuery}
             }}"""
         ]
 
-        individuals = self._query(patterns, node.iri)
+        filterQuery = """
+            {
+                ?sub rdf:type ?objf .
+                ?objf rdfs:subClassOf ?nofilter .
+            }
+            UNION
+            {
+                ?sub rdf:type ?filter .
+            }
+            UNION
+            {
+                {
+                    ?sub ?relf ?filter .
+                }
+                UNION
+                {
+                    ?sub ?relf ?objf .
+                    ?objf rdf:type ?filter .
+                }
+
+                FILTER (?relf IN (emmo:EMMO_9380ab64_0363_4804_b13f_3a8a94119a76, emmo:EMMO_6b78c119_f86c_4b5e_ba6c_b42d25a64122, emmo:EMMO_c4ca55f0_2795_4bff_b8a9_445ed6e29d6c, emmo:EMMO_7159549c_16a3_4dd3_b37d_e992ad0b0879, simsoft:EMMO_367a1570_8b0a_4a0a_9192_2e290e259f65)) .
+            }
+        """
+
+        individuals = self._query(patterns, node.iri, filterQuery)
 
         for individual in individuals:
             node.addChild(individual[0], "individual", self._getKpas(individual[0]))
@@ -179,28 +217,64 @@ class OntoFlowEngine:
 
         patternsOutput = [
             """SELECT ?sub ?rel ?obj WHERE {{
+                BIND(emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 AS ?rel) .
+                BIND({iri} AS ?obj) .
+
                 ?sub rdf:type owl:Class ;
                         rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
                             owl:onProperty emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 ;
-                            ?p {iri} .
+                            ?p ?obj .
                 FILTER (?p IN (owl:onClass, owl:someValuesFrom))
-                BIND(emmo:EMMO_c4bace1d_4db0_4cd3_87e9_18122bae2840 AS ?rel) .
-                BIND({iri} AS ?obj) .
             }}""",
         ]
         patternsInput = [
             """SELECT ?sub ?rel ?obj WHERE {{
-                {iri} rdf:type owl:Class ;
+                BIND(emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 AS ?rel) .
+                BIND({iri} AS ?obj) .
+
+                BIND({filter} as ?filter) .
+                BIND(simsoft:InputControlData as ?nofilter) .
+
+                ?obj rdf:type owl:Class ;
                     rdfs:subClassOf ?restriction .
                 ?restriction rdf:type owl:Restriction ;
                             owl:onProperty emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 ;
                             ?p ?sub .
                 FILTER (?p IN (owl:onClass, owl:someValuesFrom))
-                BIND(emmo:EMMO_36e69413_8c59_4799_946c_10b05d266e22 AS ?rel) .
-                BIND({iri} AS ?obj) .
+
+                {filterQuery}
             }}""",
         ]
+
+        filterQuery = """
+            {
+                ?sub rdfs:subClassOf ?nofilter
+            }
+            UNION
+            {
+                ?filter rdf:type ?sub.
+            }
+            UNION
+            {
+                {
+                    ?objf rdf:type ?sub.
+                    ?objf rdf:type ?filter.
+                }
+                UNION
+                {
+                    ?objf rdf:type ?sub .
+                    ?objf ?relf ?filter .
+                }
+                UNION
+                {
+                    ?objf rdf:type ?sub .
+                    ?objf ?relf ?objf1 .
+                    ?objf1 rdf:type ?filter .
+                }
+                FILTER (?relf IN (emmo:EMMO_9380ab64_0363_4804_b13f_3a8a94119a76, emmo:EMMO_6b78c119_f86c_4b5e_ba6c_b42d25a64122, emmo:EMMO_c4ca55f0_2795_4bff_b8a9_445ed6e29d6c, emmo:EMMO_7159549c_16a3_4dd3_b37d_e992ad0b0879, simsoft:EMMO_367a1570_8b0a_4a0a_9192_2e290e259f65)) .
+            }
+        """
 
         outputs = self._query(patternsOutput, node.iri)
 
@@ -213,7 +287,7 @@ class OntoFlowEngine:
             else:
                 ochild = node.addChild(oiri, "hasOutput", self._getKpas(oiri))
                 self.explored[oiri] = ochild
-                inputs = self._query(patternsInput, oiri)
+                inputs = self._query(patternsInput, oiri, filterQuery)
                 for input in inputs:
                     iiri = input[0]
                     if iiri in self.explored:
@@ -242,10 +316,11 @@ class OntoFlowEngine:
 
         patterns = [
             """SELECT ?sub ?rel ?obj WHERE {{
-                ?sub rdf:type owl:Class ;
-                        rdfs:subClassOf {iri} .
                 BIND(rdfs:subClassOf AS ?rel) .
                 BIND({iri} as ?obj) .
+
+                ?sub rdf:type owl:Class ;
+                        rdfs:subClassOf ?obj .
             }}"""
         ]
 
@@ -347,12 +422,18 @@ class OntoFlowEngine:
 
         return nodeKpas
 
-    def _query(self, patterns: list[str], iri: str) -> list:
+    def _query(
+        self,
+        patterns: list[str],
+        iri: str,
+        filterQuery: Optional[str] = "",
+    ) -> list:
         """Query the triplestore using the given patterns.
 
         Args:
             patterns (list[str]): The patterns to query the triplestore.
             iri (str): The IRI of the node to query.
+            filterQuery (str): The filter query. Defaults to None
 
         Returns:
             list: The results of the query.
@@ -362,8 +443,12 @@ class OntoFlowEngine:
 
         for pattern in patterns:
             iriForm = f"<{iri}>" if iri[0] != "<" else iri
+
             q = pattern.format(
-                iri=iriForm, kpa_ns=str(self.__kpaTriplestore.namespaces["kpa"])
+                iri=iriForm,
+                kpa_ns=str(self.__kpaTriplestore.namespaces["kpa"]),
+                filter=self.filter if self.filter else "<>",
+                filterQuery=filterQuery if self.filter else "",
             )
             logger.info("\n{}\n".format(q))
             results += self.triplestore.query(q)

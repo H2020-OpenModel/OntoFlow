@@ -8,12 +8,7 @@ from ontoflow.engine import OntoFlowEngine
 from tripper import Triplestore
 
 # Initialize the knowledge base
-ONTOLOGY_PATH = os.path.join(
-    Path(os.path.abspath(__file__)).parent, "openmodel_example.ttl"
-)
-
-TARGET = "http://webprotege.stanford.edu/Density"
-MCO = "basic"
+ONTOLOGIES = ["openmodel.ttl"]
 
 __triplestore_url = os.getenv("TRIPLESTORE_URL", "http://localhost:3030")
 ts = Triplestore(
@@ -23,21 +18,24 @@ ts = Triplestore(
 ts.remove_database(
     backend="fuseki", triplestore_url=__triplestore_url, database="openmodel"
 )
-ts.parse(ONTOLOGY_PATH, "turtle")
+
+for ontology in ONTOLOGIES:
+    ts.parse(os.path.join(Path(os.path.abspath(__file__)).parent, ontology), "turtle")
 
 ts.bind("emmo", "http://emmo.info/emmo#")
-ts.bind("base", "http://webprotege.stanford.edu/")
+ts.bind("simsoft", "http://open-model.eu/domain/simulationsoftware#")
 
 # Initialize the engine
 engine = OntoFlowEngine(triplestore=ts)
 
+TARGET = "http://webprotege.stanford.edu/Density"
 KPAS = [
     {"name": "Accuracy", "weight": 3, "maximise": True},
     {"name": "SimulationTime", "weight": 5, "maximise": False},
     {"name": "OpenSource", "weight": 1, "maximise": True},
 ]
-
+MCO = "mods"
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
 # Get the routes ordered according to the MCO ranking
-routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)
+routes = engine.getRoutes(TARGET, KPAS, MCO, foldername=FOLDER)
