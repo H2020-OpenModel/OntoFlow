@@ -35,8 +35,10 @@ engine = OntoFlowEngine(triplestore=ts)
 
 TARGET = "http://open-model.eu/ontologies/ss1#DeviceFlowCurrent"
 KPAS = [
+    {"name": "Accuracy", "weight": 1, "maximise": True},
+    {"name": "SimulationTime", "weight": 1, "maximise": False}
 ]
-MCO = "none"
+MCO = "basic"
 FILTER = "http://open-model.eu/ontologies/ss1#CrystalSilicon"
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
 LIMIT = 20
