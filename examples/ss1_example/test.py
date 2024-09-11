@@ -44,8 +44,6 @@ FOLDER = str(Path(os.path.abspath(__file__)).parent)
 LIMIT = 20
 
 # Get the routes ordered according to the MCO ranking
-
-
 routes: Node = engine.getRoutes(TARGET, KPAS, MCO, FILTER, foldername=FOLDER, limit=LIMIT)
 
 filtered: list["Node"] = Node.filterIncompleteRoutes(routes)

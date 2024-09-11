@@ -35,7 +35,7 @@ engine = OntoFlowEngine(triplestore=ts)
 
 TARGET = "http://open-model.eu/ontologies/ss3#AbaqusDeformationHistory"
 KPAS = [
-    {"name": "Accuracy", "weight": 1, "maximise": True},
+    {"name": "Accuracy", "weight": 2, "maximise": True},
     {"name": "SimulationTime", "weight": 1, "maximise": False}
 ]
 MCO = "basic"
@@ -44,8 +44,6 @@ FOLDER = str(Path(os.path.abspath(__file__)).parent)
 LIMIT = 20
 
 # Get the routes ordered according to the MCO ranking
-
-
 routes: Node = engine.getRoutes(TARGET, KPAS, MCO, FILTER, foldername=FOLDER, limit=LIMIT)
 
 filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
