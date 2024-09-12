@@ -68,7 +68,7 @@ class OntoFlowEngine:
         mco: str = "mods",
         filter: Optional[str] = None,
         foldername: Optional[str] = None,
-        limit: Optional[int] = 10,
+        limit: int = 10,
     ) -> list[Node]:
         """Get the mapping route from the target to all the possible sources.
         Step 1: Build the tree.

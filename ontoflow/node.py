@@ -282,6 +282,7 @@ class Node:
 
         return nodeString
 
+    @staticmethod
     def filterIncompleteRoutes(routes: list["Node"]) -> list["Node"]:
         """Filter the routes to only keep those with individuals as leaves.
 

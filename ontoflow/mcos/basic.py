@@ -16,11 +16,11 @@ class Basic(Mco):
         self.kpas = kpas
         self.data = [r.costs for r in node.routes]
 
-    def mco_calc(self) -> list[int]:
+    def mco_calc(self) -> list[float]:
         """Calculate the MCO ranking using normalised values.
 
         Returns:
-            list[int]: The ranking of the routes.
+            list[float]: The ranking of the routes.
         """
 
         logger.info("################ Start: MCO Calc ################")

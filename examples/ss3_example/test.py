@@ -43,7 +43,7 @@ MCO = "mods"
 FOLDER = str(Path(os.path.abspath(__file__)).parent)
 
 # Get the routes ordered according to the MCO ranking
-routes = engine.getRoutes(TARGET, KPAS, MCO, foldername=FOLDER)
+routes: list["Node"] = engine.getRoutes(TARGET, KPAS, MCO, foldername=FOLDER)
 
 filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
 
