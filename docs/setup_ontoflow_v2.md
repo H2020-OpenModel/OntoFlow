@@ -137,7 +137,7 @@ FOLDER = str(Path(os.path.abspath(__file__)).parent)
 # Get the routes ordered according to the MCO ranking
 routes = engine.getRoutes(TARGET, KPAS, MCO, FOLDER)
 
-filtered: list["Node"] = Node.filterIndividualsLeaves(routes)
+filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
 
 for i, route in enumerate(filtered):
     route.visualize(f"filtered_{i}", "png")

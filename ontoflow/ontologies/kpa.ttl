@@ -3,12 +3,20 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix emmo: <http://emmo.info/emmo#> .
+@prefix emmo: <https://w3id.org/emmo#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@base <http://open-model.eu/ontoflow/kpa> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@base <http://open-model.eu/ontoflow/kpa#> .
 
 <http://open-model.eu/ontoflow/kpa> rdf:type owl:Ontology ;
-                                     owl:imports <https://w3id.org/emmo/1.0.0-rc1> .
+                                     owl:versionIRI <http://open-model.eu/ontoflow/0.1/kpa> ;
+                                     owl:imports <https://w3id.org/emmo/1.0.0-rc1/disciplines/metrology> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/disciplines/models> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/disciplines/units/siunits> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/mereocausality/mereocausality> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/multiperspective/symbolic> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/perspectives/semiotics> ,
+                                                 <https://w3id.org/emmo/1.0.0-rc1/perspectives/structural> .
 
 #################################################################
 #    Object Properties
@@ -28,6 +36,7 @@
 ###  http://open-model.eu/ontoflow/kpa#KPAValue
 :KPAValue rdf:type owl:DatatypeProperty ;
           rdfs:subPropertyOf emmo:EMMO_b6292331_94af_4f00_976b_ea55960c2f1c ;
+          skos:prefLabel "KPAValue"@en ;
           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The KPAValue property defines the quantitative or qualitative measure linked to a Key Performance Attribute (KPA) for an entity"@en .
 
 
@@ -37,58 +46,92 @@
 
 ###  http://open-model.eu/ontoflow/kpa#Accuracy
 :Accuracy rdf:type owl:Class ;
-          rdfs:subClassOf emmo:EMMO_f8bd64d5_5d3e_4ad4_a46e_c30714fecb7f ,
-                          :KPA ;
+          rdfs:subClassOf :KPA ,
+                          emmo:EMMO_57b9fd6c_84d6_43f2_8c4f_de6a1ab50aea ;
+          skos:prefLabel "Accuracy"@en ;
           emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The Accuracy metric for a process, model or task. It can be defined in heterogeneous way according to its subclasses"@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#BoolOpenSource
 :BoolOpenSource rdf:type owl:Class ;
-                rdfs:subClassOf :OpenSource ;
+                rdfs:subClassOf :OpenSource ,
+                                emmo:EMMO_54dc83cb_06e1_4739_9e45_bc09cead7f48 ;
+                skos:prefLabel "BoolOpenSource"@en ;
                 emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating if the software is open source or not. Possible values are true and false"@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#KPA
 :KPA rdf:type owl:Class ;
      rdfs:subClassOf emmo:EMMO_f658c301_ce93_46cf_9639_4eace2c5d1d5 ;
+     skos:prefLabel "KPA"@en ;
      emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The Key Performance Attribute (KPA) class defining technical attributes of models, processes or tasks"@en .
+
+
+###  http://open-model.eu/ontoflow/kpa#NormalizedSimulationTime
+:NormalizedSimulationTime rdf:type owl:Class ;
+                          rdfs:subClassOf :SimulationTime ,
+                                          emmo:EMMO_88a34881_b8d0_474b_9a08_40dbd414d834 ;
+                          skos:prefLabel "NormalizedSimulationTime"@en ;
+                          emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating the typical simulation time, normalized to a reference value."@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#NumericalAccuracy
 :NumericalAccuracy rdf:type owl:Class ;
-                   rdfs:subClassOf :Accuracy ;
+                   rdfs:subClassOf :Accuracy ,
+                                   emmo:EMMO_88a34881_b8d0_474b_9a08_40dbd414d834 ;
+                   skos:prefLabel "NumericalAccuracy"@en ;
                    emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating a specific numerical cost for the Accuracy according to an internal logic."@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#NumericalOpenSource
 :NumericalOpenSource rdf:type owl:Class ;
-                     rdfs:subClassOf :OpenSource ;
+                     rdfs:subClassOf :OpenSource ,
+                                     emmo:EMMO_88a34881_b8d0_474b_9a08_40dbd414d834 ;
+                     skos:prefLabel "NumericalOpenSource"@en ;
                      emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating a specific numerical cost for the OpenSource, according to an internal logic."@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#NumericalSimulationTime
 :NumericalSimulationTime rdf:type owl:Class ;
-                         rdfs:subClassOf :SimulationTime ;
+                         rdfs:subClassOf :SimulationTime ,
+                                         emmo:EMMO_88a34881_b8d0_474b_9a08_40dbd414d834 ,
+                                         [ rdf:type owl:Restriction ;
+                                           owl:onProperty emmo:EMMO_bed1d005_b04e_4a90_94cf_02bc678a8569 ;
+                                           owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                           owl:onClass emmo:Second
+                                         ] ;
+                         skos:prefLabel "NumericalSimulationTime"@en ;
                          emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating the typical simulation time, in seconds."@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#OpenSource
 :OpenSource rdf:type owl:Class ;
             rdfs:subClassOf :KPA ;
+            skos:prefLabel "OpenSource"@en ;
             emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The OpenSource metric defining whether a process, model or task is opensource"@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#OrdinalAccuracy
 :OrdinalAccuracy rdf:type owl:Class ;
-                 rdfs:subClassOf emmo:EMMO_50ea1ec5_f157_41b0_b46b_a9032f17ca10 ,
-                                 :Accuracy ;
+                 rdfs:subClassOf :Accuracy ,
+                                 emmo:EMMO_50ea1ec5_f157_41b0_b46b_a9032f17ca10 ;
+                 skos:prefLabel "OrdinalAccuracy"@en ;
                  emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "A performance attribute indicating the typical accuracy of a simulation tool. This takes the values of  High, Medium and Low"@en .
 
 
 ###  http://open-model.eu/ontoflow/kpa#SimulationTime
 :SimulationTime rdf:type owl:Class ;
-                rdfs:subClassOf :KPA ;
-                emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Usual simulation time of tools"@en .
+                rdfs:subClassOf :KPA ,
+                                emmo:EMMO_57b9fd6c_84d6_43f2_8c4f_de6a1ab50aea ;
+                skos:prefLabel "SimulationTime"@en ;
+                emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "Any quantity that affects the execution time of a given computational task."@en .
 
 
-###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi
+###  http://open-model.eu/ontoflow/kpa#SystemSize
+:SystemSize rdf:type owl:Class ;
+            rdfs:subClassOf :SimulationTime ;
+            skos:prefLabel "SystemSize"@en ;
+            emmo:EMMO_967080e5_2f42_4eb2_a3a9_c58143e835f9 "The size of a simulation sample, e.g. the number of particles in a molecular dynamics simulation. The size of the simulated system affects the computatinal cost of the simulation."@en .
+
+
+###  Generated by the OWL API (version 4.5.26.2023-07-17T20:34:13Z) https://github.com/owlcs/owlapi
