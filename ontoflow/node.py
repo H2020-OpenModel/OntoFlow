@@ -162,17 +162,17 @@ class Node:
                             paths.append(el)
                 else:
                     # Not a choice point, and there are other choices to be made
-                    children_choices = []
+                    childrenChoices = []
                     for child in self.children:
                         tmp = child._getPaths()
-                        children_choices.append(tmp)
-                    combinations = list(itertools.product(*children_choices))
+                        childrenChoices.append(tmp)
+                    combinations = list(itertools.product(*childrenChoices))
                     for comb in combinations:
-                        comb_choice = {}
+                        combChoice = {}
                         for choice in comb:
-                            comb_choice.update(choice)
+                            combChoice.update(choice)
 
-                        paths.append(comb_choice)
+                        paths.append(combChoice)
 
             paths = list(filter(lambda x: len(x.keys()) > 0, paths))
         else:
@@ -194,9 +194,9 @@ class Node:
         cpy.children = []
 
         if self.localChoices > 1:
-            children_to_be_selected = path.get(self.iri)
+            childrenToBeSelected = path.get(self.iri)
             for child in self.children:
-                if child.iri == children_to_be_selected:
+                if child.iri == childrenToBeSelected:
                     cpy.children.append(child._getRoute(path))
         else:
             for child in self.children:
@@ -256,18 +256,18 @@ class Node:
         nodeChoicePointColor = "red"
 
         nodeString = set()
-        main_string = '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
+        mainString = '"{}" [shape=box] [xlabel="r: {}\nl: {}"] [style=filled, fillcolor={}]'.format(
             self.iri,
             self.routeChoices,
             self.localChoices,
             colormap.get(self.predicate, "white"),
         )
         if self.localChoices > 1:
-            main_string = "subgraph cluster_{} {{ {} color={}}}".format(
-                random.randint(0, 100), main_string, nodeChoicePointColor
+            mainString = "subgraph cluster_{} {{ {} color={}}}".format(
+                random.randint(0, 100), mainString, nodeChoicePointColor
             )
 
-        nodeString.add(main_string)
+        nodeString.add(mainString)
 
         for child in self.children:
             nodeString.update(child._visualize())
@@ -282,7 +282,8 @@ class Node:
 
         return nodeString
 
-    def filterIndividualsLeaves(routes: list["Node"]) -> list["Node"]:
+    @staticmethod
+    def filterIncompleteRoutes(routes: list["Node"]) -> list["Node"]:
         """Filter the routes to only keep those with individuals as leaves.
 
         Args:

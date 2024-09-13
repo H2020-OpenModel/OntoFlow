@@ -22,6 +22,18 @@ def init_converter_triplestore(ts: Triplestore):
         standard="emmo",
     )
     ts.add_function(
+        mirror_converter,
+        expects=kpa_ns.NormalizedSimulationTime,
+        returns=kpa_ns.NormalizedSimulationTime,
+        standard="emmo",
+    )
+    ts.add_function(
+        mirror_converter,
+        expects=kpa_ns.SystemSize,
+        returns=kpa_ns.SystemSize,
+        standard="emmo",
+    )
+    ts.add_function(
         boolopensource_converter,
         expects=kpa_ns.BoolOpenSource,
         returns=kpa_ns.NumericalOpenSource,
