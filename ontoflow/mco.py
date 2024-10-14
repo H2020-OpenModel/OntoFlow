@@ -25,16 +25,7 @@ def mco_ranking(engine: str, kpas: list[dict], node: Node) -> list[int]:
         list[int]: The ranking of the routes.
     """
 
-    mcos_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcos")
-
-    # Load all modules in the ontoflow.mcos package
-    mco_modules = {
-        name: import_module(f"ontoflow.mcos.{name}")
-        for _, name, _ in iter_modules(path=[mcos_dir])
-    }
-
-    # Check if the engine exists in the loaded modules
-    mco_engine = mco_modules.get(engine)
+    mco_engine = import_module(f"ontoflow.mcos.{engine}")
 
     if mco_engine is not None:
         return getattr(mco_engine, engine.capitalize())(kpas, node).mco_calc()
