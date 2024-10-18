@@ -21,7 +21,7 @@ dependencies = [
   "python-dotenv",
   "rdflib",
   "pydot",
-  "pybacktrip @ git+https://github.com/EMMC-ASBL/PyBackTrip@v2.0.0",
+  "pybacktrip @ git+https://github.com/EMMC-ASBL/PyBackTrip@main",
   "sim-cmcl-mods-wrapper @ git+https://github.com/EMMC-ASBL/MoDSInterface",
 ]
 
