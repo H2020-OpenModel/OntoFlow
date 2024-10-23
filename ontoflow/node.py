@@ -283,7 +283,9 @@ class Node:
         return nodeString
 
     @staticmethod
-    def filterRoutes(routes: list["Node"], nodes: Optional[list[str]] = None) -> list["Node"]:
+    def filterRoutes(
+        routes: list["Node"], nodes: Optional[list[str]] = None
+    ) -> list["Node"]:
         """Filter the routes to only keep those with individuals as leaves and containing all specified nodes.
 
         Args:
@@ -294,12 +296,12 @@ class Node:
             list[Node]: the list of routes with only the individuals as leaves and containing all specified nodes.
         """
 
-        def _checkIndividualsAndNodes(node: "Node", requiredNodes: set[str]) -> bool:
-            """Check if the node has only individuals as leaves and contains all specified nodes.
+        def _checkNodes(node: "Node", requiredNodes: set[str]) -> bool:
+            """Check if the node has only individuals as leaves and contains all specified nodes using the _traverse function.
 
             Args:
                 node (Node): the node to be checked.
-                required_nodes (set[str]): the set of node IRIs to be checked.
+                requiredNodes (set[str]): the set of node IRIs to be checked.
 
             Returns:
                 bool: True if the node has only individuals as leaves and contains all specified nodes, False otherwise.
@@ -316,7 +318,11 @@ class Node:
 
             return _traverse(node) and found == requiredNodes
 
-        return list(filter(lambda node: _checkIndividualsAndNodes(node, set(nodes) if nodes else set()), routes))
+        return list(
+            filter(
+                lambda node: _checkNodes(node, set(nodes) if nodes else set()), routes
+            )
+        )
 
     def __str__(self) -> str:
         """String representation of the node structure.
