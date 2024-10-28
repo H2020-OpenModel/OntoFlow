@@ -283,32 +283,46 @@ class Node:
         return nodeString
 
     @staticmethod
-    def filterIncompleteRoutes(routes: list["Node"]) -> list["Node"]:
-        """Filter the routes to only keep those with individuals as leaves.
+    def filterRoutes(
+        routes: list["Node"], nodes: Optional[list[str]] = None
+    ) -> list["Node"]:
+        """Filter the routes to only keep those with individuals as leaves and containing all specified nodes.
 
         Args:
             routes (list[Node]): the list of routes to be filtered.
+            nodes (Optional[list[str]]): the list of node IRIs to be checked.
 
         Returns:
-            list[Node]: the list of routes with only the individuals as leaves.
+            list[Node]: the list of routes with only the individuals as leaves and containing all specified nodes.
         """
 
-        def _checkIndividualsLeaves(node: "Node") -> bool:
-            """Check if the node has only individuals as leaves.
+        def _checkNodes(node: "Node", requiredNodes: set[str]) -> bool:
+            """Check if the node has only individuals as leaves and contains all specified nodes using the _traverse function.
 
             Args:
                 node (Node): the node to be checked.
+                requiredNodes (set[str]): the set of node IRIs to be checked.
 
             Returns:
-                bool: True if the node has only individuals as leaves, False otherwise.
+                bool: True if the node has only individuals as leaves and contains all specified nodes, False otherwise.
             """
+            found = set()
 
-            if len(node.children) == 0:
-                return node.predicate == "individual"
-            else:
-                return all([_checkIndividualsLeaves(child) for child in node.children])
+            def _traverse(node: "Node") -> bool:
+                if node.iri in requiredNodes:
+                    found.add(node.iri)
+                if len(node.children) == 0:
+                    return node.predicate == "individual"
+                else:
+                    return all(_traverse(child) for child in node.children)
 
-        return list(filter(lambda node: _checkIndividualsLeaves(node), routes))
+            return _traverse(node) and found == requiredNodes
+
+        return list(
+            filter(
+                lambda node: _checkNodes(node, set(nodes) if nodes else set()), routes
+            )
+        )
 
     def __str__(self) -> str:
         """String representation of the node structure.

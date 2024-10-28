@@ -46,7 +46,7 @@ LIMIT = 20
 # Get the routes ordered according to the MCO ranking
 routes: list["Node"] = engine.getRoutes(TARGET, KPAS, MCO, FILTER, foldername=FOLDER, limit=LIMIT)
 
-filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
+filtered: list["Node"] = Node.filterRoutes(routes)
 
 for i, route in enumerate(filtered):
     route.visualize(f"ss3_lite_filtered_{i}", "png")

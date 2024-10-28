@@ -36,7 +36,7 @@ engine = OntoFlowEngine(triplestore=ts)
 TARGET = "http://open-model.eu/ontologies/ss1#DeviceFlowCurrent"
 KPAS = [
     {"name": "Accuracy", "weight": 1, "maximise": True},
-    {"name": "SimulationTime", "weight": 1, "maximise": False}
+    {"name": "SimulationTime", "weight": 1, "maximise": False},
 ]
 MCO = "basic"
 FILTER = "http://open-model.eu/ontologies/ss1#CrystalSilicon"
@@ -44,9 +44,14 @@ FOLDER = str(Path(os.path.abspath(__file__)).parent)
 LIMIT = 20
 
 # Get the routes ordered according to the MCO ranking
-routes: list["Node"] = engine.getRoutes(TARGET, KPAS, MCO, FILTER, foldername=FOLDER, limit=LIMIT)
+routes: list["Node"] = engine.getRoutes(
+    TARGET, KPAS, MCO, FILTER, foldername=FOLDER, limit=LIMIT
+)
 
-filtered: list["Node"] = Node.filterIncompleteRoutes(routes)
+filtered: list["Node"] = Node.filterRoutes(
+    routes, ["http://open-model.eu/ontologies/ss1-abox#QEBands_settings_high"]
+)
 
 for i, route in enumerate(filtered):
     route.visualize(f"ss1_filtered_{i}", "png")
+    route.export(f"ss1_filtered_{i}")
