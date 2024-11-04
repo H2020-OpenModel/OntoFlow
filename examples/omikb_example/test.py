@@ -21,6 +21,8 @@ ts = Triplestore(
 ts.bind("emmo", "https://w3id.org/emmo#")
 ts.bind("simsoft", "http://open-model.eu/domain/simulationsoftware#")
 
+ts.add_triples([("http://open-model.eu/ontologies/ss3kb#yieldstrength1", "rdf:type", "http://open-model.eu/ontologies/ss3#YieldStrength")])
+
 # Initialize the engine
 engine = OntoFlowEngine(triplestore=ts)
 
